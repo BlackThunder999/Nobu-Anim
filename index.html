@@ -117,15 +117,15 @@
     }
 
     .track-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
       letter-spacing: 1px;
       text-align: center;
       margin-bottom: 30px;
-      height: 22px;
+      height: 20px;
     }
 
-    /* Полоса перемотки */
+    /* Прогресс-бар */
     .progress-container {
       width: 100%;
       max-width: 320px;
@@ -191,7 +191,7 @@
       color: #ffffff;
     }
 
-    /* Фотка Мелла и кнопка пуска */
+    /* Блок с Меллом и кнопкой */
     .player-deck {
       position: relative;
       width: 190px;
@@ -279,7 +279,7 @@
       cursor: pointer;
     }
 
-    /* Навигация станций */
+    /* Нижняя навигация */
     nav {
       border-top: 1px solid #141414;
       display: flex;
@@ -370,25 +370,23 @@
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
+    // Все твои файлы из репозитория
     const PLAYLIST = [
-      { name: "ТРЕК #1", src: "ssstik.io_@ISSDD_7689597148920352006.mp3", dur: 150 },
-      { name: "РЕКЛАМА #1 (ТГ)", src: "tts_1794059996527_2.wav", dur: 15 },
-      { name: "ТРЕК #2", src: "ssstik.io_@gevenjilussko_7663545560258858262.mp3", dur: 150 },
-      { name: "РЕКЛАМА #2 (ТГ)", src: "tts_1794060362348_6.wav", dur: 15 },
-      { name: "ТРЕК #1", src: "ssstik.io_@ISSDD_7689597148920352006.mp3", dur: 150 },
-      { name: "РЕКЛАМА #3 (ТГ)", src: "tts_1794060639757_8.wav", dur: 15 },
-      { name: "ТРЕК #2", src: "ssstik.io_@gevenjilussko_7663545560258858262.mp3", dur: 150 },
-      { name: "РЕКЛАМА PLAYEROK", src: "tts_1794060925086_11 2.wav", dur: 15 },
-      { name: "КОНЕЦ ЛЕНТЫ", src: "tts_1794061684960_13.wav", dur: 8 }
+      { name: "ТРЕК #1 (20 МИН)", file: "ssstik.io_@ISSDD_7689597148920352006.mp3" },
+      { name: "РЕКЛАМА #1 (ТГ)", file: "tts_1794059996527_2.wav" },
+      { name: "ТРЕК #2", file: "ssstik.io_@gevenjilussko_7663545560258858262.mp3" },
+      { name: "РЕКЛАМА #2 (ТГ)", file: "tts_1794060362348_6.wav" },
+      { name: "ТРЕК #1 (20 МИН)", file: "ssstik.io_@ISSDD_7689597148920352006.mp3" },
+      { name: "РЕКЛАМА #3 (ТГ)", file: "tts_1794060639757_8.wav" },
+      { name: "ТРЕК #2", file: "ssstik.io_@gevenjilussko_7663545560258858262.mp3" },
+      { name: "РЕКЛАМА PLAYEROK", file: "tts_1794060925086_11 2.wav" },
+      { name: "КОНЕЦ ЛЕНТЫ", file: "tts_1794061684960_13.wav" }
     ];
 
-    const TOTAL_CYCLE = PLAYLIST.reduce((acc, item) => acc + item.dur, 0);
-
+    let currentIndex = 0;
     let isPlaying = false;
     let isLive = true;
-    let seekOffset = 0;
     let connected = false;
-    let currentSrc = "";
 
     const audio = document.getElementById('audio-engine');
     const playBtn = document.getElementById('main-play-btn');
@@ -403,52 +401,56 @@
     const liveTag = document.getElementById('live-indicator');
 
     function fmt(s) {
+      if (isNaN(s) || s < 0) return "00:00";
       const m = Math.floor(s / 60).toString().padStart(2, '0');
       const sec = Math.floor(s % 60).toString().padStart(2, '0');
       return `${m}:${sec}`;
     }
 
-    function getLiveSec() {
-      return Math.floor(Date.now() / 1000) % TOTAL_CYCLE;
+    // Четкое экранирование для iOS Safari: сохраняет @ и кодирует пробелы
+    function getSafeSrc(filename) {
+      return './' + encodeURIComponent(filename).replace(/%40/g, '@');
     }
 
-    function getTrackAt(sec) {
-      let accumulated = 0;
-      for (let item of PLAYLIST) {
-        if (sec < accumulated + item.dur) {
-          return { item, offset: sec - accumulated, remaining: (accumulated + item.dur) - sec };
-        }
-        accumulated += item.dur;
+    function playTrack(index) {
+      currentIndex = (index + PLAYLIST.length) % PLAYLIST.length;
+      const track = PLAYLIST[currentIndex];
+      nowPlaying.textContent = track.name;
+
+      audio.src = getSafeSrc(track.file);
+      audio.load();
+
+      const p = audio.play();
+      if (p !== undefined) {
+        p.catch(() => {
+          setTimeout(() => {
+            if (isPlaying) playTrack(currentIndex + 1);
+          }, 300);
+        });
       }
-      return { item: PLAYLIST[0], offset: 0, remaining: PLAYLIST[0].dur };
     }
 
-    function update() {
-      const liveSec = getLiveSec();
-      const currentPos = isLive ? liveSec : Math.max(0, liveSec - seekOffset);
-      const data = getTrackAt(currentPos);
+    audio.addEventListener('ended', () => {
+      playTrack(currentIndex + 1);
+    });
 
-      nowPlaying.textContent = data.item.name;
-      timeCurrent.textContent = fmt(currentPos);
-      timeTotal.textContent = fmt(TOTAL_CYCLE - currentPos);
+    audio.addEventListener('error', () => {
+      if (isPlaying) {
+        playTrack(currentIndex + 1);
+      }
+    });
 
-      const pct = (currentPos / TOTAL_CYCLE) * 100;
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const cur = audio.currentTime;
+      const dur = audio.duration;
+      timeCurrent.textContent = fmt(cur);
+      timeTotal.textContent = fmt(dur - cur);
+
+      const pct = (cur / dur) * 100;
       seekFill.style.width = pct + '%';
       seekThumb.style.left = pct + '%';
-
-      if (isPlaying) {
-        if (currentSrc !== data.item.src) {
-          currentSrc = data.item.src;
-          audio.src = encodeURI(data.item.src);
-          audio.currentTime = data.offset;
-          audio.play().catch(() => {});
-        } else if (Math.abs(audio.currentTime - data.offset) > 3) {
-          audio.currentTime = data.offset;
-        }
-      }
-    }
-
-    setInterval(update, 1000);
+    });
 
     playBtn.addEventListener('click', () => {
       if (isPlaying) {
@@ -461,44 +463,52 @@
 
       if (!connected) {
         modal.style.display = 'flex';
+        // Прогреваем контекст айфона сразу по первому клику
+        audio.src = getSafeSrc(PLAYLIST[0].file);
+        audio.load();
+
         setTimeout(() => {
           modal.style.display = 'none';
           connected = true;
-          startAudio();
+          isPlaying = true;
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+          playTrack(0);
         }, 3000);
       } else {
-        startAudio();
+        isPlaying = true;
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+        if (!audio.src || audio.src === window.location.href) {
+          playTrack(currentIndex);
+        } else {
+          audio.play().catch(() => playTrack(currentIndex));
+        }
       }
     });
 
-    function startAudio() {
-      isPlaying = true;
-      playIcon.style.display = 'none';
-      pauseIcon.style.display = 'block';
-      update();
-    }
-
     const seekTouch = document.getElementById('seekbar-touch');
     seekTouch.addEventListener('click', (e) => {
+      if (!audio.duration) return;
       const rect = seekTouch.getBoundingClientRect();
-      const targetSec = ((e.clientX - rect.left) / rect.width) * TOTAL_CYCLE;
-      const liveSec = getLiveSec();
+      const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const targetTime = clickRatio * audio.duration;
 
-      if (targetSec <= liveSec) {
-        seekOffset = liveSec - targetSec;
+      if (targetTime < audio.currentTime) {
+        audio.currentTime = targetTime;
         isLive = false;
         liveTag.classList.remove('active');
-        currentSrc = "";
-        update();
       }
     });
 
     liveTag.addEventListener('click', () => {
-      seekOffset = 0;
-      isLive = true;
-      liveTag.classList.add('active');
-      currentSrc = "";
-      update();
+      if (!isLive) {
+        isLive = true;
+        liveTag.classList.add('active');
+        if (audio.duration) {
+          audio.currentTime = Math.max(0, audio.duration - 1);
+        }
+      }
     });
 
     const tabHamam = document.getElementById('tab-hamam');
