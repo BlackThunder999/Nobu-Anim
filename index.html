@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>РАДИО ХАМАМ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #000000;
+      color: #ffffff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Модалка 3-секундного коннекта */
+    #connecting-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000000;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .loader {
+      width: 32px;
+      height: 32px;
+      border: 2px solid #222222;
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .connecting-text {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888888;
+    }
+
+    /* Шапка */
+    header {
+      padding: 30px 20px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #141414;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #ffffff;
+      border-radius: 50%;
+    }
+
+    /* Центральная часть */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      position: relative;
+    }
+
+    .view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    .station-wave {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #555555;
+      margin-bottom: 6px;
+    }
+
+    .track-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-align: center;
+      margin-bottom: 30px;
+      height: 22px;
+    }
+
+    /* Полоса перемотки */
+    .progress-container {
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 35px;
+    }
+
+    .time-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #666666;
+      margin-bottom: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .seekbar-wrap {
+      position: relative;
+      width: 100%;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .seekbar-bg {
+      width: 100%;
+      height: 2px;
+      background: #222222;
+      position: relative;
+    }
+
+    .seekbar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: #ffffff;
+      width: 0%;
+    }
+
+    .seekbar-thumb {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      background: #ffffff;
+      border-radius: 50%;
+      left: 0%;
+    }
+
+    .live-tag {
+      cursor: pointer;
+      border: 1px solid #333333;
+      padding: 1px 6px;
+      border-radius: 2px;
+      color: #666666;
+      font-size: 10px;
+    }
+
+    .live-tag.active {
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    /* Фотка Мелла и кнопка пуска */
+    .player-deck {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid #1a1a1a;
+      background: #000000;
+      overflow: hidden;
+    }
+
+    .deck-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('IMG_3320.JPG');
+      background-size: cover;
+      background-position: center;
+      filter: grayscale(100%) brightness(0.35);
+      z-index: 1;
+    }
+
+    .play-btn {
+      position: relative;
+      z-index: 2;
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 1px solid #ffffff;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    .play-btn:active {
+      transform: scale(0.94);
+      background: #ffffff;
+      color: #000000;
+    }
+
+    .play-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Заглушка Nobu FM */
+    .service-box {
+      border: 1px solid #1a1a1a;
+      padding: 30px 20px;
+      text-align: center;
+      max-width: 280px;
+      width: 100%;
+    }
+
+    .service-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    .service-desc {
+      font-size: 11px;
+      color: #666666;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .switch-back-btn {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      padding: 8px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    /* Навигация станций */
+    nav {
+      border-top: 1px solid #141414;
+      display: flex;
+      background: #000000;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 16px 0;
+      background: none;
+      border: none;
+      color: #444444;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      color: #ffffff;
+      border-top: 1px solid #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="connecting-modal">
+    <div class="loader"></div>
+    <div class="connecting-text">ПОДКЛЮЧАЕМСЯ...</div>
+  </div>
+
+  <header>
+    <div class="brand-title">РАДИО ХАМАМ</div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span>104.2 FM</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-hamam" class="view active">
+      <div class="station-wave">ЭФИР</div>
+      <div class="track-title" id="now-playing">ЭФИР</div>
+
+      <div class="progress-container">
+        <div class="time-labels">
+          <span id="time-current">00:00</span>
+          <span id="live-indicator" class="live-tag active">LIVE</span>
+          <span id="time-total">00:00</span>
+        </div>
+        
+        <div class="seekbar-wrap" id="seekbar-touch">
+          <div class="seekbar-bg">
+            <div class="seekbar-fill" id="seek-fill"></div>
+            <div class="seekbar-thumb" id="seek-thumb"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="player-deck">
+        <div class="deck-bg"></div>
+        <button class="play-btn" id="main-play-btn" aria-label="Пуск">
+          <svg id="play-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <svg id="pause-icon" viewBox="0 0 24 24" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-nobu" class="view">
+      <div class="service-box">
+        <div class="service-title">NOBU FM</div>
+        <div class="service-desc">ИДУТ РАБОТЫ.<br>СКОРО В ЭФИРЕ.</div>
+        <button class="switch-back-btn" id="btn-back-hamam">НА ХАМАМ FM</button>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="tab-btn active" id="tab-hamam">ХАМАМ FM</button>
+    <button class="tab-btn" id="tab-nobu">NOBU FM</button>
+  </nav>
+
+  <audio id="audio-engine" preload="auto"></audio>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    const PLAYLIST = [
+      { name: "ТРЕК #1", src: "ssstik.io_@ISSDD_7689597148920352006.mp3", dur: 150 },
+      { name: "РЕКЛАМА #1 (ТГ)", src: "tts_1794059996527_2.wav", dur: 15 },
+      { name: "ТРЕК #2", src: "ssstik.io_@gevenjilussko_7663545560258858262.mp3", dur: 150 },
+      { name: "РЕКЛАМА #2 (ТГ)", src: "tts_1794060362348_6.wav", dur: 15 },
+      { name: "ТРЕК #1", src: "ssstik.io_@ISSDD_7689597148920352006.mp3", dur: 150 },
+      { name: "РЕКЛАМА #3 (ТГ)", src: "tts_1794060639757_8.wav", dur: 15 },
+      { name: "ТРЕК #2", src: "ssstik.io_@gevenjilussko_7663545560258858262.mp3", dur: 150 },
+      { name: "РЕКЛАМА PLAYEROK", src: "tts_1794060925086_11 2.wav", dur: 15 },
+      { name: "КОНЕЦ ЛЕНТЫ", src: "tts_1794061684960_13.wav", dur: 8 }
+    ];
+
+    const TOTAL_CYCLE = PLAYLIST.reduce((acc, item) => acc + item.dur, 0);
+
+    let isPlaying = false;
+    let isLive = true;
+    let seekOffset = 0;
+    let connected = false;
+    let currentSrc = "";
+
+    const audio = document.getElementById('audio-engine');
+    const playBtn = document.getElementById('main-play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    const modal = document.getElementById('connecting-modal');
+    const nowPlaying = document.getElementById('now-playing');
+    const timeCurrent = document.getElementById('time-current');
+    const timeTotal = document.getElementById('time-total');
+    const seekFill = document.getElementById('seek-fill');
+    const seekThumb = document.getElementById('seek-thumb');
+    const liveTag = document.getElementById('live-indicator');
+
+    function fmt(s) {
+      const m = Math.floor(s / 60).toString().padStart(2, '0');
+      const sec = Math.floor(s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    function getLiveSec() {
+      return Math.floor(Date.now() / 1000) % TOTAL_CYCLE;
+    }
+
+    function getTrackAt(sec) {
+      let accumulated = 0;
+      for (let item of PLAYLIST) {
+        if (sec < accumulated + item.dur) {
+          return { item, offset: sec - accumulated, remaining: (accumulated + item.dur) - sec };
+        }
+        accumulated += item.dur;
+      }
+      return { item: PLAYLIST[0], offset: 0, remaining: PLAYLIST[0].dur };
+    }
+
+    function update() {
+      const liveSec = getLiveSec();
+      const currentPos = isLive ? liveSec : Math.max(0, liveSec - seekOffset);
+      const data = getTrackAt(currentPos);
+
+      nowPlaying.textContent = data.item.name;
+      timeCurrent.textContent = fmt(currentPos);
+      timeTotal.textContent = fmt(TOTAL_CYCLE - currentPos);
+
+      const pct = (currentPos / TOTAL_CYCLE) * 100;
+      seekFill.style.width = pct + '%';
+      seekThumb.style.left = pct + '%';
+
+      if (isPlaying) {
+        if (currentSrc !== data.item.src) {
+          currentSrc = data.item.src;
+          audio.src = encodeURI(data.item.src);
+          audio.currentTime = data.offset;
+          audio.play().catch(() => {});
+        } else if (Math.abs(audio.currentTime - data.offset) > 3) {
+          audio.currentTime = data.offset;
+        }
+      }
+    }
+
+    setInterval(update, 1000);
+
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+        return;
+      }
+
+      if (!connected) {
+        modal.style.display = 'flex';
+        setTimeout(() => {
+          modal.style.display = 'none';
+          connected = true;
+          startAudio();
+        }, 3000);
+      } else {
+        startAudio();
+      }
+    });
+
+    function startAudio() {
+      isPlaying = true;
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'block';
+      update();
+    }
+
+    const seekTouch = document.getElementById('seekbar-touch');
+    seekTouch.addEventListener('click', (e) => {
+      const rect = seekTouch.getBoundingClientRect();
+      const targetSec = ((e.clientX - rect.left) / rect.width) * TOTAL_CYCLE;
+      const liveSec = getLiveSec();
+
+      if (targetSec <= liveSec) {
+        seekOffset = liveSec - targetSec;
+        isLive = false;
+        liveTag.classList.remove('active');
+        currentSrc = "";
+        update();
+      }
+    });
+
+    liveTag.addEventListener('click', () => {
+      seekOffset = 0;
+      isLive = true;
+      liveTag.classList.add('active');
+      currentSrc = "";
+      update();
+    });
+
+    const tabHamam = document.getElementById('tab-hamam');
+    const tabNobu = document.getElementById('tab-nobu');
+    const viewHamam = document.getElementById('view-hamam');
+    const viewNobu = document.getElementById('view-nobu');
+    const btnBack = document.getElementById('btn-back-hamam');
+
+    tabHamam.addEventListener('click', () => setTab('hamam'));
+    btnBack.addEventListener('click', () => setTab('hamam'));
+    tabNobu.addEventListener('click', () => setTab('nobu'));
+
+    function setTab(tab) {
+      if (tab === 'hamam') {
+        tabHamam.classList.add('active');
+        tabNobu.classList.remove('active');
+        viewHamam.classList.add('active');
+        viewNobu.classList.remove('active');
+      } else {
+        tabNobu.classList.add('active');
+        tabHamam.classList.remove('active');
+        viewNobu.classList.add('active');
+        viewHamam.classList.remove('active');
+      }
+    }
+  </script>
+</body>
+</html>
