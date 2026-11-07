@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hamam-radio-v1';
+const CACHE_NAME = 'hamam-radio-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -20,7 +20,11 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(
+      keys.map((k) => { if (k !== CACHE_NAME) return caches.delete(k); })
+    )).then(() => clients.claim())
+  );
 });
 
 self.addEventListener('fetch', (event) => {
