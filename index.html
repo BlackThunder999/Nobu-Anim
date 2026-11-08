@@ -8,11 +8,11 @@
   <style>
     :root {
       --bg: #000000;
-      --surface: #0f0f13;
-      --surface-card: #18181f;
-      --border: #262630;
+      --surface: #101014;
+      --card: #18181f;
+      --border: #282834;
       --accent: #ffffff;
-      --safe-bottom: env(safe-area-inset-bottom, 14px);
+      --safe-bottom: env(safe-area-inset-bottom, 12px);
     }
     * {
       box-sizing: border-box;
@@ -20,21 +20,21 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    body {
-      background-color: var(--bg);
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background: var(--bg);
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
-      overflow: hidden;
-      height: 100vh;
-      height: -webkit-fill-available;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
+    .custom-scroll::-webkit-scrollbar { display: none; }
+    .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    
     input[type=range] {
       -webkit-appearance: none;
       appearance: none;
-      background: #282834;
+      background: #2b2b38;
       height: 3px;
       border-radius: 9999px;
       outline: none;
@@ -46,604 +46,719 @@
       height: 14px;
       border-radius: 50%;
       background: #ffffff;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
       cursor: pointer;
     }
-    .custom-scroll::-webkit-scrollbar { display: none; }
-    .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-    .tap-action { cursor: pointer; touch-action: manipulation; transition: transform 0.08s ease, opacity 0.08s ease; }
-    .tap-action:active { transform: scale(0.96); opacity: 0.85; }
-    .timeline-grid {
-      background-size: 30px 100%;
-      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    .tap-btn {
+      touch-action: manipulation;
+      cursor: pointer;
+      transition: transform 0.08s ease, opacity 0.08s ease;
     }
-    .clip-selected {
+    .tap-btn:active {
+      transform: scale(0.96);
+      opacity: 0.85;
+    }
+    .track-active {
       border: 2px solid #ffffff !important;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
     }
   </style>
 </head>
 <body class="flex flex-col h-full bg-black">
 
-  <!-- ========================================== -->
-  <!-- 1. HEADER (CapCut Pro Minimal Header)      -->
-  <!-- ========================================== -->
-  <header class="h-11 px-3 border-b border-[#1f1f28] bg-[#08080b] flex items-center justify-between shrink-0 z-30">
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 rounded-lg bg-white text-black font-extrabold text-[11px] flex items-center justify-center">
-        NA
-      </div>
-      <span class="text-xs font-bold tracking-tight text-zinc-200">Nobu Anim Pro</span>
-      <span class="text-[9px] font-mono text-zinc-500 bg-[#16161f] px-1.5 py-0.5 rounded border border-[#23232f]">v3.2</span>
-    </div>
-
-    <div class="flex items-center gap-2">
-      <select id="aspectSelect" class="bg-[#121217] border border-[#262633] text-[10px] text-zinc-300 font-mono px-2 py-1 rounded-lg outline-none">
-        <option value="9:16">9:16 (TikTok)</option>
-        <option value="16:9">16:9 (YouTube)</option>
-        <option value="1:1">1:1 (Square)</option>
-      </select>
-
-      <button id="exportModalBtn" type="button" class="h-7 px-3 rounded-lg bg-white text-black font-bold text-xs flex items-center gap-1.5 tap-action">
-        <span>Экспорт</span>
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-      </button>
-    </div>
-  </header>
-
-  <!-- ========================================== -->
-  <!-- 2. CANVAS PREVIEW VIEWPORT                 -->
-  <!-- ========================================== -->
-  <div class="flex-1 relative flex items-center justify-center p-2 bg-[#050507] overflow-hidden" id="viewportBox">
-    <div class="relative max-h-full aspect-[9/16] rounded-xl overflow-hidden border border-[#20202a] bg-black shadow-2xl flex items-center justify-center">
-      <canvas id="mainCanvas" width="1080" height="1920" class="w-full h-full object-contain"></canvas>
-
-      <!-- Заглушка пустого состояния -->
-      <div id="emptyNotice" class="absolute inset-0 flex flex-col items-center justify-center p-4 bg-black/80 text-center pointer-events-none">
-        <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mb-2">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+  <!-- ======================================================== -->
+  <!-- ЭКРАН 1: ХАБ ПРОЕКТОВ (CapCut Projects Hub)               -->
+  <!-- ======================================================== -->
+  <section id="screenProjects" class="flex flex-col h-full w-full bg-black z-30">
+    <!-- Шапка проектов -->
+    <header class="h-14 px-4 border-b border-[#1c1c24] flex items-center justify-between shrink-0 bg-[#08080b]">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-white text-black font-black text-xs flex items-center justify-center">
+          NA
         </div>
-        <span class="text-xs font-semibold text-zinc-300">Добавьте видео или фото</span>
-        <span class="text-[10px] text-zinc-500 mt-0.5">Вкладка «Медиа» внизу</span>
+        <div>
+          <h1 class="text-sm font-bold tracking-tight text-white leading-tight">Nobu Anim Pro</h1>
+          <p class="text-[10px] text-zinc-500 font-mono">CapCut Studio Engine</p>
+        </div>
       </div>
+      <div id="projectCountBadge" class="text-[11px] font-mono text-zinc-400 bg-[#14141c] px-2.5 py-1 rounded-full border border-zinc-800">
+        0 проектов
+      </div>
+    </header>
+
+    <!-- Основной контент со списком проектов -->
+    <div class="flex-1 overflow-y-auto custom-scroll p-4 flex flex-col gap-4">
+      
+      <!-- Большая кнопка создания нового проекта -->
+      <button id="btnNewProject" class="w-full py-6 rounded-2xl border border-dashed border-zinc-700 hover:border-white bg-[#0e0e14] flex flex-col items-center justify-center gap-2 tap-btn">
+        <div class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
+        <span class="text-xs font-bold text-zinc-200">Создать новый проект</span>
+      </button>
+
+      <!-- Заголовок списка -->
+      <div class="flex items-center justify-between text-xs font-semibold text-zinc-400 px-1 pt-2">
+        <span>МОИ ПРОЕКТЫ</span>
+        <span class="text-[10px] text-zinc-600 font-normal">Локальное хранилище</span>
+      </div>
+
+      <!-- Контейнер карточек проектов -->
+      <div id="projectsList" class="grid grid-cols-2 gap-3 pb-8"></div>
     </div>
-  </div>
+  </section>
 
-  <!-- ========================================== -->
-  <!-- 3. TRANSPORT & KEYFRAME TOOLBAR            -->
-  <!-- ========================================== -->
-  <div class="h-10 border-t border-[#1a1a23] bg-[#0c0c11] px-3 flex items-center justify-between shrink-0 z-20">
-    <div class="flex items-center gap-2">
-      <button id="playToggleBtn" type="button" class="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center tap-action">
-        <svg id="playIconSvg" class="w-3.5 h-3.5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-      </button>
-      <span id="timecodeText" class="font-mono text-[11px] text-zinc-400">00:00:00 / 00:15:00</span>
-    </div>
-
-    <!-- Тулбар действий с чистыми SVG -->
-    <div class="flex items-center gap-1.5">
-      <!-- Ромбик ключевого кадра (SVG Diamond) -->
-      <button id="keyframeBtn" type="button" class="h-7 px-2.5 rounded-lg bg-[#15151e] border border-zinc-700 hover:border-amber-400 text-zinc-200 text-[11px] font-semibold flex items-center gap-1.5 tap-action">
-        <svg class="w-3 h-3 text-amber-400" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 22 12 12 22 2 12"></polygon></svg>
-        <span id="keyframeLabel">Ключ</span>
-      </button>
-
-      <!-- Разрезать (SVG Ножницы) -->
-      <button id="splitBtn" type="button" class="h-7 px-2 rounded-lg bg-[#15151e] border border-zinc-800 text-zinc-400 hover:text-white tap-action" title="Разрезать клип">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
-      </button>
-
-      <!-- Удалить выбранное (SVG Корзина) -->
-      <button id="deleteBtn" type="button" class="h-7 px-2.5 rounded-lg bg-[#1a1214] border border-red-950 text-red-400 hover:text-red-300 flex items-center gap-1 tap-action" title="Удалить выбранный слой">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        <span class="text-[10px] font-semibold">Удалить</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- ========================================== -->
-  <!-- 4. МУЛЬТИТРЕКОВЫЙ ТАЙМЛАЙН                  -->
-  <!-- ========================================== -->
-  <div id="timelineScrollBox" class="h-28 bg-[#07070a] border-t border-[#1a1a23] relative overflow-x-auto custom-scroll timeline-grid px-3 py-1 flex flex-col justify-between shrink-0">
+  <!-- ======================================================== -->
+  <!-- ЭКРАН 2: РЕДАКТОР СТУДИИ NOBU ANIM (Editor Screen)        -->
+  <!-- ======================================================== -->
+  <section id="screenEditor" class="hidden flex-col h-full w-full bg-black z-30">
     
-    <!-- Плейхед -->
-    <div id="playheadBar" class="absolute top-0 bottom-0 w-[2px] bg-white z-40 pointer-events-none left-3">
-      <div class="w-2.5 h-3 bg-white -translate-x-[4px] rounded-b-sm shadow-md"></div>
-    </div>
+    <!-- 1. Header редактора -->
+    <header class="h-11 px-3 border-b border-[#1b1b22] bg-[#09090c] flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2">
+        <button id="btnBackToHub" class="w-7 h-7 rounded-lg bg-[#14141c] text-zinc-300 flex items-center justify-center tap-btn" title="Сохранить и выйти">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <input id="projNameInput" type="text" value="Монтаж" class="w-24 bg-transparent border-b border-transparent focus:border-zinc-500 text-xs font-bold text-white outline-none">
+      </div>
 
-    <!-- V1 Фон -->
-    <div id="trackBg" class="h-5 rounded-md bg-[#161c28] border border-[#27344d] flex items-center px-2 text-[9px] font-mono text-zinc-300 cursor-pointer relative truncate tap-action">
-      <span class="text-blue-400 font-bold mr-2 text-[8px]">V1</span>
-      <span id="labelTrackBg" class="truncate">Основной трек (Фон)</span>
-    </div>
+      <div class="flex items-center gap-2">
+        <!-- Aspect Ratio Picker -->
+        <select id="aspectPicker" class="h-7 bg-[#13131a] border border-zinc-700 text-[10px] font-mono text-zinc-300 px-2 rounded-lg outline-none">
+          <option value="9:16">9:16 (TikTok)</option>
+          <option value="16:9">16:9 (YouTube)</option>
+          <option value="1:1">1:1 (Квадрат)</option>
+          <option value="4:5">4:5 (Пост)</option>
+        </select>
 
-    <!-- PIP Оверлей -->
-    <div id="trackOverlay" class="h-5 rounded-md bg-[#24172f] border border-[#442959] flex items-center px-2 text-[9px] font-mono text-purple-200 cursor-pointer relative truncate tap-action">
-      <span class="text-purple-400 font-bold mr-2 text-[8px]">PIP</span>
-      <span id="labelTrackOverlay" class="truncate">Оверлей (Эдит / Наложение)</span>
-      <div id="kfMarkersOverlay" class="absolute inset-0 pointer-events-none"></div>
-    </div>
+        <button id="btnOpenExport" class="h-7 px-3 rounded-lg bg-white text-black font-bold text-xs flex items-center gap-1.5 tap-btn">
+          <span>Экспорт</span>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </button>
+      </div>
+    </header>
 
-    <!-- A1 Аудио -->
-    <div id="trackAudio" class="h-5 rounded-md bg-[#12241b] border border-[#224b35] flex items-center px-2 text-[9px] font-mono text-emerald-200 cursor-pointer relative truncate tap-action">
-      <span class="text-emerald-400 font-bold mr-2 text-[8px]">A1</span>
-      <span id="labelTrackAudio" class="truncate">Аудиодорожка (Музыка / Видео)</span>
-    </div>
+    <!-- 2. Viewport с канвасом (Адаптивное соотношение сторон) -->
+    <div class="flex-1 min-h-[170px] relative flex items-center justify-center p-2 bg-[#050507] overflow-hidden" id="viewportWrapper">
+      <div id="canvasAspectBox" class="relative max-h-full aspect-[9/16] rounded-xl overflow-hidden border border-[#202028] bg-black shadow-2xl flex items-center justify-center transition-all duration-150">
+        <canvas id="editorCanvas" width="1080" height="1920" class="w-full h-full object-contain"></canvas>
 
-    <!-- TXT Текст -->
-    <div id="trackText" class="h-5 rounded-md bg-[#2b2214] border border-[#523e1e] flex items-center px-2 text-[9px] font-mono text-amber-200 cursor-pointer relative truncate tap-action">
-      <span class="text-amber-400 font-bold mr-2 text-[8px]">TXT</span>
-      <span id="labelTrackText" class="truncate">Текстовый титр</span>
-    </div>
-  </div>
-
-  <!-- ========================================== -->
-  <!-- 5. ВКЛАДКИ ИНСТРУМЕНТОВ (CapCut Tab Bar)   -->
-  <!-- ========================================== -->
-  <div class="border-t border-[#181822] bg-[#000000] flex flex-col shrink-0 pb-[var(--safe-bottom)]">
-    
-    <div class="flex border-b border-[#181822] text-[11px] font-medium overflow-x-auto custom-scroll">
-      <button class="nav-tab-btn px-4 py-2 text-white border-b-2 border-white shrink-0 tap-action" data-tab="media">Медиа</button>
-      <button class="nav-tab-btn px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-action" data-tab="timing">Длительность</button>
-      <button class="nav-tab-btn px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-action" data-tab="motion">Движение</button>
-      <button class="nav-tab-btn px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-action" data-tab="adjust">Цвет / Adjust</button>
-      <button class="nav-tab-btn px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-action" data-tab="fx">Эффекты</button>
-      <button class="nav-tab-btn px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-action" data-tab="text">Текст</button>
-    </div>
-
-    <!-- ПАНЕЛЬ: МЕДИА -->
-    <div id="panel-media" class="panel-box p-3 grid grid-cols-3 gap-2">
-      <input type="file" id="inputBg" accept="video/*,image/*" class="hidden">
-      <button type="button" onclick="document.getElementById('inputBg').click()" class="h-12 rounded-xl bg-[#111116] border border-[#262633] hover:border-zinc-500 text-zinc-200 flex flex-col items-center justify-center gap-0.5 tap-action">
-        <svg class="w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-        <span class="text-[10px] font-semibold truncate max-w-[85px]" id="statusBg">Фон V1</span>
-      </button>
-
-      <input type="file" id="inputOverlay" accept="video/*,image/*" class="hidden">
-      <button type="button" onclick="document.getElementById('inputOverlay').click()" class="h-12 rounded-xl bg-[#111116] border border-[#262633] hover:border-zinc-500 text-zinc-200 flex flex-col items-center justify-center gap-0.5 tap-action">
-        <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-        <span class="text-[10px] font-semibold truncate max-w-[85px]" id="statusOverlay">Оверлей PIP</span>
-      </button>
-
-      <input type="file" id="inputAudio" accept="audio/*" class="hidden">
-      <button type="button" onclick="document.getElementById('inputAudio').click()" class="h-12 rounded-xl bg-[#111116] border border-[#262633] hover:border-zinc-500 text-zinc-200 flex flex-col items-center justify-center gap-0.5 tap-action">
-        <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-        <span class="text-[10px] font-semibold truncate max-w-[85px]" id="statusAudio">Аудио MP3</span>
-      </button>
-    </div>
-
-    <!-- ПАНЕЛЬ: ДЛИТЕЛЬНОСТЬ И ТАЙМИНГ -->
-    <div id="panel-timing" class="panel-box hidden p-3 flex flex-col gap-2.5">
-      <div class="flex items-center justify-between text-xs">
-        <span class="text-zinc-400 font-medium">Длина выбранного слоя:</span>
-        <div class="flex items-center gap-2">
-          <input type="number" id="clipDurationNumber" min="0.5" max="60" step="0.5" value="15.0" class="w-16 bg-[#121217] border border-zinc-700 rounded-lg px-2 py-1 text-center font-mono text-white text-xs outline-none">
-          <span class="text-zinc-500 text-[11px]">сек</span>
+        <div id="emptyMediaNotice" class="absolute inset-0 flex flex-col items-center justify-center bg-black/75 p-4 text-center pointer-events-none">
+          <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mb-1.5">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          </div>
+          <span class="text-xs font-semibold text-zinc-300">Добавьте фон</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">Вкладка «Медиа» внизу</span>
         </div>
       </div>
-      <div class="flex items-center justify-between gap-3 text-xs">
-        <span class="text-zinc-400">Громкость звука:</span>
-        <input type="range" id="clipVolumeRange" min="0" max="1" step="0.05" value="1" class="flex-1">
-        <span id="clipVolumeLabel" class="font-mono text-zinc-300 w-10 text-right">100%</span>
+    </div>
+
+    <!-- 3. Панель управления плеером (Транспорт & Инструменты) -->
+    <div class="h-10 border-t border-[#181822] bg-[#0d0d12] px-3 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2">
+        <button id="btnPlayPause" class="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center tap-btn">
+          <svg id="svgPlayPause" class="w-3.5 h-3.5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </button>
+        <span id="labelTimecode" class="font-mono text-[11px] text-zinc-400">00:00:00 / 00:15:00</span>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <!-- SVG Diamond Keyframe -->
+        <button id="btnKeyframe" class="h-7 px-2.5 rounded-lg bg-[#15151e] border border-zinc-700 hover:border-amber-400 text-zinc-200 text-[11px] font-semibold flex items-center gap-1.5 tap-btn">
+          <svg class="w-3 h-3 text-amber-400" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 22 12 12 22 2 12"></polygon></svg>
+          <span id="txtKeyframe">Ключ</span>
+        </button>
+
+        <!-- SVG Split -->
+        <button id="btnSplitClip" class="h-7 px-2 rounded-lg bg-[#15151e] border border-zinc-800 text-zinc-400 tap-btn" title="Разрезать клип">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
+        </button>
+
+        <!-- SVG Trash Delete -->
+        <button id="btnDeleteClip" class="h-7 px-2.5 rounded-lg bg-[#1d1214] border border-red-950 text-red-400 flex items-center gap-1 tap-btn" title="Удалить выбранный трек">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <span class="text-[10px] font-semibold">Удалить</span>
+        </button>
       </div>
     </div>
 
-    <!-- ПАНЕЛЬ: ДВИЖЕНИЕ & КЕЙФРЕЙМЫ -->
-    <div id="panel-motion" class="panel-box hidden p-3 grid grid-cols-3 gap-2">
-      <div class="flex flex-col gap-1">
-        <div class="flex justify-between text-[10px] text-zinc-400"><span>Масштаб</span><b id="scaleValText" class="text-white">1.0x</b></div>
-        <input type="range" id="scaleInput" min="0.2" max="3.5" step="0.05" value="1.0">
+    <!-- 4. Таймлайн мультитрековый -->
+    <div id="timelineScrollArea" class="h-28 bg-[#07070a] border-t border-[#181822] relative overflow-x-auto custom-scroll px-3 py-1 flex flex-col justify-between shrink-0 select-none cursor-pointer">
+      
+      <!-- Белый плейхед -->
+      <div id="playheadIndicator" class="absolute top-0 bottom-0 w-[2px] bg-white z-40 pointer-events-none left-3">
+        <div class="w-2.5 h-3 bg-white -translate-x-[4px] rounded-b-sm shadow-md"></div>
       </div>
-      <div class="flex flex-col gap-1">
-        <div class="flex justify-between text-[10px] text-zinc-400"><span>Поворот</span><b id="rotateValText" class="text-white">0°</b></div>
-        <input type="range" id="rotateInput" min="-180" max="180" step="2" value="0">
+
+      <!-- Дорожка V1 (Фон) -->
+      <div id="trackRowBg" class="h-5 rounded-md bg-[#131b27] border border-[#23354f] flex items-center px-2 text-[9px] font-mono text-zinc-300 relative truncate tap-btn track-active">
+        <span class="text-blue-400 font-bold mr-2 text-[8px]">V1</span>
+        <span id="titleTrackBg" class="truncate">Основной фон (Видео / Спутник)</span>
       </div>
-      <div class="flex flex-col gap-1">
-        <div class="flex justify-between text-[10px] text-zinc-400"><span>Прозрачность</span><b id="opacityValText" class="text-white">100%</b></div>
-        <input type="range" id="opacityInput" min="0" max="1" step="0.05" value="1">
+
+      <!-- Дорожка PIP (Оверлей) -->
+      <div id="trackRowOverlay" class="h-5 rounded-md bg-[#24172f] border border-[#482861] flex items-center px-2 text-[9px] font-mono text-purple-200 relative truncate tap-btn">
+        <span class="text-purple-400 font-bold mr-2 text-[8px]">PIP</span>
+        <span id="titleTrackOverlay" class="truncate">Оверлей (Эдит / Нарезка)</span>
+        <div id="overlayKeyframeDots" class="absolute inset-0 pointer-events-none"></div>
+      </div>
+
+      <!-- Дорожка A1 (Звук) -->
+      <div id="trackRowAudio" class="h-5 rounded-md bg-[#12241b] border border-[#214c35] flex items-center px-2 text-[9px] font-mono text-emerald-200 relative truncate tap-btn">
+        <span class="text-emerald-400 font-bold mr-2 text-[8px]">A1</span>
+        <span id="titleTrackAudio" class="truncate">Аудио / Музыка</span>
+      </div>
+
+      <!-- Дорожка TXT (Текст) -->
+      <div id="trackRowText" class="h-5 rounded-md bg-[#2b2214] border border-[#523e1e] flex items-center px-2 text-[9px] font-mono text-amber-200 relative truncate tap-btn">
+        <span class="text-amber-400 font-bold mr-2 text-[8px]">TXT</span>
+        <span id="titleTrackText" class="truncate">Текстовый титр</span>
       </div>
     </div>
 
-    <!-- ПАНЕЛЬ: COLOR / ADJUST -->
-    <div id="panel-adjust" class="panel-box hidden p-3 flex flex-col gap-2 max-h-36 overflow-y-auto custom-scroll">
-      <div class="grid grid-cols-3 gap-2">
+    <!-- 5. Нижнее меню в стиле CapCut (Строго помещается на экране) -->
+    <div class="border-t border-[#181822] bg-[#000000] flex flex-col shrink-0 pb-[var(--safe-bottom)]">
+      
+      <!-- Вкладки тулбара -->
+      <div class="flex border-b border-[#181822] text-[11px] font-medium overflow-x-auto custom-scroll">
+        <button class="menu-tab px-4 py-2 text-white border-b-2 border-white shrink-0 tap-btn" data-panel="media">Медиа</button>
+        <button class="menu-tab px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-btn" data-panel="timing">Длина / Слой</button>
+        <button class="menu-tab px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-btn" data-panel="adjust">Цвет / Adjust</button>
+        <button class="menu-tab px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-btn" data-panel="effects">Эффекты</button>
+      </div>
+
+      <!-- ПАНЕЛЬ 1: МЕДИА -->
+      <div id="tab-media" class="menu-panel p-2.5 grid grid-cols-3 gap-2">
+        <input type="file" id="fileUploadBg" accept="video/*,image/*" class="hidden">
+        <button type="button" onclick="document.getElementById('fileUploadBg').click()" class="h-11 rounded-xl bg-[#111116] border border-[#252533] text-zinc-200 flex flex-col items-center justify-center gap-0.5 tap-btn">
+          <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <span class="text-[9px] font-semibold truncate max-w-[80px]" id="badgeStatusBg">Фон V1</span>
+        </button>
+
+        <input type="file" id="fileUploadOverlay" accept="video/*,image/*" class="hidden">
+        <button type="button" onclick="document.getElementById('fileUploadOverlay').click()" class="h-11 rounded-xl bg-[#111116] border border-[#252533] text-zinc-200 flex flex-col items-center justify-center gap-0.5 tap-btn">
+          <svg class="w-3.5 h-3.5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          <span class="text-[9px] font-semibold truncate max-w-[80px]" id="badgeStatusOverlay">Оверлей PIP</span>
+        </button>
+
+        <input type="file" id="fileUploadAudio" accept="audio/*" class="hidden">
+        <button type="button" onclick="document.getElementById('fileUploadAudio').click()" class="h-11 rounded-xl bg-[#111116] border border-[#252533] text-zinc-200 flex flex-col items-center justify-center gap-0.5 tap-btn">
+          <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          <span class="text-[9px] font-semibold truncate max-w-[80px]" id="badgeStatusAudio">Аудио MP3</span>
+        </button>
+      </div>
+
+      <!-- ПАНЕЛЬ 2: ДЛИНА / СЛОЙ -->
+      <div id="tab-timing" class="menu-panel hidden p-2.5 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-zinc-400 text-[11px]">Длительность выделенного:</span>
+          <div class="flex items-center gap-1.5">
+            <input type="number" id="inputClipDuration" min="0.5" max="60" step="0.5" value="15.0" class="w-16 bg-[#13131b] border border-zinc-700 rounded-lg px-2 py-1 text-center font-mono text-white text-xs outline-none">
+            <span class="text-zinc-500 text-[10px]">сек</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-zinc-400 text-[10px]">Масштаб:</span>
+            <input type="range" id="inputScale" min="0.3" max="3.0" step="0.05" value="1.0" class="flex-1">
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-zinc-400 text-[10px]">Громкость:</span>
+            <input type="range" id="inputVolume" min="0" max="1" step="0.05" value="1" class="flex-1">
+          </div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛЬ 3: ЦВЕТ / ADJUST -->
+      <div id="tab-adjust" class="menu-panel hidden p-2.5 grid grid-cols-2 gap-2 text-xs max-h-28 overflow-y-auto custom-scroll">
         <div class="flex flex-col gap-0.5">
-          <div class="flex justify-between text-[9px] text-zinc-400"><span>Яркость</span><b id="labelBright" class="text-white">100%</b></div>
-          <input type="range" id="rangeBright" min="50" max="160" value="100">
+          <div class="flex justify-between text-[9px] text-zinc-400"><span>Яркость</span><b id="txtValBright" class="text-white">100%</b></div>
+          <input type="range" id="rangeBright" min="50" max="150" value="100">
         </div>
         <div class="flex flex-col gap-0.5">
-          <div class="flex justify-between text-[9px] text-zinc-400"><span>Контраст</span><b id="labelContrast" class="text-white">100%</b></div>
-          <input type="range" id="rangeContrast" min="50" max="160" value="100">
+          <div class="flex justify-between text-[9px] text-zinc-400"><span>Контраст</span><b id="txtValContrast" class="text-white">100%</b></div>
+          <input type="range" id="rangeContrast" min="50" max="150" value="100">
         </div>
         <div class="flex flex-col gap-0.5">
-          <div class="flex justify-between text-[9px] text-zinc-400"><span>Насыщенность</span><b id="labelSat" class="text-white">100%</b></div>
+          <div class="flex justify-between text-[9px] text-zinc-400"><span>Насыщенность</span><b id="txtValSat" class="text-white">100%</b></div>
           <input type="range" id="rangeSat" min="0" max="200" value="100">
         </div>
         <div class="flex flex-col gap-0.5">
-          <div class="flex justify-between text-[9px] text-zinc-400"><span>Теплота</span><b id="labelWarmth" class="text-white">0°</b></div>
-          <input type="range" id="rangeWarmth" min="-50" max="50" value="0">
-        </div>
-        <div class="flex flex-col gap-0.5">
-          <div class="flex justify-between text-[9px] text-zinc-400"><span>Виньетка</span><b id="labelVignette" class="text-white">30%</b></div>
+          <div class="flex justify-between text-[9px] text-zinc-400"><span>Виньетка</span><b id="txtValVignette" class="text-white">30%</b></div>
           <input type="range" id="rangeVignette" min="0" max="1" step="0.05" value="0.3">
         </div>
-        <div class="flex flex-col gap-0.5">
-          <span class="text-[9px] text-zinc-400">LUT Пресет</span>
-          <select id="lutSelect" class="bg-[#14141c] border border-zinc-800 text-[9px] text-white rounded p-1 outline-none">
-            <option value="none">Оригинал</option>
-            <option value="cold">Холодный фильм</option>
-            <option value="bw">Moody B&W</option>
-            <option value="neon">Neon Cyber</option>
-            <option value="vhs">Vintage VHS</option>
-          </select>
-        </div>
       </div>
-    </div>
 
-    <!-- ПАНЕЛЬ: ЭФФЕКТЫ -->
-    <div id="panel-fx" class="panel-box hidden p-3 grid grid-cols-2 gap-2 text-xs">
-      <label class="bg-[#111116] border border-[#242432] p-2 rounded-xl flex items-center justify-between cursor-pointer">
-        <span class="text-[11px] text-zinc-300">Звуковая волна (Спектр)</span>
-        <input type="checkbox" id="checkSpectrum" checked class="w-4 h-4 accent-white rounded">
-      </label>
-      <label class="bg-[#111116] border border-[#242432] p-2 rounded-xl flex items-center justify-between cursor-pointer">
-        <span class="text-[11px] text-zinc-300">Снег / Частицы</span>
-        <input type="checkbox" id="checkSnow" checked class="w-4 h-4 accent-white rounded">
-      </label>
-      <label class="bg-[#111116] border border-[#242432] p-2 rounded-xl flex items-center justify-between cursor-pointer">
-        <span class="text-[11px] text-zinc-300">Тряска Shake</span>
-        <input type="checkbox" id="checkShake" class="w-4 h-4 accent-white rounded">
-      </label>
-      <label class="bg-[#111116] border border-[#242432] p-2 rounded-xl flex items-center justify-between cursor-pointer">
-        <span class="text-[11px] text-zinc-300">Водяной знак Nobu</span>
-        <input type="checkbox" id="checkWatermark" checked class="w-4 h-4 accent-white rounded">
-      </label>
-    </div>
+      <!-- ПАНЕЛЬ 4: ЭФФЕКТЫ -->
+      <div id="tab-effects" class="menu-panel hidden p-2.5 grid grid-cols-3 gap-2 text-xs">
+        <label class="bg-[#111116] border border-[#252533] p-2 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer">
+          <span class="text-[10px] text-zinc-300">Спектр</span>
+          <input type="checkbox" id="chkSpectrum" checked class="accent-white">
+        </label>
+        <label class="bg-[#111116] border border-[#252533] p-2 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer">
+          <span class="text-[10px] text-zinc-300">Снег</span>
+          <input type="checkbox" id="chkSnow" checked class="accent-white">
+        </label>
+        <label class="bg-[#111116] border border-[#252533] p-2 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer">
+          <span class="text-[10px] text-zinc-300">Вотермарк</span>
+          <input type="checkbox" id="chkWatermark" checked class="accent-white">
+        </label>
+      </div>
 
-    <!-- ПАНЕЛЬ: ТЕКСТ -->
-    <div id="panel-text" class="panel-box hidden p-3 flex gap-2">
-      <input type="text" id="textTitleInput" placeholder="Введите титр (например: ПЕСНИ ИЗ РАЗНЫХ СТРАН)" class="flex-1 bg-[#121217] border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-white">
-      <button id="applyTextBtn" type="button" class="px-4 rounded-xl bg-white text-black text-xs font-bold tap-action">Применить</button>
     </div>
-  </div>
+  </section>
 
-  <!-- ========================================== -->
-  <!-- 6. ЭКСПОРТ МОДАЛКА (4K / 60 / 120 FPS MP4) -->
-  <!-- ========================================== -->
-  <div id="exportModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <!-- ======================================================== -->
+  <!-- МОДАЛКА ЭКСПОРТА (720p / 1080p / 4K, 30/60/120 FPS)      -->
+  <!-- ======================================================== -->
+  <div id="modalExport" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="w-full max-w-sm bg-[#0e0e13] border border-zinc-800 rounded-t-3xl sm:rounded-2xl p-5 flex flex-col gap-3 text-white">
       <div class="flex items-center justify-between pb-1 border-b border-zinc-900">
-        <span class="text-xs font-bold tracking-tight">Экспорт видео</span>
-        <button id="closeExportBtn" class="text-zinc-500 hover:text-white p-1">
+        <span class="text-xs font-bold">Настройки экспорта MP4</span>
+        <button id="btnCloseExport" class="text-zinc-500 hover:text-white p-1">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
 
       <div class="grid grid-cols-3 gap-2 text-xs">
-        <button class="res-tag py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-res="720">720p</button>
-        <button class="res-tag py-2 rounded-xl border border-white bg-white text-black font-bold" data-res="1080">1080p FHD</button>
-        <button class="res-tag py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-res="2160">4K UHD</button>
+        <button class="res-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-res="720">720p</button>
+        <button class="res-btn py-2 rounded-xl border border-white bg-white text-black font-bold" data-res="1080">1080p FHD</button>
+        <button class="res-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-res="2160">4K UHD</button>
       </div>
 
       <div class="grid grid-cols-3 gap-2 text-xs">
-        <button class="fps-tag py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-fps="30">30 FPS</button>
-        <button class="fps-tag py-2 rounded-xl border border-white bg-white text-black font-bold" data-fps="60">60 FPS</button>
-        <button class="fps-tag py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-fps="120">120 FPS</button>
+        <button class="fps-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-fps="30">30 FPS</button>
+        <button class="fps-btn py-2 rounded-xl border border-white bg-white text-black font-bold" data-fps="60">60 FPS</button>
+        <button class="fps-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-fps="120">120 FPS</button>
       </div>
 
-      <div id="renderProgress" class="hidden flex flex-col gap-1">
+      <div id="renderProgressBar" class="hidden flex flex-col gap-1">
         <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-          <div id="renderBar" class="h-full bg-white w-0 transition-all duration-75"></div>
+          <div id="renderProgressFill" class="h-full bg-white w-0 transition-all duration-75"></div>
         </div>
         <div class="flex justify-between text-[10px] font-mono text-zinc-400">
-          <span id="renderStatus">Рендеринг кадров...</span>
-          <span id="renderPct">0%</span>
+          <span>Рендеринг кадров...</span>
+          <span id="txtRenderPercent">0%</span>
         </div>
       </div>
 
-      <button id="startRenderBtn" type="button" class="w-full py-3 rounded-xl bg-white text-black font-extrabold text-xs tracking-wide tap-action flex items-center justify-center gap-1.5">
+      <button id="btnStartExport" type="button" class="w-full py-3 rounded-xl bg-white text-black font-extrabold text-xs tracking-wide tap-btn flex items-center justify-center gap-1.5">
         <span>Сохранить в Галерею MP4</span>
       </button>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 7. ЯДРО ВИДЕОРЕДАКТОРА NOBU ANIM PRO        -->
-  <!-- ========================================== -->
+  <!-- ======================================================== -->
+  <!-- СКРИПТ: ЯДРО ДВИЖКА NOBU ANIM PRO                        -->
+  <!-- ======================================================== -->
   <script>
-    // Audio Context для снятия ограничений iOS Safari
-    let webAudioContext = null;
-    function unlockAudio() {
-      if (!webAudioContext) {
-        webAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (webAudioContext.state === 'suspended') {
-        webAudioContext.resume();
-      }
+    // -------------------------------------------------------------
+    // 1. БАЗА ДАННЫХ ПРОЕКТОВ (IndexedDB + Fallback)
+    // -------------------------------------------------------------
+    let dbInstance = null;
+    const DB_NAME = 'NobuAnimDB';
+    const STORE_NAME = 'projects';
+
+    function initDatabase() {
+      return new Promise((resolve) => {
+        try {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = (e) => {
+            dbInstance = e.target.result;
+            resolve();
+          };
+          req.onerror = () => resolve();
+        } catch (e) {
+          resolve();
+        }
+      });
     }
 
-    // Состояние сессии
-    const session = {
-      currentTime: 0,
-      totalDuration: 15.0,
-      isPlaying: false,
-      selectedTrack: 'bg', // 'bg' | 'overlay' | 'audio' | 'text'
+    function getSavedProjects() {
+      return new Promise((resolve) => {
+        if (!dbInstance) {
+          const local = localStorage.getItem('nobu_projects');
+          return resolve(local ? JSON.parse(local) : []);
+        }
+        try {
+          const tx = dbInstance.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    }
+
+    function saveProjectToDB(proj) {
+      if (!dbInstance) {
+        const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
+        const idx = list.findIndex(p => p.id === proj.id);
+        if (idx >= 0) list[idx] = proj; else list.unshift(proj);
+        localStorage.setItem('nobu_projects', JSON.stringify(list));
+        return;
+      }
+      try {
+        const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(proj);
+      } catch (e) {}
+    }
+
+    function deleteProjectFromDB(id) {
+      if (!dbInstance) {
+        let list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
+        list = list.filter(p => p.id !== id);
+        localStorage.setItem('nobu_projects', JSON.stringify(list));
+        return;
+      }
+      try {
+        const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(id);
+      } catch (e) {}
+    }
+
+    // -------------------------------------------------------------
+    // 2. СОСТОЯНИЕ РЕДАКТОРА
+    // -------------------------------------------------------------
+    let currentProject = {
+      id: null,
+      name: 'Монтаж',
+      updatedAt: Date.now(),
       aspect: '9:16',
-      media: {
-        bg: null,
-        overlay: null,
-        audio: null
-      },
-      durations: {
-        bg: 15.0,
-        overlay: 15.0,
-        audio: 15.0,
-        text: 15.0
-      },
-      volumes: {
-        bg: 1.0,
-        overlay: 1.0,
-        audio: 1.0
-      },
+      totalDuration: 15.0,
+      durations: { bg: 15.0, overlay: 15.0, audio: 15.0, text: 15.0 },
+      volumes: { bg: 1.0, overlay: 1.0, audio: 1.0 },
       keyframes: [
-        { time: 0.0, x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 },
-        { time: 15.0, x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 }
+        { time: 0.0, x: 0.5, y: 0.5, scale: 1.0, opacity: 1.0 },
+        { time: 15.0, x: 0.5, y: 0.5, scale: 1.0, opacity: 1.0 }
       ],
       text: '',
-      fx: {
-        brightness: 100,
-        contrast: 100,
-        saturation: 100,
-        warmth: 0,
-        vignette: 0.3,
-        lut: 'none',
-        shake: false,
-        snow: true,
-        spectrum: true,
-        watermark: true
-      }
+      fx: { brightness: 100, contrast: 100, saturation: 100, vignette: 0.3, spectrum: true, snow: true, watermark: true }
     };
 
-    // Canvas
-    const canvas = document.getElementById('mainCanvas');
+    let sessionMedia = { bg: null, overlay: null, audio: null };
+    let editorTime = 0.0;
+    let isPlaying = false;
+    let selectedTrack = 'bg';
+
+    // Разблокировка звука на iOS
+    let audioContext = null;
+    function unlockAudio() {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioContext.state === 'suspended') audioContext.resume();
+    }
+
+    // -------------------------------------------------------------
+    // 3. UI И ИНИЦИАЛИЗАЦИЯ
+    // -------------------------------------------------------------
+    const screenProjects = document.getElementById('screenProjects');
+    const screenEditor = document.getElementById('screenEditor');
+    const projectsList = document.getElementById('projectsList');
+    const projectCountBadge = document.getElementById('projectCountBadge');
+    const btnNewProject = document.getElementById('btnNewProject');
+    const btnBackToHub = document.getElementById('btnBackToHub');
+    const projNameInput = document.getElementById('projNameInput');
+    const aspectPicker = document.getElementById('aspectPicker');
+    const canvasAspectBox = document.getElementById('canvasAspectBox');
+    const canvas = document.getElementById('editorCanvas');
     const ctx = canvas.getContext('2d', { alpha: false });
-    const emptyNotice = document.getElementById('emptyNotice');
+    const emptyMediaNotice = document.getElementById('emptyMediaNotice');
 
-    // UI элементы
-    const playToggleBtn = document.getElementById('playToggleBtn');
-    const playIconSvg = document.getElementById('playIconSvg');
-    const timecodeText = document.getElementById('timecodeText');
-    const playheadBar = document.getElementById('playheadBar');
-    const timelineScrollBox = document.getElementById('timelineScrollBox');
-    const keyframeBtn = document.getElementById('keyframeBtn');
-    const keyframeLabel = document.getElementById('keyframeLabel');
-    const deleteBtn = document.getElementById('deleteBtn');
-    const splitBtn = document.getElementById('splitBtn');
-    const kfMarkersOverlay = document.getElementById('kfMarkersOverlay');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const svgPlayPause = document.getElementById('svgPlayPause');
+    const labelTimecode = document.getElementById('labelTimecode');
+    const playheadIndicator = document.getElementById('playheadIndicator');
+    const timelineScrollArea = document.getElementById('timelineScrollArea');
+    const btnKeyframe = document.getElementById('btnKeyframe');
+    const txtKeyframe = document.getElementById('txtKeyframe');
+    const btnDeleteClip = document.getElementById('btnDeleteClip');
+    const btnSplitClip = document.getElementById('btnSplitClip');
+    const overlayKeyframeDots = document.getElementById('overlayKeyframeDots');
 
-    // Дорожки
-    const trackBg = document.getElementById('trackBg');
-    const trackOverlay = document.getElementById('trackOverlay');
-    const trackAudio = document.getElementById('trackAudio');
-    const trackText = document.getElementById('trackText');
+    const trackRowBg = document.getElementById('trackRowBg');
+    const trackRowOverlay = document.getElementById('trackRowOverlay');
+    const trackRowAudio = document.getElementById('trackRowAudio');
+    const trackRowText = document.getElementById('trackRowText');
 
-    // Инпуты файлов
-    const inputBg = document.getElementById('inputBg');
-    const inputOverlay = document.getElementById('inputOverlay');
-    const inputAudio = document.getElementById('inputAudio');
-    const statusBg = document.getElementById('statusBg');
-    const statusOverlay = document.getElementById('statusOverlay');
-    const statusAudio = document.getElementById('statusAudio');
+    const inputClipDuration = document.getElementById('inputClipDuration');
+    const inputScale = document.getElementById('inputScale');
+    const inputVolume = document.getElementById('inputVolume');
 
-    // Настройки
-    const clipDurationNumber = document.getElementById('clipDurationNumber');
-    const clipVolumeRange = document.getElementById('clipVolumeRange');
-    const clipVolumeLabel = document.getElementById('clipVolumeLabel');
-
-    const scaleInput = document.getElementById('scaleInput');
-    const rotateInput = document.getElementById('rotateInput');
-    const opacityInput = document.getElementById('opacityInput');
-    const scaleValText = document.getElementById('scaleValText');
-    const rotateValText = document.getElementById('rotateValText');
-    const opacityValText = document.getElementById('opacityValText');
-
-    // FX & Adjust
     const rangeBright = document.getElementById('rangeBright');
     const rangeContrast = document.getElementById('rangeContrast');
     const rangeSat = document.getElementById('rangeSat');
-    const rangeWarmth = document.getElementById('rangeWarmth');
     const rangeVignette = document.getElementById('rangeVignette');
-    const lutSelect = document.getElementById('lutSelect');
-    const checkShake = document.getElementById('checkShake');
-    const checkSnow = document.getElementById('checkSnow');
-    const checkSpectrum = document.getElementById('checkSpectrum');
-    const checkWatermark = document.getElementById('checkWatermark');
+    const txtValBright = document.getElementById('txtValBright');
+    const txtValContrast = document.getElementById('txtValContrast');
+    const txtValSat = document.getElementById('txtValSat');
+    const txtValVignette = document.getElementById('txtValVignette');
 
-    const textTitleInput = document.getElementById('textTitleInput');
-    const applyTextBtn = document.getElementById('applyTextBtn');
+    const chkSpectrum = document.getElementById('chkSpectrum');
+    const chkSnow = document.getElementById('chkSnow');
+    const chkWatermark = document.getElementById('chkWatermark');
 
-    // Частицы снега
-    const snowflakes = Array.from({ length: 30 }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      s: Math.random() * 2.5 + 1.2,
-      v: Math.random() * 0.05 + 0.02
-    }));
+    // -------------------------------------------------------------
+    // 4. ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ И ПРОЕКТЫ
+    // -------------------------------------------------------------
+    async function loadProjectsHub() {
+      const list = await getSavedProjects();
+      projectCountBadge.innerText = `${list.length} проектов`;
+      projectsList.innerHTML = '';
 
-    // Водяной знак "Nobu Anim"
-    const watermarkBadge = document.createElement('canvas');
-    watermarkBadge.width = 400;
-    watermarkBadge.height = 100;
-    const wctx = watermarkBadge.getContext('2d');
-    wctx.font = '800 42px -apple-system, sans-serif';
-    wctx.textAlign = 'center';
-    wctx.textBaseline = 'middle';
-    wctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-    wctx.lineWidth = 3;
-    wctx.strokeText('Nobu Anim', 200, 50);
-    wctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    wctx.fillText('Nobu Anim', 200, 50);
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'bg-[#111116] border border-zinc-800 rounded-xl p-3 flex flex-col justify-between gap-2 tap-btn relative';
+        card.innerHTML = `
+          <div class="aspect-video bg-zinc-950 rounded-lg flex items-center justify-center overflow-hidden border border-zinc-900">
+            <span class="text-[10px] font-mono text-zinc-600">${p.aspect || '9:16'}</span>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white truncate">${p.name}</div>
+            <div class="text-[9px] font-mono text-zinc-500">${new Date(p.updatedAt).toLocaleDateString()}</div>
+          </div>
+          <button class="absolute top-2 right-2 text-zinc-600 hover:text-red-400 p-1 delete-proj-btn" data-id="${p.id}">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        `;
+        card.onclick = (e) => {
+          if (e.target.closest('.delete-proj-btn')) return;
+          openProject(p);
+        };
+        projectsList.appendChild(card);
+      });
 
-    // -----------------------------------------------------------------
-    // 1. ЗАГРУЗКА И РАЗБЛОКИРОВКА АУДИО (100% со звуком на iPhone)
-    // -----------------------------------------------------------------
-    function setupVideoElement(file, onLoaded) {
-      const url = URL.createObjectURL(file);
-      const vid = document.createElement('video');
-      vid.src = url;
-      vid.playsInline = true;
-      vid.webkitPlaysInline = true;
-      vid.muted = false; // Звук не глушится
-      vid.crossOrigin = 'anonymous';
-      vid.preload = 'auto';
-
-      vid.onloadedmetadata = () => {
-        onLoaded(vid);
-      };
+      document.querySelectorAll('.delete-proj-btn').forEach(b => {
+        b.onclick = (e) => {
+          e.stopPropagation();
+          deleteProjectFromDB(b.dataset.id);
+          loadProjectsHub();
+        };
+      });
     }
 
-    inputBg.onchange = (e) => {
-      unlockAudio();
-      const f = e.target.files[0];
-      if (!f) return;
-      statusBg.innerText = f.name;
+    function createNewProject() {
+      const newP = {
+        id: 'proj_' + Date.now(),
+        name: 'Монтаж ' + new Date().toLocaleTimeString().slice(0, 5),
+        updatedAt: Date.now(),
+        aspect: '9:16',
+        totalDuration: 15.0,
+        durations: { bg: 15.0, overlay: 15.0, audio: 15.0, text: 15.0 },
+        volumes: { bg: 1.0, overlay: 1.0, audio: 1.0 },
+        keyframes: [
+          { time: 0.0, x: 0.5, y: 0.5, scale: 1.0, opacity: 1.0 },
+          { time: 15.0, x: 0.5, y: 0.5, scale: 1.0, opacity: 1.0 }
+        ],
+        text: '',
+        fx: { brightness: 100, contrast: 100, saturation: 100, vignette: 0.3, spectrum: true, snow: true, watermark: true }
+      };
+      saveProjectToDB(newP);
+      openProject(newP);
+    }
 
-      if (f.type.startsWith('video/')) {
-        setupVideoElement(f, (v) => {
-          session.media.bg = v;
-          session.durations.bg = Math.min(v.duration || 15.0, 60.0);
-          session.totalDuration = Math.max(session.totalDuration, session.durations.bg);
-          emptyNotice.classList.add('hidden');
-          v.volume = session.volumes.bg;
-          renderUI();
-          drawFrame();
-        });
-      } else {
-        const img = new Image();
-        img.src = URL.createObjectURL(f);
-        img.onload = () => {
-          session.media.bg = img;
-          emptyNotice.classList.add('hidden');
-          renderUI();
-          drawFrame();
-        };
-      }
+    function openProject(p) {
+      currentProject = p;
+      projNameInput.value = p.name;
+      aspectPicker.value = p.aspect || '9:16';
+      setAspectRatio(p.aspect || '9:16');
+
+      screenProjects.classList.add('hidden');
+      screenEditor.classList.remove('hidden');
+      screenEditor.style.display = 'flex';
+
+      sessionMedia = { bg: null, overlay: null, audio: null };
+      emptyMediaNotice.classList.remove('hidden');
+
+      selectTrack('bg');
+      renderTimelineUI();
+      draw();
+    }
+
+    btnBackToHub.onclick = () => {
+      if (isPlaying) togglePlay();
+      currentProject.name = projNameInput.value.trim() || 'Монтаж';
+      currentProject.updatedAt = Date.now();
+      saveProjectToDB(currentProject);
+
+      screenEditor.classList.add('hidden');
+      screenEditor.style.display = 'none';
+      screenProjects.classList.remove('hidden');
+      loadProjectsHub();
     };
 
-    inputOverlay.onchange = (e) => {
-      unlockAudio();
-      const f = e.target.files[0];
-      if (!f) return;
-      statusOverlay.innerText = f.name;
+    btnNewProject.onclick = createNewProject;
 
-      if (f.type.startsWith('video/')) {
-        setupVideoElement(f, (v) => {
-          session.media.overlay = v;
-          session.durations.overlay = Math.min(v.duration || 15.0, 60.0);
-          v.volume = session.volumes.overlay;
-          renderUI();
-          drawFrame();
-        });
+    // -------------------------------------------------------------
+    // 5. СООТНОШЕНИЕ СТОРОН (МГНОВЕННЫЙ RESIZE)
+    // -------------------------------------------------------------
+    function setAspectRatio(ratio) {
+      currentProject.aspect = ratio;
+      canvasAspectBox.className = 'relative max-h-full rounded-xl overflow-hidden border border-[#202028] bg-black shadow-2xl flex items-center justify-center transition-all duration-150';
+
+      if (ratio === '9:16') {
+        canvasAspectBox.classList.add('aspect-[9/16]');
+        canvas.width = 1080; canvas.height = 1920;
+      } else if (ratio === '16:9') {
+        canvasAspectBox.classList.add('aspect-[16/9]');
+        canvas.width = 1920; canvas.height = 1080;
+      } else if (ratio === '1:1') {
+        canvasAspectBox.classList.add('aspect-square');
+        canvas.width = 1080; canvas.height = 1080;
+      } else if (ratio === '4:5') {
+        canvasAspectBox.classList.add('aspect-[4/5]');
+        canvas.width = 1080; canvas.height = 1350;
+      }
+      draw();
+    }
+
+    aspectPicker.onchange = () => setAspectRatio(aspectPicker.value);
+
+    // -------------------------------------------------------------
+    // 6. ЗАГРУЗКА МЕДИА И РАЗБЛОКИРОВКА АУДИО
+    // -------------------------------------------------------------
+    const fileUploadBg = document.getElementById('fileUploadBg');
+    const fileUploadOverlay = document.getElementById('fileUploadOverlay');
+    const fileUploadAudio = document.getElementById('fileUploadAudio');
+    const badgeStatusBg = document.getElementById('badgeStatusBg');
+    const badgeStatusOverlay = document.getElementById('badgeStatusOverlay');
+    const badgeStatusAudio = document.getElementById('badgeStatusAudio');
+
+    function createMediaElement(file, onReady) {
+      unlockAudio();
+      const url = URL.createObjectURL(file);
+      if (file.type.startsWith('video/')) {
+        const vid = document.createElement('video');
+        vid.src = url;
+        vid.playsInline = true;
+        vid.webkitPlaysInline = true;
+        vid.muted = false; // Звук активен!
+        vid.crossOrigin = 'anonymous';
+        vid.preload = 'auto';
+        vid.onloadedmetadata = () => onReady(vid);
       } else {
         const img = new Image();
-        img.src = URL.createObjectURL(f);
-        img.onload = () => {
-          session.media.overlay = img;
-          renderUI();
-          drawFrame();
-        };
+        img.src = url;
+        img.onload = () => onReady(img);
       }
+    }
+
+    fileUploadBg.onchange = (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      badgeStatusBg.innerText = f.name;
+      createMediaElement(f, (el) => {
+        sessionMedia.bg = el;
+        if (el.tagName === 'VIDEO') {
+          currentProject.durations.bg = Math.min(el.duration || 15.0, 60.0);
+          currentProject.totalDuration = Math.max(currentProject.totalDuration, currentProject.durations.bg);
+        }
+        emptyMediaNotice.classList.add('hidden');
+        renderTimelineUI();
+        draw();
+      });
     };
 
-    inputAudio.onchange = (e) => {
+    fileUploadOverlay.onchange = (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      badgeStatusOverlay.innerText = f.name;
+      createMediaElement(f, (el) => {
+        sessionMedia.overlay = el;
+        if (el.tagName === 'VIDEO') {
+          currentProject.durations.overlay = Math.min(el.duration || 15.0, 60.0);
+        }
+        renderTimelineUI();
+        draw();
+      });
+    };
+
+    fileUploadAudio.onchange = (e) => {
       unlockAudio();
       const f = e.target.files[0];
       if (!f) return;
-      statusAudio.innerText = f.name;
+      badgeStatusAudio.innerText = f.name;
       const audio = new Audio(URL.createObjectURL(f));
       audio.preload = 'auto';
       audio.onloadedmetadata = () => {
-        session.media.audio = audio;
-        session.durations.audio = audio.duration || 15.0;
-        session.totalDuration = Math.max(session.totalDuration, session.durations.audio);
-        audio.volume = session.volumes.audio;
-        renderUI();
+        sessionMedia.audio = audio;
+        currentProject.durations.audio = audio.duration || 15.0;
+        currentProject.totalDuration = Math.max(currentProject.totalDuration, currentProject.durations.audio);
+        renderTimelineUI();
       };
     };
 
-    // -----------------------------------------------------------------
-    // 2. ВЫБОР И УДАЛЕНИЕ ДОРОЖЕК
-    // -----------------------------------------------------------------
-    function selectTrack(trackName) {
-      session.selectedTrack = trackName;
-      [trackBg, trackOverlay, trackAudio, trackText].forEach(el => el.classList.remove('clip-selected'));
+    // -------------------------------------------------------------
+    // 7. ВЫБОР ДОРОЖКИ И УДАЛЕНИЕ КЛИПОВ
+    // -------------------------------------------------------------
+    function selectTrack(track) {
+      selectedTrack = track;
+      [trackRowBg, trackRowOverlay, trackRowAudio, trackRowText].forEach(el => el.classList.remove('track-active'));
 
-      if (trackName === 'bg') trackBg.classList.add('clip-selected');
-      if (trackName === 'overlay') trackOverlay.classList.add('clip-selected');
-      if (trackName === 'audio') trackAudio.classList.add('clip-selected');
-      if (trackName === 'text') trackText.classList.add('clip-selected');
+      if (track === 'bg') trackRowBg.classList.add('track-active');
+      if (track === 'overlay') trackRowOverlay.classList.add('track-active');
+      if (track === 'audio') trackRowAudio.classList.add('track-active');
+      if (track === 'text') trackRowText.classList.add('track-active');
 
-      clipDurationNumber.value = session.durations[trackName] || 15.0;
-      clipVolumeRange.value = session.volumes[trackName] ?? 1.0;
-      clipVolumeLabel.innerText = Math.round((session.volumes[trackName] ?? 1.0) * 100) + '%';
+      inputClipDuration.value = currentProject.durations[track] || 15.0;
+      inputVolume.value = currentProject.volumes[track] ?? 1.0;
     }
 
-    trackBg.onclick = () => selectTrack('bg');
-    trackOverlay.onclick = () => selectTrack('overlay');
-    trackAudio.onclick = () => selectTrack('audio');
-    trackText.onclick = () => selectTrack('text');
+    trackRowBg.onclick = () => selectTrack('bg');
+    trackRowOverlay.onclick = () => selectTrack('overlay');
+    trackRowAudio.onclick = () => selectTrack('audio');
+    trackRowText.onclick = () => selectTrack('text');
 
-    deleteBtn.onclick = () => {
-      const cur = session.selectedTrack;
-      if (cur === 'bg') {
-        if (session.media.bg && session.media.bg.tagName === 'VIDEO') session.media.bg.pause();
-        session.media.bg = null;
-        statusBg.innerText = 'Фон V1';
-        emptyNotice.classList.remove('hidden');
-      } else if (cur === 'overlay') {
-        if (session.media.overlay && session.media.overlay.tagName === 'VIDEO') session.media.overlay.pause();
-        session.media.overlay = null;
-        statusOverlay.innerText = 'Оверлей PIP';
-        session.keyframes = [];
-      } else if (cur === 'audio') {
-        if (session.media.audio) session.media.audio.pause();
-        session.media.audio = null;
-        statusAudio.innerText = 'Аудио MP3';
-      } else if (cur === 'text') {
-        session.text = '';
-        textTitleInput.value = '';
+    btnDeleteClip.onclick = () => {
+      if (selectedTrack === 'bg') {
+        if (sessionMedia.bg && sessionMedia.bg.tagName === 'VIDEO') sessionMedia.bg.pause();
+        sessionMedia.bg = null;
+        badgeStatusBg.innerText = 'Фон V1';
+        emptyMediaNotice.classList.remove('hidden');
+      } else if (selectedTrack === 'overlay') {
+        if (sessionMedia.overlay && sessionMedia.overlay.tagName === 'VIDEO') sessionMedia.overlay.pause();
+        sessionMedia.overlay = null;
+        badgeStatusOverlay.innerText = 'Оверлей PIP';
+        currentProject.keyframes = [];
+      } else if (selectedTrack === 'audio') {
+        if (sessionMedia.audio) sessionMedia.audio.pause();
+        sessionMedia.audio = null;
+        badgeStatusAudio.innerText = 'Аудио MP3';
       }
-      renderUI();
-      drawFrame();
+      renderTimelineUI();
+      draw();
     };
 
-    // Изменение длины клипа
-    clipDurationNumber.onchange = () => {
-      const v = Math.max(0.5, Math.min(120, parseFloat(clipDurationNumber.value) || 15.0));
-      session.durations[session.selectedTrack] = v;
-      session.totalDuration = Math.max(...Object.values(session.durations));
-      renderUI();
-      drawFrame();
+    inputClipDuration.onchange = () => {
+      const val = Math.max(0.5, Math.min(120, parseFloat(inputClipDuration.value) || 15.0));
+      currentProject.durations[selectedTrack] = val;
+      currentProject.totalDuration = Math.max(...Object.values(currentProject.durations));
+      renderTimelineUI();
+      draw();
     };
 
-    // Изменение звука клипа
-    clipVolumeRange.oninput = () => {
-      const v = parseFloat(clipVolumeRange.value);
-      session.volumes[session.selectedTrack] = v;
-      clipVolumeLabel.innerText = Math.round(v * 100) + '%';
-
-      const med = session.media[session.selectedTrack];
+    inputVolume.oninput = () => {
+      const v = parseFloat(inputVolume.value);
+      currentProject.volumes[selectedTrack] = v;
+      const med = sessionMedia[selectedTrack];
       if (med && (med.tagName === 'VIDEO' || med.tagName === 'AUDIO')) {
         med.volume = v;
       }
     };
 
-    // -----------------------------------------------------------------
-    // 3. РОМБИК КЛЮЧЕВОГО КАДРА (SVG Keyframe Engine)
-    // -----------------------------------------------------------------
-    function getInterpolatedKf(t) {
-      const kfs = session.keyframes;
-      if (!kfs || kfs.length === 0) return { x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 };
+    // -------------------------------------------------------------
+    // 8. РОМБИК КЛЮЧЕВОГО КАДРА (SVG Keyframe Engine)
+    // -------------------------------------------------------------
+    function getKeyframeAt(t) {
+      const kfs = currentProject.keyframes;
+      if (!kfs || kfs.length === 0) return { x: 0.5, y: 0.5, scale: 1.0, opacity: 1.0 };
       if (kfs.length === 1 || t <= kfs[0].time) return kfs[0];
       if (t >= kfs[kfs.length - 1].time) return kfs[kfs.length - 1];
 
@@ -652,169 +767,137 @@
       const k0 = kfs[i];
       const k1 = kfs[i + 1];
       const span = k1.time - k0.time;
-      const progress = span > 0 ? (t - k0.time) / span : 0;
-      const s = progress * progress * (3 - 2 * progress); // smoothstep
+      const prog = span > 0 ? (t - k0.time) / span : 0;
+      const s = prog * prog * (3 - 2 * prog);
 
       return {
         x: k0.x + (k1.x - k0.x) * s,
         y: k0.y + (k1.y - k0.y) * s,
         scale: k0.scale + (k1.scale - k0.scale) * s,
-        rotation: k0.rotation + (k1.rotation - k0.rotation) * s,
         opacity: k0.opacity + (k1.opacity - k0.opacity) * s
       };
     }
 
-    keyframeBtn.onclick = () => {
-      const curTime = session.currentTime;
-      const existIdx = session.keyframes.findIndex(k => Math.abs(k.time - curTime) < 0.15);
+    btnKeyframe.onclick = () => {
+      const curT = editorTime;
+      const idx = currentProject.keyframes.findIndex(k => Math.abs(k.time - curT) < 0.2);
 
-      if (existIdx >= 0) {
-        session.keyframes.splice(existIdx, 1);
-        keyframeLabel.innerText = 'Ключ';
+      if (idx >= 0) {
+        currentProject.keyframes.splice(idx, 1);
+        txtKeyframe.innerText = 'Ключ';
       } else {
-        const tr = getInterpolatedKf(curTime);
-        session.keyframes.push({
-          time: curTime,
-          x: tr.x,
-          y: tr.y,
-          scale: parseFloat(scaleInput.value),
-          rotation: parseFloat(rotateInput.value),
-          opacity: parseFloat(opacityInput.value)
+        const cur = getKeyframeAt(curT);
+        currentProject.keyframes.push({
+          time: curT,
+          x: cur.x,
+          y: cur.y,
+          scale: parseFloat(inputScale.value),
+          opacity: 1.0
         });
-        session.keyframes.sort((a, b) => a.time - b.time);
-        keyframeLabel.innerText = 'Удалить ключ';
+        currentProject.keyframes.sort((a, b) => a.time - b.time);
+        txtKeyframe.innerText = 'Удалить ключ';
       }
-      renderKeyframeMarkers();
-      drawFrame();
+      renderKeyframeDots();
+      draw();
     };
 
-    function renderKeyframeMarkers() {
-      kfMarkersOverlay.innerHTML = '';
-      const dur = session.durations.overlay || session.totalDuration;
-      session.keyframes.forEach(kf => {
-        const pct = Math.max(0, Math.min(1, kf.time / dur)) * 100;
-        const mark = document.createElement('div');
-        mark.className = 'absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-amber-400 rotate-45 -ml-1 pointer-events-none shadow';
-        mark.style.left = pct + '%';
-        kfMarkersOverlay.appendChild(mark);
+    function renderKeyframeDots() {
+      overlayKeyframeDots.innerHTML = '';
+      const dur = currentProject.durations.overlay || currentProject.totalDuration;
+      currentProject.keyframes.forEach(k => {
+        const pct = Math.max(0, Math.min(1, k.time / dur)) * 100;
+        const dot = document.createElement('div');
+        dot.className = 'absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-amber-400 rotate-45 -ml-1 pointer-events-none shadow';
+        dot.style.left = pct + '%';
+        overlayKeyframeDots.appendChild(dot);
       });
     }
 
-    // Слайдеры движения
-    scaleInput.oninput = () => {
-      scaleValText.innerText = scaleInput.value + 'x';
-      drawFrame();
-    };
-    rotateInput.oninput = () => {
-      rotateValText.innerText = rotateInput.value + '°';
-      drawFrame();
-    };
-    opacityInput.oninput = () => {
-      opacityValText.innerText = Math.round(opacityInput.value * 100) + '%';
-      drawFrame();
-    };
+    inputScale.oninput = () => draw();
 
-    // -----------------------------------------------------------------
-    // 4. COLOR GRADING, LUT & НАСТРОЙКИ
-    // -----------------------------------------------------------------
-    function bindFx(slider, labelId, unit, key) {
+    // -------------------------------------------------------------
+    // 9. ADJUST НАСТРОЙКИ (ЯРКОСТЬ, КОНТРАСТ, ВИНЬЕТКА)
+    // -------------------------------------------------------------
+    function bindSlider(slider, label, unit, key) {
       slider.oninput = () => {
-        document.getElementById(labelId).innerText = slider.value + unit;
-        session.fx[key] = parseFloat(slider.value);
-        drawFrame();
+        label.innerText = slider.value + unit;
+        currentProject.fx[key] = parseFloat(slider.value);
+        draw();
       };
     }
-    bindFx(rangeBright, 'labelBright', '%', 'brightness');
-    bindFx(rangeContrast, 'labelContrast', '%', 'contrast');
-    bindFx(rangeSat, 'labelSat', '%', 'saturation');
-    bindFx(rangeWarmth, 'labelWarmth', '°', 'warmth');
-    bindFx(rangeVignette, 'labelVignette', '%', 'vignette');
+    bindSlider(rangeBright, txtValBright, '%', 'brightness');
+    bindSlider(rangeContrast, txtValContrast, '%', 'contrast');
+    bindSlider(rangeSat, txtValSat, '%', 'saturation');
+    bindSlider(rangeVignette, txtValVignette, '%', 'vignette');
 
-    lutSelect.onchange = () => { session.fx.lut = lutSelect.value; drawFrame(); };
-    checkShake.onchange = () => { session.fx.shake = checkShake.checked; drawFrame(); };
-    checkSnow.onchange = () => { session.fx.snow = checkSnow.checked; drawFrame(); };
-    checkSpectrum.onchange = () => { session.fx.spectrum = checkSpectrum.checked; drawFrame(); };
-    checkWatermark.onchange = () => { session.fx.watermark = checkWatermark.checked; drawFrame(); };
+    chkSpectrum.onchange = () => { currentProject.fx.spectrum = chkSpectrum.checked; draw(); };
+    chkSnow.onchange = () => { currentProject.fx.snow = chkSnow.checked; draw(); };
+    chkWatermark.onchange = () => { currentProject.fx.watermark = chkWatermark.checked; draw(); };
 
-    applyTextBtn.onclick = () => {
-      session.text = textTitleInput.value.trim();
-      drawFrame();
-    };
+    // -------------------------------------------------------------
+    // 10. ОТРИСОВКА ХОЛСТА (CANVAS RENDER ENGINE)
+    // -------------------------------------------------------------
+    const snowflakes = Array.from({ length: 28 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      s: Math.random() * 2 + 1,
+      v: Math.random() * 0.04 + 0.02
+    }));
 
-    // -----------------------------------------------------------------
-    // 5. ОТРИСОВКА ХОЛСТА (CANVAS ENGINE)
-    // -----------------------------------------------------------------
-    function drawFrame() {
+    function draw() {
       const w = canvas.width;
       const h = canvas.height;
-      const t = session.currentTime;
+      const t = editorTime;
 
       ctx.save();
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.clearRect(0, 0, w, h);
 
-      // Color Grading Filter
-      let filterStr = `brightness(${session.fx.brightness}%) contrast(${session.fx.contrast}%) saturate(${session.fx.saturation}%) hue-rotate(${session.fx.warmth}deg)`;
-      if (session.fx.lut === 'cold') filterStr += ' hue-rotate(180deg) contrast(120%)';
-      else if (session.fx.lut === 'bw') filterStr += ' grayscale(100%) contrast(140%)';
-      else if (session.fx.lut === 'neon') filterStr += ' saturate(220%) contrast(130%)';
-      else if (session.fx.lut === 'vhs') filterStr += ' sepia(45%) contrast(110%)';
-
-      ctx.filter = filterStr;
-
-      let sx = 0, sy = 0;
-      if (session.fx.shake) {
-        sx = (Math.random() - 0.5) * (w * 0.02);
-        sy = (Math.random() - 0.5) * (h * 0.02);
-      }
+      // Фильтр цвета
+      ctx.filter = `brightness(${currentProject.fx.brightness}%) contrast(${currentProject.fx.contrast}%) saturate(${currentProject.fx.saturation}%)`;
 
       // 1. Фон
-      if (session.media.bg && t <= session.durations.bg) {
-        ctx.drawImage(session.media.bg, sx, sy, w, h);
+      if (sessionMedia.bg && t <= currentProject.durations.bg) {
+        ctx.drawImage(sessionMedia.bg, 0, 0, w, h);
       } else {
-        ctx.fillStyle = '#050508';
+        ctx.fillStyle = '#060608';
         ctx.fillRect(0, 0, w, h);
       }
       ctx.filter = 'none';
 
       // 2. Оверлей PIP
-      if (session.media.overlay && t <= session.durations.overlay) {
-        const tr = getInterpolatedKf(t);
-        const curScale = session.keyframes.length > 0 ? tr.scale : parseFloat(scaleInput.value);
-        const curRot = session.keyframes.length > 0 ? tr.rotation : parseFloat(rotateInput.value);
-        const curAlpha = session.keyframes.length > 0 ? tr.opacity : parseFloat(opacityInput.value);
-
-        const bw = w * 0.45 * curScale;
-        const bh = (session.media.overlay.videoHeight || session.media.overlay.naturalHeight || 1) /
-                   (session.media.overlay.videoWidth || session.media.overlay.naturalWidth || 1) * bw;
-        const px = tr.x * w;
-        const py = tr.y * h;
+      if (sessionMedia.overlay && t <= currentProject.durations.overlay) {
+        const kf = getKeyframeAt(t);
+        const sc = currentProject.keyframes.length > 0 ? kf.scale : parseFloat(inputScale.value);
+        const ow = w * 0.45 * sc;
+        const oh = (sessionMedia.overlay.videoHeight || sessionMedia.overlay.naturalHeight || 1) /
+                   (sessionMedia.overlay.videoWidth || sessionMedia.overlay.naturalWidth || 1) * ow;
+        const px = kf.x * w;
+        const py = kf.y * h;
 
         ctx.save();
-        ctx.globalAlpha = Math.max(0, Math.min(1, curAlpha));
         ctx.translate(px, py);
-        ctx.rotate((curRot * Math.PI) / 180);
-        ctx.drawImage(session.media.overlay, -bw / 2, -bh / 2, bw, bh);
+        ctx.drawImage(sessionMedia.overlay, -ow / 2, -oh / 2, ow, oh);
         ctx.restore();
       }
 
       // 3. Виньетка
-      if (session.fx.vignette > 0) {
+      if (currentProject.fx.vignette > 0) {
         ctx.save();
-        const rad = Math.max(w, h) * 0.75;
+        const rad = Math.max(w, h) * 0.7;
         const grad = ctx.createRadialGradient(w / 2, h / 2, rad * 0.35, w / 2, h / 2, rad);
         grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(1, `rgba(0,0,0,${session.fx.vignette})`);
+        grad.addColorStop(1, `rgba(0,0,0,${currentProject.fx.vignette})`);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
         ctx.restore();
       }
 
       // 4. Снег
-      if (session.fx.snow) {
+      if (currentProject.fx.snow) {
         ctx.save();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
         snowflakes.forEach(f => {
           const fx = ((f.x + t * 0.05) % 1) * w;
           const fy = ((f.y + t * f.v) % 1) * h;
@@ -826,197 +909,185 @@
       }
 
       // 5. Звуковой спектр
-      if (session.fx.spectrum) {
+      if (currentProject.fx.spectrum) {
         ctx.save();
-        const bars = 26;
-        const bWidth = (w * 0.44) / bars;
-        const startX = (w - (bWidth * bars)) / 2;
+        const bars = 24;
+        const bW = (w * 0.4) / bars;
+        const startX = (w - (bW * bars)) / 2;
         const baseY = h * 0.88;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
         for (let b = 0; b < bars; b++) {
-          const wave = Math.sin(t * 8 + b * 0.45) * 0.5 + 0.5;
-          const bh = (h * 0.03) * (0.25 + wave * 0.75);
-          ctx.fillRect(startX + b * bWidth + 1, baseY - bh, bWidth - 2, bh);
+          const wave = Math.sin(t * 8 + b * 0.4) * 0.5 + 0.5;
+          const bh = (h * 0.03) * (0.2 + wave * 0.8);
+          ctx.fillRect(startX + b * bW + 1, baseY - bh, bW - 2, bh);
         }
         ctx.restore();
       }
 
-      // 6. Текст
-      if (session.text && t <= session.durations.text) {
+      // 6. Стеклянный водяной знак
+      if (currentProject.fx.watermark) {
         ctx.save();
-        const fontSize = Math.round(w * 0.068);
-        ctx.font = `900 ${fontSize}px -apple-system, sans-serif`;
+        const fontSize = Math.round(w * 0.038);
+        ctx.font = `800 ${fontSize}px -apple-system, sans-serif`;
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = Math.max(5, fontSize * 0.16);
-        ctx.strokeText(session.text, w / 2, h * 0.45);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(session.text, w / 2, h * 0.45);
-        ctx.restore();
-      }
-
-      // 7. Стеклянный водяной знак
-      if (session.fx.watermark) {
-        ctx.save();
-        const mw = w * 0.35;
-        const mh = mw / 4;
-        ctx.drawImage(watermarkBadge, (w - mw) / 2, h - mh - (h * 0.025), mw, mh);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('Nobu Anim', w / 2, h - (h * 0.04));
         ctx.restore();
       }
 
       ctx.restore();
     }
 
-    // -----------------------------------------------------------------
-    // 6. ПЛЕЕР И СИНХРОНИЗАЦИЯ ТАЙМЛАЙНА
-    // -----------------------------------------------------------------
-    let animLoopId = null;
-    let startTimestamp = null;
+    // -------------------------------------------------------------
+    // 11. ПЛЕЕР И СКРАББИНГ ТАЙМЛАЙНА
+    // -------------------------------------------------------------
+    let startStamp = null;
 
-    function renderUI() {
-      const dur = session.totalDuration;
-      const cur = session.currentTime;
+    function renderTimelineUI() {
+      const dur = currentProject.totalDuration;
+      const cur = editorTime;
       const pct = Math.max(0, Math.min(1, cur / dur)) * 100;
-
-      playheadBar.style.left = `calc(${pct}% + 12px)`;
+      playheadIndicator.style.left = `calc(${pct}% + 12px)`;
 
       const s = Math.floor(cur);
       const ms = Math.floor((cur % 1) * 100);
       const ds = Math.floor(dur);
       const dms = Math.floor((dur % 1) * 100);
-      timecodeText.innerText = `00:${s < 10 ? '0' : ''}${s}:${ms < 10 ? '0' : ''}${ms} / 00:${ds < 10 ? '0' : ''}${ds}:${dms < 10 ? '0' : ''}${dms}`;
+      labelTimecode.innerText = `00:${s < 10 ? '0' : ''}${s}:${ms < 10 ? '0' : ''}${ms} / 00:${ds < 10 ? '0' : ''}${ds}:${dms < 10 ? '0' : ''}${dms}`;
 
-      renderKeyframeMarkers();
+      renderKeyframeDots();
     }
 
     function togglePlay() {
       unlockAudio();
-      session.isPlaying = !session.isPlaying;
-      if (session.isPlaying) {
-        playIconSvg.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
-        startTimestamp = performance.now() - (session.currentTime * 1000);
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        svgPlayPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+        startStamp = performance.now() - (editorTime * 1000);
 
-        // Запуск аудио/видео
         ['bg', 'overlay'].forEach(k => {
-          const med = session.media[k];
+          const med = sessionMedia[k];
           if (med && med.tagName === 'VIDEO') {
-            med.currentTime = session.currentTime;
+            med.currentTime = editorTime;
             med.play().catch(() => {});
           }
         });
-        if (session.media.audio) {
-          session.media.audio.currentTime = session.currentTime;
-          session.media.audio.play().catch(() => {});
+        if (sessionMedia.audio) {
+          sessionMedia.audio.currentTime = editorTime;
+          sessionMedia.audio.play().catch(() => {});
         }
       } else {
-        playIconSvg.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+        svgPlayPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
         ['bg', 'overlay'].forEach(k => {
-          const med = session.media[k];
+          const med = sessionMedia[k];
           if (med && med.tagName === 'VIDEO') med.pause();
         });
-        if (session.media.audio) session.media.audio.pause();
+        if (sessionMedia.audio) sessionMedia.audio.pause();
       }
     }
 
-    playToggleBtn.onclick = togglePlay;
+    btnPlayPause.onclick = togglePlay;
 
-    function mainAnimationLoop(now) {
-      if (session.isPlaying) {
-        const elapsed = (now - startTimestamp) / 1000;
-        session.currentTime = elapsed % session.totalDuration;
-        renderUI();
-        drawFrame();
+    function tickLoop(now) {
+      if (isPlaying) {
+        const elapsed = (now - startStamp) / 1000;
+        editorTime = elapsed % currentProject.totalDuration;
+        renderTimelineUI();
+        draw();
       }
-      requestAnimationFrame(mainAnimationLoop);
+      requestAnimationFrame(tickLoop);
     }
-    requestAnimationFrame(mainAnimationLoop);
+    requestAnimationFrame(tickLoop);
 
-    // Скраббинг по таймлайну
-    timelineScrollBox.onclick = (e) => {
+    timelineScrollArea.onclick = (e) => {
       unlockAudio();
-      const rect = timelineScrollBox.getBoundingClientRect();
+      const rect = timelineScrollArea.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
-      const progress = Math.max(0, Math.min(1, clickX / rect.width));
-      session.currentTime = progress * session.totalDuration;
-      startTimestamp = performance.now() - (session.currentTime * 1000);
+      const prog = Math.max(0, Math.min(1, clickX / rect.width));
+      editorTime = prog * currentProject.totalDuration;
+      startStamp = performance.now() - (editorTime * 1000);
 
       ['bg', 'overlay'].forEach(k => {
-        const med = session.media[k];
-        if (med && med.tagName === 'VIDEO') med.currentTime = session.currentTime;
+        const med = sessionMedia[k];
+        if (med && med.tagName === 'VIDEO') med.currentTime = editorTime;
       });
-      if (session.media.audio) session.media.audio.currentTime = session.currentTime;
+      if (sessionMedia.audio) sessionMedia.audio.currentTime = editorTime;
 
-      renderUI();
-      drawFrame();
+      renderTimelineUI();
+      draw();
     };
 
-    // -----------------------------------------------------------------
-    // 7. НАВИГАЦИЯ ПО ТАБАМ
-    // -----------------------------------------------------------------
-    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('.nav-tab-btn').forEach(b => {
-          b.className = 'nav-tab-btn px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-action';
+    // -------------------------------------------------------------
+    // 12. ТАБЫ МЕНЮ
+    // -------------------------------------------------------------
+    document.querySelectorAll('.menu-tab').forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll('.menu-tab').forEach(x => {
+          x.className = 'menu-tab px-4 py-2 text-zinc-500 border-b-2 border-transparent shrink-0 tap-btn';
         });
-        document.querySelectorAll('.panel-box').forEach(p => p.classList.add('hidden'));
+        document.querySelectorAll('.menu-panel').forEach(p => p.classList.add('hidden'));
 
-        btn.className = 'nav-tab-btn px-4 py-2 text-white border-b-2 border-white shrink-0 tap-action';
-        document.getElementById('panel-' + btn.dataset.tab).classList.remove('hidden');
+        b.className = 'menu-tab px-4 py-2 text-white border-b-2 border-white shrink-0 tap-btn';
+        document.getElementById('tab-' + b.dataset.panel).classList.remove('hidden');
       };
     });
 
-    // -----------------------------------------------------------------
-    // 8. ЭКСПОРТ (720p, 1080p, 4K UHD, 60/120 FPS MP4)
-    // -----------------------------------------------------------------
-    const exportModal = document.getElementById('exportModal');
-    const exportModalBtn = document.getElementById('exportModalBtn');
-    const closeExportBtn = document.getElementById('closeExportBtn');
-    const startRenderBtn = document.getElementById('startRenderBtn');
-    const renderProgress = document.getElementById('renderProgress');
-    const renderBar = document.getElementById('renderBar');
-    const renderPct = document.getElementById('renderPct');
+    // -------------------------------------------------------------
+    // 13. ЭКСПОРТ (720p / 1080p / 4K, 30/60/120 FPS MP4)
+    // -------------------------------------------------------------
+    const modalExport = document.getElementById('modalExport');
+    const btnOpenExport = document.getElementById('btnOpenExport');
+    const btnCloseExport = document.getElementById('btnCloseExport');
+    const btnStartExport = document.getElementById('btnStartExport');
+    const renderProgressBar = document.getElementById('renderProgressBar');
+    const renderProgressFill = document.getElementById('renderProgressFill');
+    const txtRenderPercent = document.getElementById('txtRenderPercent');
 
-    let exportRes = 1080;
-    let exportFps = 60;
+    let exportResolution = 1080;
+    let exportFramerate = 60;
 
-    exportModalBtn.onclick = () => {
-      if (session.isPlaying) togglePlay();
-      exportModal.classList.remove('hidden');
+    btnOpenExport.onclick = () => {
+      if (isPlaying) togglePlay();
+      modalExport.classList.remove('hidden');
     };
-    closeExportBtn.onclick = () => exportModal.classList.add('hidden');
+    btnCloseExport.onclick = () => modalExport.classList.add('hidden');
 
-    document.querySelectorAll('.res-tag').forEach(b => {
+    document.querySelectorAll('.res-btn').forEach(b => {
       b.onclick = () => {
-        document.querySelectorAll('.res-tag').forEach(x => x.className = 'res-tag py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400');
-        b.className = 'res-tag py-2 rounded-xl border border-white bg-white text-black font-bold';
-        exportRes = parseInt(b.dataset.res);
+        document.querySelectorAll('.res-btn').forEach(x => x.className = 'res-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400');
+        b.className = 'res-btn py-2 rounded-xl border border-white bg-white text-black font-bold';
+        exportResolution = parseInt(b.dataset.res);
       };
     });
 
-    document.querySelectorAll('.fps-tag').forEach(b => {
+    document.querySelectorAll('.fps-btn').forEach(b => {
       b.onclick = () => {
-        document.querySelectorAll('.fps-tag').forEach(x => x.className = 'fps-tag py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400');
-        b.className = 'fps-tag py-2 rounded-xl border border-white bg-white text-black font-bold';
-        exportFps = parseInt(b.dataset.fps);
+        document.querySelectorAll('.fps-btn').forEach(x => x.className = 'fps-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400');
+        b.className = 'fps-btn py-2 rounded-xl border border-white bg-white text-black font-bold';
+        exportFramerate = parseInt(b.dataset.fps);
       };
     });
 
-    startRenderBtn.onclick = () => {
-      const targetH = exportRes;
-      const targetFps = exportFps;
-      const targetW = Math.round(targetH * (9 / 16));
+    btnStartExport.onclick = () => {
+      const targetH = exportResolution;
+      const targetFps = exportFramerate;
+      let ratioMul = 9 / 16;
+      if (currentProject.aspect === '16:9') ratioMul = 16 / 9;
+      if (currentProject.aspect === '1:1') ratioMul = 1;
+      if (currentProject.aspect === '4:5') ratioMul = 4 / 5;
 
-      const offscreen = document.createElement('canvas');
-      offscreen.width = targetW;
-      offscreen.height = targetH;
-      const oCtx = offscreen.getContext('2d', { alpha: false });
+      const targetW = Math.round(targetH * ratioMul);
+
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = targetW;
+      offCanvas.height = targetH;
+      const offCtx = offCanvas.getContext('2d', { alpha: false });
 
       let mime = 'video/mp4;codecs=avc1.42E01E';
       if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/mp4';
       if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
 
-      const stream = offscreen.captureStream(targetFps);
+      const stream = offCanvas.captureStream(targetFps);
       let recorder;
       try {
         recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: targetH >= 2160 ? 45000000 : 25000000 });
@@ -1029,49 +1100,47 @@
 
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
+        a.href = URL.createObjectURL(blob);
         a.download = `Nobu_Anim_${targetH}p_${targetFps}fps.mp4`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
 
-        renderProgress.classList.add('hidden');
-        startRenderBtn.disabled = false;
-        exportModal.classList.add('hidden');
+        renderProgressBar.classList.add('hidden');
+        btnStartExport.disabled = false;
+        modalExport.classList.add('hidden');
       };
 
-      renderProgress.classList.remove('hidden');
-      startRenderBtn.disabled = true;
+      renderProgressBar.classList.remove('hidden');
+      btnStartExport.disabled = true;
       recorder.start();
 
-      const totalFrames = Math.round(session.totalDuration * targetFps);
+      const totalFrames = Math.round(currentProject.totalDuration * targetFps);
       let f = 0;
 
-      function renderStep() {
+      function stepRender() {
         if (f <= totalFrames) {
-          const t = f / targetFps;
-          session.currentTime = t;
-          drawFrame();
-          oCtx.drawImage(canvas, 0, 0, targetW, targetH);
+          editorTime = f / targetFps;
+          draw();
+          offCtx.drawImage(canvas, 0, 0, targetW, targetH);
 
           const pct = Math.round((f / totalFrames) * 100);
-          renderBar.style.width = pct + '%';
-          renderPct.innerText = pct + '%';
+          renderProgressFill.style.width = pct + '%';
+          txtRenderPercent.innerText = pct + '%';
           f++;
-          setTimeout(renderStep, 1000 / targetFps);
+          setTimeout(stepRender, 1000 / targetFps);
         } else {
           recorder.stop();
         }
       }
-      renderStep();
+      stepRender();
     };
 
-    // Инициализация
-    selectTrack('bg');
-    renderUI();
-    drawFrame();
+    // Запуск базы данных и загрузка первого экрана
+    initDatabase().then(() => {
+      loadProjectsHub();
+    });
   </script>
 </body>
 </html>
