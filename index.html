@@ -7,11 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --bg: #000000;
-      --surface: #101014;
-      --card: #18181f;
-      --border: #282834;
-      --accent: #ffffff;
       --safe-bottom: env(safe-area-inset-bottom, 12px);
     }
     * {
@@ -24,8 +19,8 @@
       height: 100%;
       height: 100dvh;
       overflow: hidden;
-      background: var(--bg);
-      color: #fff;
+      background: #000000;
+      color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
     }
     .custom-scroll::-webkit-scrollbar { display: none; }
@@ -34,7 +29,7 @@
     input[type=range] {
       -webkit-appearance: none;
       appearance: none;
-      background: #2b2b38;
+      background: #272732;
       height: 3px;
       border-radius: 9999px;
       outline: none;
@@ -62,43 +57,65 @@
       border: 2px solid #ffffff !important;
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
     }
+    .pro-badge {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      color: #ffffff;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 2px 6px rgba(168, 85, 247, 0.4);
+    }
   </style>
 </head>
 <body class="flex flex-col h-full bg-black">
 
   <!-- ======================================================== -->
-  <!-- ЭКРАН 1: ХАБ ПРОЕКТОВ (CapCut Projects Hub)               -->
+  <!-- ЭКРАН 1: ХАБ ПРОЕКТОВ (Projects Hub)                     -->
   <!-- ======================================================== -->
   <section id="screenProjects" class="flex flex-col h-full w-full bg-black z-30">
-    <!-- Шапка проектов -->
+    <!-- Шапка проектов без упоминания сторонних редакторов -->
     <header class="h-14 px-4 border-b border-[#1c1c24] flex items-center justify-between shrink-0 bg-[#08080b]">
       <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-white text-black font-black text-xs flex items-center justify-center">
+        <div class="w-8 h-8 rounded-xl bg-white text-black font-black text-xs flex items-center justify-center shadow-md">
           NA
         </div>
         <div>
-          <h1 class="text-sm font-bold tracking-tight text-white leading-tight">Nobu Anim Pro</h1>
-          <p class="text-[10px] text-zinc-500 font-mono">CapCut Studio Engine</p>
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-sm font-bold tracking-tight text-white leading-tight">Nobu Anim</h1>
+            <span class="pro-badge">PRO</span>
+          </div>
+          <p class="text-[10px] text-zinc-500 font-mono">Keyframe & Mapping Studio</p>
         </div>
       </div>
-      <div id="projectCountBadge" class="text-[11px] font-mono text-zinc-400 bg-[#14141c] px-2.5 py-1 rounded-full border border-zinc-800">
-        0 проектов
+      <div class="flex items-center gap-2">
+        <button onclick="openProModal()" class="px-2.5 py-1 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-300 text-[10px] font-bold flex items-center gap-1 tap-btn">
+          <svg class="w-3 h-3 text-purple-400" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          10 ★
+        </button>
+        <div id="projectCountBadge" class="text-[11px] font-mono text-zinc-400 bg-[#14141c] px-2.5 py-1 rounded-full border border-zinc-800">
+          0 проектов
+        </div>
       </div>
     </header>
 
     <!-- Основной контент со списком проектов -->
     <div class="flex-1 overflow-y-auto custom-scroll p-4 flex flex-col gap-4">
       
-      <!-- Большая кнопка создания нового проекта -->
-      <button id="btnNewProject" class="w-full py-6 rounded-2xl border border-dashed border-zinc-700 hover:border-white bg-[#0e0e14] flex flex-col items-center justify-center gap-2 tap-btn">
-        <div class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg">
+      <!-- Главная кнопка создания проекта (гарантированный клик) -->
+      <button id="btnNewProject" onclick="window.createNewProject()" class="w-full py-7 rounded-2xl border border-dashed border-zinc-700 active:border-white bg-[#0e0e14] flex flex-col items-center justify-center gap-2 tap-btn">
+        <div class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-xl">
           <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </div>
         <span class="text-xs font-bold text-zinc-200">Создать новый проект</span>
       </button>
 
       <!-- Заголовок списка -->
-      <div class="flex items-center justify-between text-xs font-semibold text-zinc-400 px-1 pt-2">
+      <div class="flex items-center justify-between text-xs font-semibold text-zinc-400 px-1 pt-1">
         <span>МОИ ПРОЕКТЫ</span>
         <span class="text-[10px] text-zinc-600 font-normal">Локальное хранилище</span>
       </div>
@@ -138,7 +155,7 @@
       </div>
     </header>
 
-    <!-- 2. Viewport с канвасом (Адаптивное соотношение сторон) -->
+    <!-- 2. Viewport с канвасом -->
     <div class="flex-1 min-h-[170px] relative flex items-center justify-center p-2 bg-[#050507] overflow-hidden" id="viewportWrapper">
       <div id="canvasAspectBox" class="relative max-h-full aspect-[9/16] rounded-xl overflow-hidden border border-[#202028] bg-black shadow-2xl flex items-center justify-center transition-all duration-150">
         <canvas id="editorCanvas" width="1080" height="1920" class="w-full h-full object-contain"></canvas>
@@ -153,7 +170,7 @@
       </div>
     </div>
 
-    <!-- 3. Панель управления плеером (Транспорт & Инструменты) -->
+    <!-- 3. Панель управления плеером -->
     <div class="h-10 border-t border-[#181822] bg-[#0d0d12] px-3 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-2">
         <button id="btnPlayPause" class="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center tap-btn">
@@ -185,7 +202,7 @@
     <!-- 4. Таймлайн мультитрековый -->
     <div id="timelineScrollArea" class="h-28 bg-[#07070a] border-t border-[#181822] relative overflow-x-auto custom-scroll px-3 py-1 flex flex-col justify-between shrink-0 select-none cursor-pointer">
       
-      <!-- Белый плейхед -->
+      <!-- Плейхед -->
       <div id="playheadIndicator" class="absolute top-0 bottom-0 w-[2px] bg-white z-40 pointer-events-none left-3">
         <div class="w-2.5 h-3 bg-white -translate-x-[4px] rounded-b-sm shadow-md"></div>
       </div>
@@ -196,7 +213,7 @@
         <span id="titleTrackBg" class="truncate">Основной фон (Видео / Спутник)</span>
       </div>
 
-      <!-- Дорожка PIP (Оверлей) -->
+      <!-- Дорожка PIP (Наложение) -->
       <div id="trackRowOverlay" class="h-5 rounded-md bg-[#24172f] border border-[#482861] flex items-center px-2 text-[9px] font-mono text-purple-200 relative truncate tap-btn">
         <span class="text-purple-400 font-bold mr-2 text-[8px]">PIP</span>
         <span id="titleTrackOverlay" class="truncate">Наложение (Эдит / Нарезка)</span>
@@ -216,7 +233,7 @@
       </div>
     </div>
 
-    <!-- 5. Нижнее меню в стиле CapCut (Строго помещается на экране) -->
+    <!-- 5. Нижнее меню редактора -->
     <div class="border-t border-[#181822] bg-[#000000] flex flex-col shrink-0 pb-[var(--safe-bottom)]">
       
       <!-- Вкладки тулбара -->
@@ -249,7 +266,7 @@
         </button>
       </div>
 
-      <!-- ПАНЕЛЬ 2: НАЛОЖЕНИЕ / РАЗМЕР -->
+      <!-- ПАНЕЛЬ 2: НАЛОЖЕНИЕ / МАСШТАБ -->
       <div id="tab-timing" class="menu-panel hidden p-2.5 flex flex-col gap-2">
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div class="flex flex-col gap-1">
@@ -273,16 +290,16 @@
         </div>
       </div>
 
-      <!-- ПАНЕЛЬ 3: ШЕЙК (НОВЫЙ РАЗДЕЛ) -->
+      <!-- ПАНЕЛЬ 3: ШЕЙК (С PRO ФИЧАМИ) -->
       <div id="tab-shake" class="menu-panel hidden p-2.5 flex flex-col gap-2 text-xs">
         <div class="flex items-center justify-between">
           <span class="text-zinc-300 font-bold text-[11px]">Тип шейка:</span>
           <select id="selShakeType" class="bg-[#14141c] border border-zinc-700 text-white text-xs rounded-lg px-2 py-1 outline-none">
             <option value="none">Без шейка</option>
             <option value="bounce">Вертикальный баунс</option>
-            <option value="glitch">Глитч шейк</option>
             <option value="drift">Плавный дрифт</option>
-            <option value="bass">Басс-пульс (Zoom)</option>
+            <option value="glitch">Глитч шейк [PRO]</option>
+            <option value="bass">Басс-пульс (Zoom) [PRO]</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-2">
@@ -297,43 +314,53 @@
         </div>
       </div>
 
-      <!-- ПАНЕЛЬ 4: 20+ ЭФФЕКТОВ ДЛЯ ЭДИТОВ -->
+      <!-- ПАНЕЛЬ 4: 20+ ЭФФЕКТОВ (С PRO ЗНАЧКАМИ) -->
       <div id="tab-effects" class="menu-panel hidden p-2 grid grid-cols-3 gap-1.5 max-h-36 overflow-y-auto custom-scroll text-[10px]">
         <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
           <span class="text-zinc-200">Снег</span>
           <input type="checkbox" id="fx_snow" checked class="accent-white">
         </label>
-        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
-          <span class="text-zinc-200">RGB Split</span>
-          <input type="checkbox" id="fx_rgbsplit" class="accent-white">
-        </label>
+        
+        <!-- PRO: RGB Split -->
+        <div onclick="openProModal()" class="bg-[#181122] border border-purple-900/60 p-2 rounded-lg flex items-center justify-between cursor-pointer tap-btn">
+          <span class="text-purple-200">RGB Split</span>
+          <span class="pro-badge">PRO</span>
+        </div>
+
         <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
           <span class="text-zinc-200">Вспышка бит</span>
           <input type="checkbox" id="fx_flash" class="accent-white">
+        </label>
+
+        <!-- PRO: VHS 8mm -->
+        <div onclick="openProModal()" class="bg-[#181122] border border-purple-900/60 p-2 rounded-lg flex items-center justify-between cursor-pointer tap-btn">
+          <span class="text-purple-200">Плёнка 8мм</span>
+          <span class="pro-badge">PRO</span>
+        </div>
+
+        <!-- PRO: Strobe -->
+        <div onclick="openProModal()" class="bg-[#181122] border border-purple-900/60 p-2 rounded-lg flex items-center justify-between cursor-pointer tap-btn">
+          <span class="text-purple-200">Стробоскоп</span>
+          <span class="pro-badge">PRO</span>
+        </div>
+
+        <!-- PRO: Neon -->
+        <div onclick="openProModal()" class="bg-[#181122] border border-purple-900/60 p-2 rounded-lg flex items-center justify-between cursor-pointer tap-btn">
+          <span class="text-purple-200">Неон контур</span>
+          <span class="pro-badge">PRO</span>
+        </div>
+
+        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
+          <span class="text-zinc-200">Дождь</span>
+          <input type="checkbox" id="fx_rain" class="accent-white">
         </label>
         <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
           <span class="text-zinc-200">VHS Кассета</span>
           <input type="checkbox" id="fx_vhs" class="accent-white">
         </label>
         <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
-          <span class="text-zinc-200">Плёнка 8мм</span>
-          <input type="checkbox" id="fx_grain" class="accent-white">
-        </label>
-        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
-          <span class="text-zinc-200">Стробоскоп</span>
-          <input type="checkbox" id="fx_strobe" class="accent-white">
-        </label>
-        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
-          <span class="text-zinc-200">Неон контур</span>
-          <input type="checkbox" id="fx_edges" class="accent-white">
-        </label>
-        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
           <span class="text-zinc-200">Ghost фантом</span>
           <input type="checkbox" id="fx_ghost" class="accent-white">
-        </label>
-        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
-          <span class="text-zinc-200">Дождь</span>
-          <input type="checkbox" id="fx_rain" class="accent-white">
         </label>
         <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
           <span class="text-zinc-200">ТВ помехи</span>
@@ -371,14 +398,6 @@
           <span class="text-zinc-200">90s Sepia</span>
           <input type="checkbox" id="fx_sepia" class="accent-white">
         </label>
-        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
-          <span class="text-zinc-200">Zoom Blur</span>
-          <input type="checkbox" id="fx_zoomblur" class="accent-white">
-        </label>
-        <label class="bg-[#111116] border border-zinc-800 p-2 rounded-lg flex items-center justify-between cursor-pointer">
-          <span class="text-zinc-200">Radial Blur</span>
-          <input type="checkbox" id="fx_radial" class="accent-white">
-        </label>
       </div>
 
       <!-- ПАНЕЛЬ 5: ЦВЕТ / ADJUST -->
@@ -400,28 +419,11 @@
           <input type="range" id="rangeVignette" min="0" max="1" step="0.05" value="0.3">
         </div>
       </div>
-
-      <!-- ПАНЕЛЬ 4: ЭФФЕКТЫ -->
-      <div id="tab-effects" class="menu-panel hidden p-2.5 grid grid-cols-3 gap-2 text-xs">
-        <label class="bg-[#111116] border border-[#252533] p-2 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer">
-          <span class="text-[10px] text-zinc-300">Спектр</span>
-          <input type="checkbox" id="chkSpectrum" checked class="accent-white">
-        </label>
-        <label class="bg-[#111116] border border-[#252533] p-2 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer">
-          <span class="text-[10px] text-zinc-300">Снег</span>
-          <input type="checkbox" id="chkSnow" checked class="accent-white">
-        </label>
-        <label class="bg-[#111116] border border-[#252533] p-2 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer">
-          <span class="text-[10px] text-zinc-300">Вотермарк</span>
-          <input type="checkbox" id="chkWatermark" checked class="accent-white">
-        </label>
-      </div>
-
     </div>
   </section>
 
   <!-- ======================================================== -->
-  <!-- МОДАЛКА ЭКСПОРТА (720p / 1080p / 4K, 30/60/120 FPS)      -->
+  <!-- МОДАЛКА ЭКСПОРТА (4K & 120 FPS ПОМЕЧЕНЫ PRO)             -->
   <!-- ======================================================== -->
   <div id="modalExport" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="w-full max-w-sm bg-[#0e0e13] border border-zinc-800 rounded-t-3xl sm:rounded-2xl p-5 flex flex-col gap-3 text-white">
@@ -435,13 +437,21 @@
       <div class="grid grid-cols-3 gap-2 text-xs">
         <button class="res-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-res="720">720p</button>
         <button class="res-btn py-2 rounded-xl border border-white bg-white text-black font-bold" data-res="1080">1080p FHD</button>
-        <button class="res-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-res="2160">4K UHD</button>
+        <!-- PRO 4K -->
+        <button onclick="openProModal()" class="py-2 rounded-xl border border-purple-900/60 bg-[#191024] text-purple-300 font-bold flex items-center justify-center gap-1 tap-btn">
+          <span>4K UHD</span>
+          <span class="pro-badge">PRO</span>
+        </button>
       </div>
 
       <div class="grid grid-cols-3 gap-2 text-xs">
         <button class="fps-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-fps="30">30 FPS</button>
         <button class="fps-btn py-2 rounded-xl border border-white bg-white text-black font-bold" data-fps="60">60 FPS</button>
-        <button class="fps-btn py-2 rounded-xl border border-zinc-800 bg-[#14141c] text-zinc-400" data-fps="120">120 FPS</button>
+        <!-- PRO 120 FPS -->
+        <button onclick="openProModal()" class="py-2 rounded-xl border border-purple-900/60 bg-[#191024] text-purple-300 font-bold flex items-center justify-center gap-1 tap-btn">
+          <span>120 FPS</span>
+          <span class="pro-badge">PRO</span>
+        </button>
       </div>
 
       <div id="renderProgressBar" class="hidden flex flex-col gap-1">
@@ -461,9 +471,105 @@
   </div>
 
   <!-- ======================================================== -->
+  <!-- МОДАЛКА PRO: БАННЕР 10 TELEGRAM ЗВЕЗД / 1 ГОД             -->
+  <!-- ======================================================== -->
+  <div id="modalProPromo" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-[#0d0914] border border-purple-900/70 rounded-3xl p-5 flex flex-col gap-3 text-white shadow-2xl relative overflow-hidden">
+      
+      <!-- Декоративные световые пятна -->
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-purple-600/30 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-indigo-600/30 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Кнопка закрытия -->
+      <button onclick="closeProModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white p-1.5 rounded-full bg-white/5 tap-btn z-10">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <!-- Интерактивный промо-баннер в стиле загруженного арта -->
+      <div class="w-full rounded-2xl bg-gradient-to-br from-[#1a0f2e] via-[#0f0a1d] to-[#090514] border border-purple-500/40 p-4 relative overflow-hidden shadow-inner flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <!-- 3D хлопушка / Pro логотип -->
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 p-0.5 shadow-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </div>
+            <div>
+              <span class="text-xl font-black italic tracking-tighter text-white">Pro</span>
+              <div class="text-[9px] text-purple-300 font-bold uppercase tracking-widest">Nobu Studio</div>
+            </div>
+          </div>
+
+          <!-- 10 ЗВЁЗД В 1 ГОД -->
+          <div class="text-right">
+            <div class="flex items-center justify-end gap-1">
+              <span class="text-2xl font-black text-white leading-none">10</span>
+              <svg class="w-5 h-5 text-purple-400 fill-purple-400" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </div>
+            <div class="text-[11px] font-black text-purple-300 tracking-wide uppercase">В 1 ГОД!!!</div>
+          </div>
+        </div>
+
+        <!-- 4K плашка из баннера -->
+        <div class="mt-1 bg-black/60 border border-purple-500/30 rounded-xl p-2 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-purple-600 font-black text-[11px] text-white">4K</span>
+            <span class="text-xs font-semibold text-zinc-200">Сохранять можно будет 4K</span>
+          </div>
+          <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 3 18 3 22 9 12 22 2 9"></polygon></svg>
+        </div>
+
+        <p class="text-[10px] text-purple-300/80 italic text-center mt-0.5">
+          ✦ и множество других мощных функций ✦
+        </p>
+      </div>
+
+      <!-- Список будущих фич -->
+      <div class="flex flex-col gap-1.5 text-xs text-zinc-300 py-1">
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-purple-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Экспорт в Ultra HD 4K (2160p)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-purple-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Сверхплавный рендеринг 120 FPS</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-purple-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Премиум шейки (Bass Zoom, Glitch Shake)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-purple-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Элитные FX: RGB Split, Неон контур, 8мм</span>
+        </div>
+      </div>
+
+      <!-- Кнопка покупки (пока отключена) -->
+      <div class="flex flex-col gap-1.5 pt-1">
+        <button disabled class="w-full py-3 rounded-2xl bg-zinc-800 text-zinc-500 font-black text-xs tracking-wide flex items-center justify-center gap-2 cursor-not-allowed">
+          <span>Купить за 10 ★ (В разработке)</span>
+        </button>
+        <span class="text-[9px] text-center text-zinc-500 font-mono">
+          Оплата через Telegram Stars скоро станет доступна
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
   <!-- СКРИПТ: ЯДРО ДВИЖКА NOBU ANIM PRO                        -->
   <!-- ======================================================== -->
   <script>
+    // -------------------------------------------------------------
+    // МОДАЛКА PRO
+    // -------------------------------------------------------------
+    function openProModal() {
+      document.getElementById('modalProPromo').classList.remove('hidden');
+    }
+    function closeProModal() {
+      document.getElementById('modalProPromo').classList.add('hidden');
+    }
+
     // -------------------------------------------------------------
     // 1. БАЗА ДАННЫХ ПРОЕКТОВ (IndexedDB + Fallback)
     // -------------------------------------------------------------
@@ -576,9 +682,33 @@
       if (audioContext.state === 'suspended') audioContext.resume();
     }
 
+    // Элементы UI
+    const screenProjects = document.getElementById('screenProjects');
+    const screenEditor = document.getElementById('screenEditor');
+    const projectsList = document.getElementById('projectsList');
+    const projectCountBadge = document.getElementById('projectCountBadge');
+    const projNameInput = document.getElementById('projNameInput');
+    const aspectPicker = document.getElementById('aspectPicker');
+    const canvasAspectBox = document.getElementById('canvasAspectBox');
+    const canvas = document.getElementById('editorCanvas');
+    const ctx = canvas.getContext('2d');
+    const emptyMediaNotice = document.getElementById('emptyMediaNotice');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const svgPlayPause = document.getElementById('svgPlayPause');
+    const labelTimecode = document.getElementById('labelTimecode');
+    const btnKeyframe = document.getElementById('btnKeyframe');
+    const txtKeyframe = document.getElementById('txtKeyframe');
+    const btnDeleteClip = document.getElementById('btnDeleteClip');
+    const timelineScrollArea = document.getElementById('timelineScrollArea');
+    const playheadIndicator = document.getElementById('playheadIndicator');
+    const overlayKeyframeDots = document.getElementById('overlayKeyframeDots');
+
+    const inputScale = document.getElementById('inputScale');
     const inputPosY = document.getElementById('inputPosY');
     const txtPosYVal = document.getElementById('txtPosYVal');
     const txtScaleVal = document.getElementById('txtScaleVal');
+    const inputClipDuration = document.getElementById('inputClipDuration');
+    const inputVolume = document.getElementById('inputVolume');
 
     const selShakeType = document.getElementById('selShakeType');
     const rangeShakeAmp = document.getElementById('rangeShakeAmp');
@@ -586,7 +716,15 @@
     const txtShakeAmp = document.getElementById('txtShakeAmp');
     const txtShakeSpeed = document.getElementById('txtShakeSpeed');
 
-    selShakeType.onchange = () => { currentProject.shake.type = selShakeType.value; draw(); };
+    selShakeType.onchange = () => {
+      if (selShakeType.value === 'glitch' || selShakeType.value === 'bass') {
+        openProModal();
+        selShakeType.value = currentProject.shake.type;
+        return;
+      }
+      currentProject.shake.type = selShakeType.value;
+      draw();
+    };
     rangeShakeAmp.oninput = () => {
       currentProject.shake.amp = parseFloat(rangeShakeAmp.value);
       txtShakeAmp.innerText = currentProject.shake.amp + 'px';
@@ -604,13 +742,8 @@
       draw();
     };
 
-    // Привязка чекбоксов 20+ эффектов
-    const fxList = [
-      'snow', 'rgbsplit', 'flash', 'vhs', 'grain', 'strobe', 'edges', 'ghost',
-      'rain', 'noise', 'letterbox', 'bloom', 'mirror', 'noir', 'gold', 'cyber',
-      'negative', 'sepia', 'zoomblur', 'radial'
-    ];
-    fxList.forEach(k => {
+    // Привязка бесплатных чекбоксов
+    ['snow', 'flash', 'vhs', 'ghost', 'rain', 'noise', 'letterbox', 'bloom', 'mirror', 'noir', 'gold', 'cyber', 'negative', 'sepia'].forEach(k => {
       const el = document.getElementById('fx_' + k);
       if (el) {
         el.onchange = () => {
@@ -620,16 +753,11 @@
       }
     });
 
-      document.querySelectorAll('.delete-proj-btn').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          deleteProjectFromDB(b.dataset.id);
-          loadProjectsHub();
-        };
-      });
-    }
-
-    function createNewProject() {
+    // -------------------------------------------------------------
+    // 3. НАВИГАЦИЯ И СОЗДАНИЕ ПРОЕКТА (ГАРАНТИРОВАННЫЙ КЛИК)
+    // -------------------------------------------------------------
+    window.createNewProject = function() {
+      unlockAudio();
       const newP = {
         id: 'proj_' + Date.now(),
         name: 'Монтаж ' + new Date().toLocaleTimeString().slice(0, 5),
@@ -638,16 +766,24 @@
         totalDuration: 15.0,
         durations: { bg: 15.0, overlay: 15.0, audio: 15.0, text: 15.0 },
         volumes: { bg: 1.0, overlay: 1.0, audio: 1.0 },
+        overlayPos: { y: 0.5 },
+        shake: { type: 'none', amp: 15, speed: 12 },
         keyframes: [
           { time: 0.0, x: 0.5, y: 0.5, scale: 1.0, opacity: 1.0 },
           { time: 15.0, x: 0.5, y: 0.5, scale: 1.0, opacity: 1.0 }
         ],
         text: '',
-        fx: { brightness: 100, contrast: 100, saturation: 100, vignette: 0.3, spectrum: true, snow: true, watermark: true }
+        fx: {
+          brightness: 100, contrast: 100, saturation: 100, vignette: 0.3,
+          snow: true, rgbsplit: false, flash: false, vhs: false, grain: false,
+          strobe: false, edges: false, ghost: false, rain: false, noise: false,
+          letterbox: false, bloom: false, mirror: false, noir: false, gold: false,
+          cyber: false, negative: false, sepia: false, zoomblur: false, radial: false
+        }
       };
       saveProjectToDB(newP);
       openProject(newP);
-    }
+    };
 
     function openProject(p) {
       currentProject = p;
@@ -667,7 +803,7 @@
       draw();
     }
 
-    btnBackToHub.onclick = () => {
+    document.getElementById('btnBackToHub').onclick = () => {
       if (isPlaying) togglePlay();
       currentProject.name = projNameInput.value.trim() || 'Монтаж';
       currentProject.updatedAt = Date.now();
@@ -679,10 +815,76 @@
       loadProjectsHub();
     };
 
-    btnNewProject.onclick = createNewProject;
+    async function loadProjectsHub() {
+      const projs = await getSavedProjects();
+      projectCountBadge.innerText = `${projs.length} проектов`;
+      projectsList.innerHTML = '';
+
+      projs.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'rounded-2xl border border-zinc-800 bg-[#0e0e14] p-3 flex flex-col justify-between gap-3 tap-btn cursor-pointer';
+        card.onclick = () => openProject(p);
+        card.innerHTML = `
+          <div class="w-full aspect-[9/16] rounded-xl bg-[#060609] border border-zinc-800/80 flex items-center justify-center relative overflow-hidden">
+            <span class="text-[11px] font-mono text-zinc-500">${p.aspect}</span>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white truncate">${p.name}</div>
+            <div class="flex items-center justify-between text-[10px] text-zinc-500 mt-1">
+              <span>${Math.round(p.totalDuration)} сек</span>
+              <button data-id="${p.id}" class="delete-proj-btn text-zinc-600 hover:text-red-400 p-1">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        `;
+        projectsList.appendChild(card);
+      });
+
+      document.querySelectorAll('.delete-proj-btn').forEach(b => {
+        b.onclick = (e) => {
+          e.stopPropagation();
+          deleteProjectFromDB(b.dataset.id);
+          loadProjectsHub();
+        };
+      });
+    }
 
     // -------------------------------------------------------------
-    // 5. СООТНОШЕНИЕ СТОРОН (МГНОВЕННЫЙ RESIZE)
+    // 4. ТРЕКИ И ВЫБОР
+    // -------------------------------------------------------------
+    function selectTrack(trackId) {
+      selectedTrack = trackId;
+      ['bg', 'overlay', 'audio', 'text'].forEach(k => {
+        const row = document.getElementById('trackRow' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (row) {
+          if (k === trackId) row.classList.add('track-active');
+          else row.classList.remove('track-active');
+        }
+      });
+      inputClipDuration.value = currentProject.durations[trackId] || 15.0;
+      inputVolume.value = currentProject.volumes[trackId] || 1.0;
+    }
+
+    document.getElementById('trackRowBg').onclick = () => selectTrack('bg');
+    document.getElementById('trackRowOverlay').onclick = () => selectTrack('overlay');
+    document.getElementById('trackRowAudio').onclick = () => selectTrack('audio');
+    document.getElementById('trackRowText').onclick = () => selectTrack('text');
+
+    btnDeleteClip.onclick = () => {
+      if (sessionMedia[selectedTrack]) {
+        if (sessionMedia[selectedTrack].tagName === 'VIDEO' || sessionMedia[selectedTrack].tagName === 'AUDIO') {
+          sessionMedia[selectedTrack].pause();
+        }
+        sessionMedia[selectedTrack] = null;
+      }
+      if (selectedTrack === 'overlay') currentProject.keyframes = [];
+      renderTimelineUI();
+      draw();
+    };
+
+    // -------------------------------------------------------------
+    // 5. СООТНОШЕНИЕ СТОРОН
     // -------------------------------------------------------------
     function setAspectRatio(ratio) {
       currentProject.aspect = ratio;
@@ -703,18 +905,11 @@
       }
       draw();
     }
-
     aspectPicker.onchange = () => setAspectRatio(aspectPicker.value);
 
     // -------------------------------------------------------------
-    // 6. ЗАГРУЗКА МЕДИА И РАЗБЛОКИРОВКА АУДИО
+    // 6. ЗАГРУЗКА МЕДИА
     // -------------------------------------------------------------
-    const fileUploadBg = document.getElementById('fileUploadBg');
-    const fileUploadOverlay = document.getElementById('fileUploadOverlay');
-    const fileUploadAudio = document.getElementById('fileUploadAudio');
-    const badgeStatusBg = document.getElementById('badgeStatusBg');
-    const badgeStatusOverlay = document.getElementById('badgeStatusOverlay');
-    // Загрузка медиа и безопасный сброс аудио
     function createMediaElement(file, onReady) {
       unlockAudio();
       const url = URL.createObjectURL(file);
@@ -735,10 +930,10 @@
       }
     }
 
-    fileUploadBg.onchange = (e) => {
+    document.getElementById('fileUploadBg').onchange = (e) => {
       const f = e.target.files[0];
       if (!f) return;
-      badgeStatusBg.innerText = f.name;
+      document.getElementById('badgeStatusBg').innerText = f.name;
       createMediaElement(f, (el) => {
         sessionMedia.bg = el;
         if (el.tagName === 'VIDEO') {
@@ -751,10 +946,10 @@
       });
     };
 
-    fileUploadOverlay.onchange = (e) => {
+    document.getElementById('fileUploadOverlay').onchange = (e) => {
       const f = e.target.files[0];
       if (!f) return;
-      badgeStatusOverlay.innerText = f.name;
+      document.getElementById('badgeStatusOverlay').innerText = f.name;
       createMediaElement(f, (el) => {
         sessionMedia.overlay = el;
         if (el.tagName === 'VIDEO') {
@@ -765,11 +960,11 @@
       });
     };
 
-    fileUploadAudio.onchange = (e) => {
+    document.getElementById('fileUploadAudio').onchange = (e) => {
       unlockAudio();
       const f = e.target.files[0];
       if (!f) return;
-      badgeStatusAudio.innerText = f.name;
+      document.getElementById('badgeStatusAudio').innerText = f.name;
       const audio = new Audio(URL.createObjectURL(f));
       audio.preload = 'auto';
       audio.onloadedmetadata = () => {
@@ -781,10 +976,13 @@
     };
 
     // -------------------------------------------------------------
-    // ОТРИСОВКА ХОЛСТА (CANVAS RENDER ENGINE С ШЕЙКОМ И 20+ ЭФФЕКТАМИ)
+    // 7. КАНВАС ДВИЖОК С НЕУДАЛЯЕМЫМ ВОТЕРМАРКОМ
     // -------------------------------------------------------------
     const rainDrops = Array.from({ length: 40 }, () => ({
       x: Math.random(), y: Math.random(), l: Math.random() * 15 + 10, v: Math.random() * 0.4 + 0.3
+    }));
+    const snowflakes = Array.from({ length: 28 }, () => ({
+      x: Math.random(), y: Math.random(), s: Math.random() * 2 + 1, v: Math.random() * 0.04 + 0.02
     }));
 
     function draw() {
@@ -805,16 +1003,9 @@
 
       if (sh.type === 'bounce') {
         shakeOffsetY = Math.sin(t * sh.speed * 2) * sh.amp;
-      } else if (sh.type === 'glitch') {
-        if (Math.sin(t * sh.speed * 4) > 0.4) {
-          shakeOffsetX = (Math.random() - 0.5) * sh.amp * 1.5;
-          shakeOffsetY = (Math.random() - 0.5) * sh.amp * 1.5;
-        }
       } else if (sh.type === 'drift') {
         shakeOffsetX = Math.cos(t * (sh.speed * 0.4)) * sh.amp;
         shakeOffsetY = Math.sin(t * (sh.speed * 0.6)) * (sh.amp * 0.8);
-      } else if (sh.type === 'bass') {
-        shakeScaleMul = 1.0 + Math.abs(Math.sin(t * sh.speed)) * (sh.amp / 100);
       }
 
       ctx.save();
@@ -824,7 +1015,7 @@
         ctx.translate(-w / 2 + shakeOffsetX, -h / 2 + shakeOffsetY);
       }
 
-      // Фильтр цвета базовый
+      // Базовый цвет
       let baseFilter = `brightness(${currentProject.fx.brightness}%) contrast(${currentProject.fx.contrast}%) saturate(${currentProject.fx.saturation}%)`;
       if (currentProject.fx.noir) baseFilter += ' grayscale(100%) contrast(160%)';
       if (currentProject.fx.sepia) baseFilter += ' sepia(70%) contrast(110%)';
@@ -840,7 +1031,7 @@
       }
       ctx.filter = 'none';
 
-      // 2. Наложение (PIP) со свободным масштабированием
+      // 2. Наложение
       if (sessionMedia.overlay && t <= currentProject.durations.overlay) {
         const kf = getKeyframeAt(t);
         const sc = (currentProject.keyframes.length > 0 ? kf.scale : 1.0) * parseFloat(inputScale.value);
@@ -853,7 +1044,6 @@
         ctx.save();
         ctx.translate(px, py);
 
-        // Ghost фантом
         if (currentProject.fx.ghost) {
           ctx.globalAlpha = 0.35;
           ctx.drawImage(sessionMedia.overlay, -ow / 2 - 12, -oh / 2, ow, oh);
@@ -861,16 +1051,6 @@
         }
 
         ctx.drawImage(sessionMedia.overlay, -ow / 2, -oh / 2, ow, oh);
-
-        // Неоновый контур
-        if (currentProject.fx.edges) {
-          ctx.strokeStyle = '#00f6ff';
-          ctx.lineWidth = 4;
-          ctx.shadowColor = '#00f6ff';
-          ctx.shadowBlur = 12;
-          ctx.strokeRect(-ow / 2, -oh / 2, ow, oh);
-        }
-
         ctx.restore();
       }
 
@@ -884,15 +1064,6 @@
         ctx.restore();
       }
 
-      // RGB Split / Хроматика
-      if (currentProject.fx.rgbsplit) {
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
-        ctx.drawImage(canvas, -6, 0, w, h);
-        ctx.drawImage(canvas, 6, 0, w, h);
-        ctx.restore();
-      }
-
       // Вспышка на бит
       if (currentProject.fx.flash) {
         const flashWave = Math.sin(t * 8);
@@ -900,12 +1071,6 @@
           ctx.fillStyle = `rgba(255, 255, 255, ${(flashWave - 0.82) * 4})`;
           ctx.fillRect(0, 0, w, h);
         }
-      }
-
-      // Стробоскоп
-      if (currentProject.fx.strobe && Math.floor(t * 24) % 2 === 0) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-        ctx.fillRect(0, 0, w, h);
       }
 
       // 3. Виньетка
@@ -930,7 +1095,7 @@
         ctx.restore();
       }
 
-      // Золотой час / Cyber
+      // Gold / Cyber
       if (currentProject.fx.gold) {
         ctx.fillStyle = 'rgba(255, 175, 40, 0.18)';
         ctx.fillRect(0, 0, w, h);
@@ -970,7 +1135,7 @@
         ctx.restore();
       }
 
-      // VHS Кассета и строки сканирования
+      // VHS Кассета
       if (currentProject.fx.vhs) {
         ctx.save();
         ctx.fillStyle = 'rgba(255,255,255,0.04)';
@@ -980,8 +1145,8 @@
         ctx.restore();
       }
 
-      // ТВ шум / Кинопленка
-      if (currentProject.fx.noise || currentProject.fx.grain) {
+      // ТВ шум
+      if (currentProject.fx.noise) {
         ctx.save();
         ctx.fillStyle = 'rgba(255,255,255,0.06)';
         for (let i = 0; i < 400; i++) {
@@ -990,7 +1155,7 @@
         ctx.restore();
       }
 
-      // Letterbox 21:9 полосы
+      // Letterbox
       if (currentProject.fx.letterbox) {
         ctx.fillStyle = '#000';
         const barH = h * 0.12;
@@ -1015,8 +1180,10 @@
     }
 
     // -------------------------------------------------------------
-    // ПЛЕЕР: ФИКС БАГА ЗАЦИКЛИВАНИЯ И ЗВУКА
+    // 8. ПЛЕЕР: СИНХРОНИЗАЦИЯ ЗВУКА И ВИДЕО БЕЗ ЗАВИСАНИЙ
     // -------------------------------------------------------------
+    let startStamp = null;
+
     function syncAndRestartMedia() {
       ['bg', 'overlay'].forEach(k => {
         const med = sessionMedia[k];
@@ -1058,7 +1225,6 @@
       if (isPlaying) {
         const elapsed = (now - startStamp) / 1000;
         if (elapsed >= currentProject.totalDuration) {
-          // Четкий перезапуск видео и звука без фризов
           editorTime = 0.0;
           startStamp = performance.now();
           syncAndRestartMedia();
@@ -1084,30 +1250,23 @@
       draw();
     };
 
-    inputScale.oninput = () => {
-      txtScaleVal.innerText = Math.round(parseFloat(inputScale.value) * 100) + '%';
-      draw();
-    };
+    function renderTimelineUI() {
+      const dur = currentProject.totalDuration;
+      const cur = editorTime;
+      const pct = Math.max(0, Math.min(1, cur / dur)) * 100;
+      playheadIndicator.style.left = `calc(${pct}% + 12px)`;
 
-    inputClipDuration.onchange = () => {
-      const val = Math.max(0.5, Math.min(120, parseFloat(inputClipDuration.value) || 15.0));
-      currentProject.durations[selectedTrack] = val;
-      currentProject.totalDuration = Math.max(...Object.values(currentProject.durations));
-      renderTimelineUI();
-      draw();
-    };
+      const s = Math.floor(cur);
+      const ms = Math.floor((cur % 1) * 100);
+      const ds = Math.floor(dur);
+      const dms = Math.floor((dur % 1) * 100);
+      labelTimecode.innerText = `00:${s < 10 ? '0' : ''}${s}:${ms < 10 ? '0' : ''}${ms} / 00:${ds < 10 ? '0' : ''}${ds}:${dms < 10 ? '0' : ''}${dms}`;
 
-    inputVolume.oninput = () => {
-      const v = parseFloat(inputVolume.value);
-      currentProject.volumes[selectedTrack] = v;
-      const med = sessionMedia[selectedTrack];
-      if (med && (med.tagName === 'VIDEO' || med.tagName === 'AUDIO')) {
-        med.volume = v;
-      }
-    };
+      renderKeyframeDots();
+    }
 
     // -------------------------------------------------------------
-    // 8. РОМБИК КЛЮЧЕВОГО КАДРА (SVG Keyframe Engine)
+    // 9. КЕЙФРЕЙМЫ И НАСТРОЙКИ
     // -------------------------------------------------------------
     function getKeyframeAt(t) {
       const kfs = currentProject.keyframes;
@@ -1148,7 +1307,7 @@
           opacity: 1.0
         });
         currentProject.keyframes.sort((a, b) => a.time - b.time);
-        txtKeyframe.innerText = 'Удалить ключ';
+        txtKeyframe.innerText = 'Удалить';
       }
       renderKeyframeDots();
       draw();
@@ -1166,11 +1325,28 @@
       });
     }
 
-    inputScale.oninput = () => draw();
+    inputScale.oninput = () => {
+      txtScaleVal.innerText = Math.round(parseFloat(inputScale.value) * 100) + '%';
+      draw();
+    };
 
-    // -------------------------------------------------------------
-    // 9. ADJUST НАСТРОЙКИ (ЯРКОСТЬ, КОНТРАСТ, ВИНЬЕТКА)
-    // -------------------------------------------------------------
+    inputClipDuration.onchange = () => {
+      const val = Math.max(0.5, Math.min(120, parseFloat(inputClipDuration.value) || 15.0));
+      currentProject.durations[selectedTrack] = val;
+      currentProject.totalDuration = Math.max(...Object.values(currentProject.durations));
+      renderTimelineUI();
+      draw();
+    };
+
+    inputVolume.oninput = () => {
+      const v = parseFloat(inputVolume.value);
+      currentProject.volumes[selectedTrack] = v;
+      const med = sessionMedia[selectedTrack];
+      if (med && (med.tagName === 'VIDEO' || med.tagName === 'AUDIO')) {
+        med.volume = v;
+      }
+    };
+
     function bindSlider(slider, label, unit, key) {
       slider.oninput = () => {
         label.innerText = slider.value + unit;
@@ -1178,200 +1354,13 @@
         draw();
       };
     }
-    bindSlider(rangeBright, txtValBright, '%', 'brightness');
-    bindSlider(rangeContrast, txtValContrast, '%', 'contrast');
-    bindSlider(rangeSat, txtValSat, '%', 'saturation');
-    bindSlider(rangeVignette, txtValVignette, '%', 'vignette');
-
-    chkSpectrum.onchange = () => { currentProject.fx.spectrum = chkSpectrum.checked; draw(); };
-    chkSnow.onchange = () => { currentProject.fx.snow = chkSnow.checked; draw(); };
-    chkWatermark.onchange = () => { currentProject.fx.watermark = chkWatermark.checked; draw(); };
+    bindSlider(document.getElementById('rangeBright'), document.getElementById('txtValBright'), '%', 'brightness');
+    bindSlider(document.getElementById('rangeContrast'), document.getElementById('txtValContrast'), '%', 'contrast');
+    bindSlider(document.getElementById('rangeSat'), document.getElementById('txtValSat'), '%', 'saturation');
+    bindSlider(document.getElementById('rangeVignette'), document.getElementById('txtValVignette'), '%', 'vignette');
 
     // -------------------------------------------------------------
-    // 10. ОТРИСОВКА ХОЛСТА (CANVAS RENDER ENGINE)
-    // -------------------------------------------------------------
-    const snowflakes = Array.from({ length: 28 }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      s: Math.random() * 2 + 1,
-      v: Math.random() * 0.04 + 0.02
-    }));
-
-    function draw() {
-      const w = canvas.width;
-      const h = canvas.height;
-      const t = editorTime;
-
-      ctx.save();
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.clearRect(0, 0, w, h);
-
-      // Фильтр цвета
-      ctx.filter = `brightness(${currentProject.fx.brightness}%) contrast(${currentProject.fx.contrast}%) saturate(${currentProject.fx.saturation}%)`;
-
-      // 1. Фон
-      if (sessionMedia.bg && t <= currentProject.durations.bg) {
-        ctx.drawImage(sessionMedia.bg, 0, 0, w, h);
-      } else {
-        ctx.fillStyle = '#060608';
-        ctx.fillRect(0, 0, w, h);
-      }
-      ctx.filter = 'none';
-
-      // 2. Оверлей PIP
-      if (sessionMedia.overlay && t <= currentProject.durations.overlay) {
-        const kf = getKeyframeAt(t);
-        const sc = currentProject.keyframes.length > 0 ? kf.scale : parseFloat(inputScale.value);
-        const ow = w * 0.45 * sc;
-        const oh = (sessionMedia.overlay.videoHeight || sessionMedia.overlay.naturalHeight || 1) /
-                   (sessionMedia.overlay.videoWidth || sessionMedia.overlay.naturalWidth || 1) * ow;
-        const px = kf.x * w;
-        const py = kf.y * h;
-
-        ctx.save();
-        ctx.translate(px, py);
-        ctx.drawImage(sessionMedia.overlay, -ow / 2, -oh / 2, ow, oh);
-        ctx.restore();
-      }
-
-      // 3. Виньетка
-      if (currentProject.fx.vignette > 0) {
-        ctx.save();
-        const rad = Math.max(w, h) * 0.7;
-        const grad = ctx.createRadialGradient(w / 2, h / 2, rad * 0.35, w / 2, h / 2, rad);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(1, `rgba(0,0,0,${currentProject.fx.vignette})`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-        ctx.restore();
-      }
-
-      // 4. Снег
-      if (currentProject.fx.snow) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-        snowflakes.forEach(f => {
-          const fx = ((f.x + t * 0.05) % 1) * w;
-          const fy = ((f.y + t * f.v) % 1) * h;
-          ctx.beginPath();
-          ctx.arc(fx, fy, f.s * (w / 1080), 0, Math.PI * 2);
-          ctx.fill();
-        });
-        ctx.restore();
-      }
-
-      // 5. Звуковой спектр
-      if (currentProject.fx.spectrum) {
-        ctx.save();
-        const bars = 24;
-        const bW = (w * 0.4) / bars;
-        const startX = (w - (bW * bars)) / 2;
-        const baseY = h * 0.88;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        for (let b = 0; b < bars; b++) {
-          const wave = Math.sin(t * 8 + b * 0.4) * 0.5 + 0.5;
-          const bh = (h * 0.03) * (0.2 + wave * 0.8);
-          ctx.fillRect(startX + b * bW + 1, baseY - bh, bW - 2, bh);
-        }
-        ctx.restore();
-      }
-
-      // 6. Стеклянный водяной знак
-      if (currentProject.fx.watermark) {
-        ctx.save();
-        const fontSize = Math.round(w * 0.038);
-        ctx.font = `800 ${fontSize}px -apple-system, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.fillText('Nobu Anim', w / 2, h - (h * 0.04));
-        ctx.restore();
-      }
-
-      ctx.restore();
-    }
-
-    // -------------------------------------------------------------
-    // 11. ПЛЕЕР И СКРАББИНГ ТАЙМЛАЙНА
-    // -------------------------------------------------------------
-    let startStamp = null;
-
-    function renderTimelineUI() {
-      const dur = currentProject.totalDuration;
-      const cur = editorTime;
-      const pct = Math.max(0, Math.min(1, cur / dur)) * 100;
-      playheadIndicator.style.left = `calc(${pct}% + 12px)`;
-
-      const s = Math.floor(cur);
-      const ms = Math.floor((cur % 1) * 100);
-      const ds = Math.floor(dur);
-      const dms = Math.floor((dur % 1) * 100);
-      labelTimecode.innerText = `00:${s < 10 ? '0' : ''}${s}:${ms < 10 ? '0' : ''}${ms} / 00:${ds < 10 ? '0' : ''}${ds}:${dms < 10 ? '0' : ''}${dms}`;
-
-      renderKeyframeDots();
-    }
-
-    function togglePlay() {
-      unlockAudio();
-      isPlaying = !isPlaying;
-      if (isPlaying) {
-        svgPlayPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
-        startStamp = performance.now() - (editorTime * 1000);
-
-        ['bg', 'overlay'].forEach(k => {
-          const med = sessionMedia[k];
-          if (med && med.tagName === 'VIDEO') {
-            med.currentTime = editorTime;
-            med.play().catch(() => {});
-          }
-        });
-        if (sessionMedia.audio) {
-          sessionMedia.audio.currentTime = editorTime;
-          sessionMedia.audio.play().catch(() => {});
-        }
-      } else {
-        svgPlayPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
-        ['bg', 'overlay'].forEach(k => {
-          const med = sessionMedia[k];
-          if (med && med.tagName === 'VIDEO') med.pause();
-        });
-        if (sessionMedia.audio) sessionMedia.audio.pause();
-      }
-    }
-
-    btnPlayPause.onclick = togglePlay;
-
-    function tickLoop(now) {
-      if (isPlaying) {
-        const elapsed = (now - startStamp) / 1000;
-        editorTime = elapsed % currentProject.totalDuration;
-        renderTimelineUI();
-        draw();
-      }
-      requestAnimationFrame(tickLoop);
-    }
-    requestAnimationFrame(tickLoop);
-
-    timelineScrollArea.onclick = (e) => {
-      unlockAudio();
-      const rect = timelineScrollArea.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const prog = Math.max(0, Math.min(1, clickX / rect.width));
-      editorTime = prog * currentProject.totalDuration;
-      startStamp = performance.now() - (editorTime * 1000);
-
-      ['bg', 'overlay'].forEach(k => {
-        const med = sessionMedia[k];
-        if (med && med.tagName === 'VIDEO') med.currentTime = editorTime;
-      });
-      if (sessionMedia.audio) sessionMedia.audio.currentTime = editorTime;
-
-      renderTimelineUI();
-      draw();
-    };
-
-    // -------------------------------------------------------------
-    // 12. ТАБЫ МЕНЮ
+    // 10. ТАБЫ МЕНЮ
     // -------------------------------------------------------------
     document.querySelectorAll('.menu-tab').forEach(b => {
       b.onclick = () => {
@@ -1386,7 +1375,7 @@
     });
 
     // -------------------------------------------------------------
-    // 13. ЭКСПОРТ (720p / 1080p / 4K, 30/60/120 FPS MP4)
+    // 11. ЭКСПОРТ (720p / 1080p БЕСПЛАТНО, 4K & 120 FPS В PRO)
     // -------------------------------------------------------------
     const modalExport = document.getElementById('modalExport');
     const btnOpenExport = document.getElementById('btnOpenExport');
@@ -1443,7 +1432,7 @@
       const stream = offCanvas.captureStream(targetFps);
       let recorder;
       try {
-        recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: targetH >= 2160 ? 45000000 : 25000000 });
+        recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 25000000 });
       } catch (e) {
         recorder = new MediaRecorder(stream);
       }
@@ -1490,7 +1479,9 @@
       stepRender();
     };
 
-    // Запуск базы данных и загрузка первого экрана
+    // -------------------------------------------------------------
+    // СТАРТ ПРИЛОЖЕНИЯ
+    // -------------------------------------------------------------
     initDatabase().then(() => {
       loadProjectsHub();
     });
