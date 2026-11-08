@@ -2,538 +2,770 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>РАДИО ХАМАМ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShadowStudio — Веб-аниматор карт и мемов</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-    }
-
     body {
-      background-color: #000000;
-      color: #ffffff;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
+      background-color: #08080c;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      touch-action: pan-x pan-y;
     }
-
-    /* Модалка 3-секундного коннекта */
-    #connecting-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: #000000;
-      z-index: 100;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-    }
-
-    .loader {
-      width: 32px;
-      height: 32px;
-      border: 2px solid #222222;
-      border-top-color: #ffffff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .connecting-text {
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #888888;
-    }
-
-    /* Шапка */
-    header {
-      padding: 30px 20px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #141414;
-    }
-
-    .brand-title {
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 2px;
-    }
-
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      letter-spacing: 1px;
-    }
-
-    .status-dot {
-      width: 6px;
+    /* Стилизация скроллбаров */
+    ::-webkit-scrollbar {
       height: 6px;
-      background: #ffffff;
-      border-radius: 50%;
+      width: 6px;
     }
-
-    /* Центральная часть */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
+    ::-webkit-scrollbar-track {
+      background: #0f111a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a2f42;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3b4360;
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+    }
+    .canvas-container {
       position: relative;
+      touch-action: none;
     }
-
-    .view {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-    }
-
-    .view.active {
-      display: flex;
-    }
-
-    .station-wave {
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: #555555;
-      margin-bottom: 6px;
-    }
-
-    .track-title {
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-align: center;
-      margin-bottom: 30px;
-      height: 20px;
-    }
-
-    /* Прогресс-бар */
-    .progress-container {
-      width: 100%;
-      max-width: 320px;
-      margin-bottom: 35px;
-    }
-
-    .time-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: #666666;
-      margin-bottom: 10px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .seekbar-wrap {
-      position: relative;
-      width: 100%;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .seekbar-bg {
-      width: 100%;
-      height: 2px;
-      background: #222222;
-      position: relative;
-    }
-
-    .seekbar-fill {
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      background: #ffffff;
-      width: 0%;
-    }
-
-    .seekbar-thumb {
-      position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 10px;
-      height: 10px;
-      background: #ffffff;
-      border-radius: 50%;
-      left: 0%;
-    }
-
-    .live-tag {
-      cursor: pointer;
-      border: 1px solid #333333;
-      padding: 1px 6px;
-      border-radius: 2px;
-      color: #666666;
-      font-size: 10px;
-    }
-
-    .live-tag.active {
-      border-color: #ffffff;
-      color: #ffffff;
-    }
-
-    /* Блок с Меллом и кнопкой */
-    .player-deck {
-      position: relative;
-      width: 190px;
-      height: 190px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      border: 1px solid #1a1a1a;
-      background: #000000;
-      overflow: hidden;
-    }
-
-    .deck-bg {
-      position: absolute;
-      inset: 0;
-      background-image: url('IMG_3320.JPG');
-      background-size: cover;
-      background-position: center;
-      filter: grayscale(100%) brightness(0.35);
-      z-index: 1;
-    }
-
-    .play-btn {
-      position: relative;
-      z-index: 2;
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      border: 1px solid #ffffff;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
-    }
-
-    .play-btn:active {
-      transform: scale(0.94);
-      background: #ffffff;
-      color: #000000;
-    }
-
-    .play-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-    }
-
-    /* Заглушка Nobu FM */
-    .service-box {
-      border: 1px solid #1a1a1a;
-      padding: 30px 20px;
-      text-align: center;
-      max-width: 280px;
-      width: 100%;
-    }
-
-    .service-title {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      margin-bottom: 10px;
-    }
-
-    .service-desc {
-      font-size: 11px;
-      color: #666666;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-
-    .switch-back-btn {
-      background: #ffffff;
-      color: #000000;
-      border: none;
-      padding: 8px 14px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      cursor: pointer;
-    }
-
-    /* Нижняя навигация */
-    nav {
-      border-top: 1px solid #141414;
-      display: flex;
-      background: #000000;
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 16px 0;
-      background: none;
-      border: none;
-      color: #444444;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      cursor: pointer;
-    }
-
-    .tab-btn.active {
-      color: #ffffff;
-      border-top: 1px solid #ffffff;
+    /* Кастомные ползунки */
+    input[type=range] {
+      accent-color: #8b5cf6;
     }
   </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between selection:bg-purple-600 selection:text-white">
 
-  <div id="connecting-modal">
-    <div class="loader"></div>
-    <div class="connecting-text">ПОДКЛЮЧАЕМСЯ...</div>
-  </div>
-
-  <header>
-    <div class="brand-title">РАДИО ХАМАМ</div>
-    <div class="status-badge">
-      <div class="status-dot"></div>
-      <span>104.2 FM</span>
+  <!-- Шапка сайта -->
+  <header class="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-30 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-600/30">
+          <i class="fa-solid fa-layer-group text-sm"></i>
+        </div>
+        <div>
+          <h1 class="font-bold tracking-wide text-white text-base md:text-lg flex items-center gap-2">
+            ShadowStudio <span class="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full border border-purple-700/50">v1.0</span>
+          </h1>
+          <p class="text-xs text-zinc-400">Аниматор карт, оверлеев и мемов прямо в браузере</p>
+        </div>
+      </div>
+      
+      <!-- Индикатор FPS / Статуса -->
+      <div class="flex items-center gap-2">
+        <div id="statusBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950/50 text-emerald-400 border border-emerald-800/40">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Готов к работе</span>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main>
-    <section id="view-hamam" class="view active">
-      <div class="station-wave">ЭФИР</div>
-      <div class="track-title" id="now-playing">ЭФИР</div>
-
-      <div class="progress-container">
-        <div class="time-labels">
-          <span id="time-current">00:00</span>
-          <span id="live-indicator" class="live-tag active">LIVE</span>
-          <span id="time-total">00:00</span>
-        </div>
+  <!-- Основная рабочая зона -->
+  <main class="max-w-7xl mx-auto w-full p-3 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
+    
+    <!-- Левая колонка: Холст и таймлайн шагов -->
+    <div class="lg:col-span-8 flex flex-col gap-4">
+      
+      <!-- Панель холста -->
+      <div class="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center min-h-[380px] md:min-h-[500px] relative overflow-hidden neon-glow">
         
-        <div class="seekbar-wrap" id="seekbar-touch">
-          <div class="seekbar-bg">
-            <div class="seekbar-fill" id="seek-fill"></div>
-            <div class="seekbar-thumb" id="seek-thumb"></div>
+        <!-- Заглушка, если ничего не загружено -->
+        <div id="emptyPlaceholder" class="text-center p-8 max-w-sm pointer-events-none">
+          <div class="w-16 h-16 rounded-full bg-zinc-800/80 flex items-center justify-center text-zinc-500 mx-auto mb-3">
+            <i class="fa-regular fa-image text-2xl"></i>
+          </div>
+          <p class="text-sm font-medium text-zinc-300">Загрузите фон и оверлей</p>
+          <p class="text-xs text-zinc-500 mt-1">Поддерживаются видео (MP4, WebM) и фото (JPG, PNG). Двигайте оверлей пальцем или мышкой.</p>
+        </div>
+
+        <!-- Контейнер для Canvas -->
+        <div id="canvasWrapper" class="hidden canvas-container w-full h-full flex items-center justify-center">
+          <canvas id="mainCanvas" class="max-w-full max-h-[65vh] rounded-lg shadow-2xl border border-zinc-700/50 cursor-grab active:cursor-grabbing bg-black"></canvas>
+        </div>
+
+        <!-- Подсказка на холсте -->
+        <div id="canvasOverlayTip" class="hidden absolute top-4 left-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[11px] text-zinc-300 pointer-events-none">
+          <i class="fa-solid fa-arrows-up-down-left-right text-purple-400 mr-1.5"></i> Тяните оверлей по экрану
+        </div>
+      </div>
+
+      <!-- Панель шагов (Кейфреймы / Таймлайн) -->
+      <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-timeline text-purple-400"></i>
+            <span class="text-sm font-semibold text-white">Шаги анимации (Кейфреймы)</span>
+            <span id="stepCounter" class="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md">Шаг 1 из 1</span>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button id="addStepBtn" class="px-3 py-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition flex items-center gap-1 shadow-md shadow-purple-600/30">
+              <i class="fa-solid fa-plus"></i> Добавить шаг
+            </button>
+            <button id="deleteStepBtn" class="px-2.5 py-1.5 text-xs font-medium bg-zinc-800 hover:bg-rose-950/60 hover:text-rose-400 text-zinc-400 rounded-lg border border-zinc-700 transition" title="Удалить текущий шаг">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Список кнопок шагов -->
+        <div id="stepsContainer" class="flex items-center gap-2 overflow-x-auto py-1">
+          <!-- Генерируются скриптом -->
+        </div>
+
+        <!-- Управление предпросмотром -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-800/80">
+          <div class="flex items-center gap-2">
+            <button id="playBtn" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition border border-zinc-700">
+              <i class="fa-solid fa-play text-purple-400"></i> <span>Старт</span>
+            </button>
+            <button id="resetStepsBtn" class="px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 rounded-xl text-xs transition border border-zinc-800" title="Сбросить все точки">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+          </div>
+
+          <!-- Ползунок скорости анимации -->
+          <div class="flex items-center gap-2 text-xs text-zinc-400">
+            <span>Длительность:</span>
+            <input type="range" id="durationSlider" min="1" max="10" step="0.5" value="3" class="w-24 md:w-32">
+            <span id="durationVal" class="text-zinc-200 font-mono">3.0с</span>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="player-deck">
-        <div class="deck-bg"></div>
-        <button class="play-btn" id="main-play-btn" aria-label="Пуск">
-          <svg id="play-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          <svg id="pause-icon" viewBox="0 0 24 24" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+    <!-- Правая колонка: Настройки, файлы и экспорт -->
+    <div class="lg:col-span-4 flex flex-col gap-4">
+
+      <!-- Загрузка файлов -->
+      <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up text-purple-400"></i> Исходные материалы
+        </h2>
+
+        <!-- Загрузка фона (видео или фото) -->
+        <div>
+          <label class="block text-xs text-zinc-300 font-medium mb-1.5">1. Основной фон (Фото или видео карты):</label>
+          <input type="file" id="bgInput" accept="image/*,video/*" class="hidden">
+          <button onclick="document.getElementById('bgInput').click()" class="w-full py-2.5 px-3 rounded-xl border border-dashed border-zinc-700 hover:border-purple-500 bg-zinc-950/60 hover:bg-purple-950/10 text-xs text-zinc-300 flex items-center justify-center gap-2 transition">
+            <i class="fa-regular fa-file-video text-purple-400"></i>
+            <span id="bgFileName">Выбрать видео пролёта / фото</span>
+          </button>
+        </div>
+
+        <!-- Загрузка оверлея (PNG контур, мем, флаг) -->
+        <div>
+          <label class="block text-xs text-zinc-300 font-medium mb-1.5">2. Оверлей (PNG контур / Мем / Стикер):</label>
+          <input type="file" id="overlayInput" accept="image/*" class="hidden">
+          <button onclick="document.getElementById('overlayInput').click()" class="w-full py-2.5 px-3 rounded-xl border border-dashed border-zinc-700 hover:border-emerald-500 bg-zinc-950/60 hover:bg-emerald-950/10 text-xs text-zinc-300 flex items-center justify-center gap-2 transition">
+            <i class="fa-regular fa-image text-emerald-400"></i>
+            <span id="overlayFileName">Выбрать PNG оверлей</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Настройки текущего шага оверлея -->
+      <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-400"></i> Трансформация оверлея (Текущий шаг)
+        </h2>
+
+        <!-- Размер -->
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between text-xs text-zinc-400">
+            <span>Масштаб (Размер):</span>
+            <span id="scaleVal" class="text-zinc-200 font-mono">1.0x</span>
+          </div>
+          <input type="range" id="scaleSlider" min="0.1" max="4.0" step="0.05" value="1.0">
+        </div>
+
+        <!-- Поворот -->
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between text-xs text-zinc-400">
+            <span>Угол поворота:</span>
+            <span id="rotateVal" class="text-zinc-200 font-mono">0°</span>
+          </div>
+          <input type="range" id="rotateSlider" min="-180" max="180" step="1" value="0">
+        </div>
+
+        <!-- Прозрачность -->
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between text-xs text-zinc-400">
+            <span>Прозрачность (Непрозрачность):</span>
+            <span id="opacityVal" class="text-zinc-200 font-mono">100%</span>
+          </div>
+          <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="1">
+        </div>
+      </div>
+
+      <!-- Экспорт и Скачивание (Чистый фронтенд, 0 нагрузки на VPS) -->
+      <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+          <i class="fa-solid fa-download text-emerald-400"></i> Экспорт готового видео
+        </h2>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <!-- Разрешение -->
+          <div>
+            <label class="block text-zinc-400 mb-1">Качество:</label>
+            <select id="exportQuality" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-zinc-200 outline-none focus:border-purple-500">
+              <option value="720">720p (HD)</option>
+              <option value="1080" selected>1080p (Full HD)</option>
+              <option value="2160">4K (Ultra HD)</option>
+            </select>
+          </div>
+
+          <!-- Частота кадров -->
+          <div>
+            <label class="block text-zinc-400 mb-1">FPS:</label>
+            <select id="exportFps" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-zinc-200 outline-none focus:border-purple-500">
+              <option value="30">30 FPS</option>
+              <option value="60" selected>60 FPS (Плавно)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Кнопка рендера -->
+        <button id="recordBtn" class="w-full mt-2 py-3 px-4 rounded-xl font-semibold text-xs md:text-sm bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fa-solid fa-video"></i>
+          <span id="recordBtnText">Срендерить и скачать видео</span>
         </button>
-      </div>
-    </section>
 
-    <section id="view-nobu" class="view">
-      <div class="service-box">
-        <div class="service-title">NOBU FM</div>
-        <div class="service-desc">ИДУТ РАБОТЫ.<br>СКОРО В ЭФИРЕ.</div>
-        <button class="switch-back-btn" id="btn-back-hamam">НА ХАМАМ FM</button>
+        <!-- Прогресс рендера -->
+        <div id="renderProgressContainer" class="hidden flex flex-col gap-1.5 mt-1">
+          <div class="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
+            <div id="renderProgressBar" class="bg-emerald-400 h-full w-0 transition-all duration-100"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-zinc-400">
+            <span>Запись кадров холста...</span>
+            <span id="renderProgressPercent">0%</span>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-zinc-500 text-center">
+          Рендер выполняется процессором вашего устройства. Сервер не загружается.
+        </p>
       </div>
-    </section>
+
+    </div>
   </main>
 
-  <nav>
-    <button class="tab-btn active" id="tab-hamam">ХАМАМ FM</button>
-    <button class="tab-btn" id="tab-nobu">NOBU FM</button>
-  </nav>
+  <!-- Футер -->
+  <footer class="border-t border-zinc-900 bg-zinc-950 py-3 text-center text-xs text-zinc-500">
+    <p>ShadowTemplates • Сделано для авторов маппинга и шортс-контента</p>
+  </footer>
 
-  <audio id="audio-engine" preload="auto"></audio>
-
+  <!-- Скрипт логики приложения -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
+    // Основные элементы
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const emptyPlaceholder = document.getElementById('emptyPlaceholder');
+    const canvasOverlayTip = document.getElementById('canvasOverlayTip');
 
-    // Все твои файлы из репозитория
-    const PLAYLIST = [
-      { name: "ТРЕК #1 (20 МИН)", file: "ssstik.io_@ISSDD_7689597148920352006.mp3" },
-      { name: "РЕКЛАМА #1 (ТГ)", file: "tts_1794059996527_2.wav" },
-      { name: "ТРЕК #2", file: "ssstik.io_@gevenjilussko_7663545560258858262.mp3" },
-      { name: "РЕКЛАМА #2 (ТГ)", file: "tts_1794060362348_6.wav" },
-      { name: "ТРЕК #1 (20 МИН)", file: "ssstik.io_@ISSDD_7689597148920352006.mp3" },
-      { name: "РЕКЛАМА #3 (ТГ)", file: "tts_1794060639757_8.wav" },
-      { name: "ТРЕК #2", file: "ssstik.io_@gevenjilussko_7663545560258858262.mp3" },
-      { name: "РЕКЛАМА PLAYEROK", file: "tts_1794060925086_11 2.wav" },
-      { name: "КОНЕЦ ЛЕНТЫ", file: "tts_1794061684960_13.wav" }
+    // Файлы
+    const bgInput = document.getElementById('bgInput');
+    const overlayInput = document.getElementById('overlayInput');
+    const bgFileName = document.getElementById('bgFileName');
+    const overlayFileName = document.getElementById('overlayFileName');
+
+    // Шаги и таймлайн
+    const stepsContainer = document.getElementById('stepsContainer');
+    const stepCounter = document.getElementById('stepCounter');
+    const addStepBtn = document.getElementById('addStepBtn');
+    const deleteStepBtn = document.getElementById('deleteStepBtn');
+    const resetStepsBtn = document.getElementById('resetStepsBtn');
+    const playBtn = document.getElementById('playBtn');
+    const durationSlider = document.getElementById('durationSlider');
+    const durationVal = document.getElementById('durationVal');
+
+    // Слайдеры трансформации
+    const scaleSlider = document.getElementById('scaleSlider');
+    const scaleVal = document.getElementById('scaleVal');
+    const rotateSlider = document.getElementById('rotateSlider');
+    const rotateVal = document.getElementById('rotateVal');
+    const opacitySlider = document.getElementById('opacitySlider');
+    const opacityVal = document.getElementById('opacityVal');
+
+    // Экспорт
+    const exportQuality = document.getElementById('exportQuality');
+    const exportFps = document.getElementById('exportFps');
+    const recordBtn = document.getElementById('recordBtn');
+    const recordBtnText = document.getElementById('recordBtnText');
+    const renderProgressContainer = document.getElementById('renderProgressContainer');
+    const renderProgressBar = document.getElementById('renderProgressBar');
+    const renderProgressPercent = document.getElementById('renderProgressPercent');
+
+    // Состояние приложения
+    let bgElement = null; // Image или Video
+    let isVideoBg = false;
+    let overlayImage = null;
+
+    // Массив ключевых точек (Шагов)
+    // Координаты хранятся в относительных единицах (0..1) для масштабируемости холста
+    let steps = [
+      { x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 }
     ];
+    let currentStepIndex = 0;
 
-    let currentIndex = 0;
+    // Состояние анимации и воспроизведения
     let isPlaying = false;
-    let isLive = true;
-    let connected = false;
+    let animationStartTime = 0;
+    let animationDuration = 3.0; // секунды
+    let animReqId = null;
 
-    const audio = document.getElementById('audio-engine');
-    const playBtn = document.getElementById('main-play-btn');
-    const playIcon = document.getElementById('play-icon');
-    const pauseIcon = document.getElementById('pause-icon');
-    const modal = document.getElementById('connecting-modal');
-    const nowPlaying = document.getElementById('now-playing');
-    const timeCurrent = document.getElementById('time-current');
-    const timeTotal = document.getElementById('time-total');
-    const seekFill = document.getElementById('seek-fill');
-    const seekThumb = document.getElementById('seek-thumb');
-    const liveTag = document.getElementById('live-indicator');
+    // Интерактивное перетаскивание мышью/пальцем
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
 
-    function fmt(s) {
-      if (isNaN(s) || s < 0) return "00:00";
-      const m = Math.floor(s / 60).toString().padStart(2, '0');
-      const sec = Math.floor(s % 60).toString().padStart(2, '0');
-      return `${m}:${sec}`;
+    // ==========================================
+    // 1. Инициализация и Загрузка Файлов
+    // ==========================================
+
+    bgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      bgFileName.innerText = file.name;
+      const fileUrl = URL.createObjectURL(file);
+
+      if (file.type.startsWith('video/')) {
+        isVideoBg = true;
+        const video = document.createElement('video');
+        video.src = fileUrl;
+        video.crossOrigin = 'anonymous';
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.onloadedmetadata = () => {
+          bgElement = video;
+          video.play();
+          setupCanvasSize(video.videoWidth, video.videoHeight);
+        };
+      } else {
+        isVideoBg = false;
+        const img = new Image();
+        img.src = fileUrl;
+        img.onload = () => {
+          bgElement = img;
+          setupCanvasSize(img.naturalWidth, img.naturalHeight);
+        };
+      }
+    });
+
+    overlayInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      overlayFileName.innerText = file.name;
+      const fileUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.src = fileUrl;
+      img.onload = () => {
+        overlayImage = img;
+        if (!bgElement) {
+          // Если фона еще нет, создаем базовый квадратный холст
+          setupCanvasSize(1080, 1080);
+        }
+        renderScene();
+      };
+    });
+
+    function setupCanvasSize(width, height) {
+      canvas.width = width || 1080;
+      canvas.height = height || 1920;
+      emptyPlaceholder.classList.add('hidden');
+      canvasWrapper.classList.remove('hidden');
+      canvasOverlayTip.classList.remove('hidden');
+      renderScene();
+      if (!isPlaying) requestAnimationFrame(loopPreview);
     }
 
-    // Четкое экранирование для iOS Safari: сохраняет @ и кодирует пробелы
-    function getSafeSrc(filename) {
-      return './' + encodeURIComponent(filename).replace(/%40/g, '@');
+    // ==========================================
+    // 2. Управление шагами (Кейфреймы)
+    // ==========================================
+
+    function updateStepsUI() {
+      stepsContainer.innerHTML = '';
+      steps.forEach((step, idx) => {
+        const btn = document.createElement('button');
+        const isActive = idx === currentStepIndex;
+        btn.className = `px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition flex items-center gap-1.5 ${
+          isActive 
+            ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30' 
+            : 'bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+        }`;
+        btn.innerHTML = `<i class="fa-solid fa-diamond text-[9px]"></i> Шаг ${idx + 1}`;
+        btn.onclick = () => selectStep(idx);
+        stepsContainer.appendChild(btn);
+      });
+
+      stepCounter.innerText = `Шаг ${currentStepIndex + 1} из ${steps.length}`;
+      syncSlidersWithCurrentStep();
     }
 
-    function playTrack(index) {
-      currentIndex = (index + PLAYLIST.length) % PLAYLIST.length;
-      const track = PLAYLIST[currentIndex];
-      nowPlaying.textContent = track.name;
+    function selectStep(index) {
+      currentStepIndex = index;
+      updateStepsUI();
+      renderScene();
+    }
 
-      audio.src = getSafeSrc(track.file);
-      audio.load();
+    addStepBtn.addEventListener('click', () => {
+      // Новый шаг копирует параметры предыдущего со смещением
+      const prev = steps[steps.length - 1];
+      steps.push({
+        x: Math.min(0.9, prev.x + 0.05),
+        y: Math.min(0.9, prev.y + 0.05),
+        scale: prev.scale,
+        rotation: prev.rotation,
+        opacity: prev.opacity
+      });
+      selectStep(steps.length - 1);
+    });
 
-      const p = audio.play();
-      if (p !== undefined) {
-        p.catch(() => {
-          setTimeout(() => {
-            if (isPlaying) playTrack(currentIndex + 1);
-          }, 300);
-        });
+    deleteStepBtn.addEventListener('click', () => {
+      if (steps.length <= 1) return; // Минимум один шаг должен оставаться
+      steps.splice(currentStepIndex, 1);
+      if (currentStepIndex >= steps.length) {
+        currentStepIndex = steps.length - 1;
+      }
+      updateStepsUI();
+      renderScene();
+    });
+
+    resetStepsBtn.addEventListener('click', () => {
+      steps = [{ x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 }];
+      currentStepIndex = 0;
+      updateStepsUI();
+      renderScene();
+    });
+
+    function syncSlidersWithCurrentStep() {
+      const cur = steps[currentStepIndex];
+      if (!cur) return;
+      scaleSlider.value = cur.scale;
+      scaleVal.innerText = cur.scale.toFixed(2) + 'x';
+
+      rotateSlider.value = cur.rotation;
+      rotateVal.innerText = cur.rotation + '°';
+
+      opacitySlider.value = cur.opacity;
+      opacityVal.innerText = Math.round(cur.opacity * 100) + '%';
+    }
+
+    // Слушатели слайдеров трансформации
+    scaleSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      scaleVal.innerText = val.toFixed(2) + 'x';
+      steps[currentStepIndex].scale = val;
+      renderScene();
+    });
+
+    rotateSlider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      rotateVal.innerText = val + '°';
+      steps[currentStepIndex].rotation = val;
+      renderScene();
+    });
+
+    opacitySlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      opacityVal.innerText = Math.round(val * 100) + '%';
+      steps[currentStepIndex].opacity = val;
+      renderScene();
+    });
+
+    durationSlider.addEventListener('input', (e) => {
+      animationDuration = parseFloat(e.target.value);
+      durationVal.innerText = animationDuration.toFixed(1) + 'с';
+    });
+
+    // ==========================================
+    // 3. Интерактивное перемещение по Canvas
+    // ==========================================
+
+    function getCanvasCoords(evt) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+      const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+      return {
+        x: (clientX - rect.left) / rect.width,
+        y: (clientY - rect.top) / rect.height
+      };
+    }
+
+    function startDrag(e) {
+      if (isPlaying) return;
+      isDragging = true;
+      const coords = getCanvasCoords(e);
+      steps[currentStepIndex].x = Math.max(0, Math.min(1, coords.x));
+      steps[currentStepIndex].y = Math.max(0, Math.min(1, coords.y));
+      renderScene();
+    }
+
+    function moveDrag(e) {
+      if (!isDragging || isPlaying) return;
+      const coords = getCanvasCoords(e);
+      steps[currentStepIndex].x = Math.max(0, Math.min(1, coords.x));
+      steps[currentStepIndex].y = Math.max(0, Math.min(1, coords.y));
+      renderScene();
+    }
+
+    function stopDrag() {
+      isDragging = false;
+    }
+
+    canvas.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', stopDrag);
+
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    window.addEventListener('touchmove', moveDrag, { passive: false });
+    window.addEventListener('touchend', stopDrag);
+
+    // ==========================================
+    // 4. Отрисовка сцены и Интерполяция
+    // ==========================================
+
+    // Функция плавной интерполяции (Ease in-out)
+    function easeInOutQuad(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    // Расчет параметров оверлея в момент прогресса progress (0..1)
+    function getInterpolatedState(progress) {
+      if (steps.length === 1) return steps[0];
+
+      const segmentCount = steps.length - 1;
+      const scaledProgress = progress * segmentCount;
+      const segmentIndex = Math.min(Math.floor(scaledProgress), segmentCount - 1);
+      const localProgress = easeInOutQuad(scaledProgress - segmentIndex);
+
+      const p1 = steps[segmentIndex];
+      const p2 = steps[segmentIndex + 1];
+
+      return {
+        x: p1.x + (p2.x - p1.x) * localProgress,
+        y: p1.y + (p2.y - p1.y) * localProgress,
+        scale: p1.scale + (p2.scale - p1.scale) * localProgress,
+        rotation: p1.rotation + (p2.rotation - p1.rotation) * localProgress,
+        opacity: p1.opacity + (p2.opacity - p1.opacity) * localProgress
+      };
+    }
+
+    function renderScene(customState = null) {
+      // Очистка
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Отрисовка фона
+      if (bgElement) {
+        ctx.drawImage(bgElement, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // 2. Отрисовка оверлея
+      if (overlayImage) {
+        const state = customState || steps[currentStepIndex];
+        const posX = state.x * canvas.width;
+        const posY = state.y * canvas.height;
+
+        // Базовый размер оверлея: 25% от меньшей стороны холста
+        const baseSize = Math.min(canvas.width, canvas.height) * 0.28;
+        const aspect = overlayImage.naturalWidth / overlayImage.naturalHeight;
+        const drawW = baseSize * state.scale;
+        const drawH = (baseSize / aspect) * state.scale;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, state.opacity));
+        ctx.translate(posX, posY);
+        ctx.rotate((state.rotation * Math.PI) / 180);
+
+        // Рисуем с центром в точке (posX, posY)
+        ctx.drawImage(overlayImage, -drawW / 2, -drawH / 2, drawW, drawH);
+
+        // Если не проигрывается анимация, рисуем легкую рамку фокуса
+        if (!isPlaying && !customState) {
+          ctx.strokeStyle = '#8b5cf6';
+          ctx.lineWidth = Math.max(2, canvas.width / 500);
+          ctx.setLineDash([6, 6]);
+          ctx.strokeRect(-drawW / 2 - 4, -drawH / 2 - 4, drawW + 8, drawH + 8);
+        }
+
+        ctx.restore();
       }
     }
 
-    audio.addEventListener('ended', () => {
-      playTrack(currentIndex + 1);
-    });
-
-    audio.addEventListener('error', () => {
+    // Цикл предпросмотра
+    function loopPreview(timestamp) {
       if (isPlaying) {
-        playTrack(currentIndex + 1);
+        if (!animationStartTime) animationStartTime = timestamp;
+        const elapsed = (timestamp - animationStartTime) / 1000;
+        let progress = (elapsed % animationDuration) / animationDuration;
+        
+        const interpolated = getInterpolatedState(progress);
+        renderScene(interpolated);
+      } else if (isVideoBg && bgElement) {
+        // Если видео на фоне, обновляем холст, чтобы фон двигался
+        renderScene();
       }
-    });
+      requestAnimationFrame(loopPreview);
+    }
 
-    audio.addEventListener('timeupdate', () => {
-      if (!audio.duration) return;
-      const cur = audio.currentTime;
-      const dur = audio.duration;
-      timeCurrent.textContent = fmt(cur);
-      timeTotal.textContent = fmt(dur - cur);
-
-      const pct = (cur / dur) * 100;
-      seekFill.style.width = pct + '%';
-      seekThumb.style.left = pct + '%';
-    });
-
+    // Старт / Стоп предпросмотра
     playBtn.addEventListener('click', () => {
+      isPlaying = !isPlaying;
       if (isPlaying) {
-        audio.pause();
-        isPlaying = false;
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
+        animationStartTime = 0;
+        playBtn.innerHTML = '<i class="fa-solid fa-pause text-amber-400"></i> <span>Пауза</span>';
+        playBtn.classList.add('border-amber-500/50');
+      } else {
+        playBtn.innerHTML = '<i class="fa-solid fa-play text-purple-400"></i> <span>Старт</span>';
+        playBtn.classList.remove('border-amber-500/50');
+        renderScene();
+      }
+    });
+
+    // ==========================================
+    // 5. Запись и Скачивание (MediaRecorder API)
+    // ==========================================
+
+    recordBtn.addEventListener('click', async () => {
+      if (!overlayImage && !bgElement) {
         return;
       }
 
-      if (!connected) {
-        modal.style.display = 'flex';
-        // Прогреваем контекст айфона сразу по первому клику
-        audio.src = getSafeSrc(PLAYLIST[0].file);
-        audio.load();
+      // Приостанавливаем интерактивный предпросмотр
+      const wasPlaying = isPlaying;
+      isPlaying = false;
+      playBtn.innerHTML = '<i class="fa-solid fa-play text-purple-400"></i> <span>Старт</span>';
 
-        setTimeout(() => {
-          modal.style.display = 'none';
-          connected = true;
-          isPlaying = true;
-          playIcon.style.display = 'none';
-          pauseIcon.style.display = 'block';
-          playTrack(0);
-        }, 3000);
-      } else {
-        isPlaying = true;
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-        if (!audio.src || audio.src === window.location.href) {
-          playTrack(currentIndex);
+      // Выбор целевого разрешения
+      const targetHeight = parseInt(exportQuality.value);
+      const targetFps = parseInt(exportFps.value);
+      const originalWidth = canvas.width;
+      const originalHeight = canvas.height;
+      const aspect = originalWidth / originalHeight;
+      const targetWidth = Math.round(targetHeight * aspect);
+
+      // Временный холст для высокого качества рендера
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = targetWidth;
+      exportCanvas.height = targetHeight;
+      const exportCtx = exportCanvas.getContext('2d');
+
+      // Настройка стрима и MediaRecorder
+      const stream = exportCanvas.captureStream(targetFps);
+      let options = { mimeType: 'video/webm; codecs=vp9' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm' };
+      }
+
+      let mediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (err) {
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
+      const chunks = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ShadowAnimation_${targetHeight}p_${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Сброс интерфейса
+        renderProgressContainer.classList.add('hidden');
+        recordBtn.disabled = false;
+        recordBtnText.innerText = 'Срендерить и скачать видео';
+        renderProgressBar.style.width = '0%';
+      };
+
+      // Блокировка кнопки и запуск индикатора
+      recordBtn.disabled = true;
+      recordBtnText.innerText = 'Идет рендеринг...';
+      renderProgressContainer.classList.remove('hidden');
+
+      mediaRecorder.start();
+
+      // Покадровый рендер для максимальной плавности без просадок FPS
+      const totalFrames = Math.round(animationDuration * targetFps);
+      let currentFrame = 0;
+
+      function renderExportFrame() {
+        if (currentFrame <= totalFrames) {
+          const progress = currentFrame / totalFrames;
+          const state = getInterpolatedState(progress);
+
+          // Отрисовка на экспортный холст
+          exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
+          if (bgElement) {
+            exportCtx.drawImage(bgElement, 0, 0, exportCanvas.width, exportCanvas.height);
+          } else {
+            exportCtx.fillStyle = '#0a0a0f';
+            exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+          }
+
+          if (overlayImage) {
+            const posX = state.x * exportCanvas.width;
+            const posY = state.y * exportCanvas.height;
+            const baseSize = Math.min(exportCanvas.width, exportCanvas.height) * 0.28;
+            const imgAspect = overlayImage.naturalWidth / overlayImage.naturalHeight;
+            const drawW = baseSize * state.scale;
+            const drawH = (baseSize / imgAspect) * state.scale;
+
+            exportCtx.save();
+            exportCtx.globalAlpha = Math.max(0, Math.min(1, state.opacity));
+            exportCtx.translate(posX, posY);
+            exportCtx.rotate((state.rotation * Math.PI) / 180);
+            exportCtx.drawImage(overlayImage, -drawW / 2, -drawH / 2, drawW, drawH);
+            exportCtx.restore();
+          }
+
+          // Обновление прогресс-бара
+          const pct = Math.round((currentFrame / totalFrames) * 100);
+          renderProgressBar.style.width = pct + '%';
+          renderProgressPercent.innerText = pct + '%';
+
+          currentFrame++;
+          // Пауза между кадрами для захвата стримом
+          setTimeout(renderExportFrame, 1000 / targetFps);
         } else {
-          audio.play().catch(() => playTrack(currentIndex));
+          // Завершение записи
+          mediaRecorder.stop();
         }
       }
+
+      renderExportFrame();
     });
 
-    const seekTouch = document.getElementById('seekbar-touch');
-    seekTouch.addEventListener('click', (e) => {
-      if (!audio.duration) return;
-      const rect = seekTouch.getBoundingClientRect();
-      const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const targetTime = clickRatio * audio.duration;
-
-      if (targetTime < audio.currentTime) {
-        audio.currentTime = targetTime;
-        isLive = false;
-        liveTag.classList.remove('active');
-      }
+    // Инициализация при загрузке страницы
+    window.addEventListener('load', () => {
+      updateStepsUI();
+      // Задаем базовый размер по умолчанию (вертикальный 9:16)
+      setupCanvasSize(720, 1280);
     });
-
-    liveTag.addEventListener('click', () => {
-      if (!isLive) {
-        isLive = true;
-        liveTag.classList.add('active');
-        if (audio.duration) {
-          audio.currentTime = Math.max(0, audio.duration - 1);
-        }
-      }
-    });
-
-    const tabHamam = document.getElementById('tab-hamam');
-    const tabNobu = document.getElementById('tab-nobu');
-    const viewHamam = document.getElementById('view-hamam');
-    const viewNobu = document.getElementById('view-nobu');
-    const btnBack = document.getElementById('btn-back-hamam');
-
-    tabHamam.addEventListener('click', () => setTab('hamam'));
-    btnBack.addEventListener('click', () => setTab('hamam'));
-    tabNobu.addEventListener('click', () => setTab('nobu'));
-
-    function setTab(tab) {
-      if (tab === 'hamam') {
-        tabHamam.classList.add('active');
-        tabNobu.classList.remove('active');
-        viewHamam.classList.add('active');
-        viewNobu.classList.remove('active');
-      } else {
-        tabNobu.classList.add('active');
-        tabHamam.classList.remove('active');
-        viewNobu.classList.add('active');
-        viewHamam.classList.remove('active');
-      }
-    }
   </script>
 </body>
 </html>
