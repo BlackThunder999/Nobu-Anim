@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Nobu Anim Studio</title>
+  <title>Nobu Anim Studio Pro</title>
   <style>
     :root {
       --bg: #000;
@@ -26,7 +26,6 @@
       flex-direction: column;
     }
 
-    /* Screen Views */
     .screen { display: none; width: 100%; height: 100%; flex-direction: column; }
     .screen.active { display: flex; }
 
@@ -43,8 +42,8 @@
       color: #fff;
       font-size: 10px;
       font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
       cursor: pointer;
     }
     .btn-create-proj {
@@ -61,6 +60,24 @@
       font-weight: 600;
       cursor: pointer;
     }
+    .projects-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .project-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
 
     /* STUDIO */
     header {
@@ -71,6 +88,21 @@
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
       background: #09090b;
+      position: relative;
+      z-index: 100;
+    }
+    .btn-header {
+      background: var(--surface-2);
+      color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .btn-export {
       background: #fff;
@@ -84,7 +116,9 @@
       align-items: center;
       gap: 5px;
       cursor: pointer;
+      z-index: 101;
     }
+
     .viewport {
       flex: 1;
       background: #050505;
@@ -133,7 +167,7 @@
 
     /* Timeline */
     .timeline {
-      height: 95px;
+      height: 105px;
       background: #080808;
       border-top: 1px solid var(--border);
       overflow-x: auto;
@@ -141,10 +175,11 @@
       position: relative;
     }
     .timeline-track {
-      height: 28px;
-      margin-bottom: 6px;
+      height: 26px;
+      margin-bottom: 5px;
       position: relative;
       width: 100%;
+      min-width: 500px;
       background: rgba(255,255,255,0.03);
       border-radius: 6px;
       display: flex;
@@ -153,20 +188,20 @@
     .clip {
       height: 100%;
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 10px;
       display: flex;
       align-items: center;
-      padding: 0 10px;
+      padding: 0 8px;
       color: #fff;
       font-weight: 600;
       border: 2px solid transparent;
       cursor: pointer;
       user-select: none;
-      transition: border-color 0.15s ease;
+      white-space: nowrap;
     }
-    .clip.selected { border-color: #fff !important; box-shadow: 0 0 8px rgba(255,255,255,0.3); }
-    .clip-bg { background: #2563eb; width: 70%; }
-    .clip-overlay { background: #7c3aed; width: 60%; }
+    .clip.selected { border-color: #fff !important; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+    .clip-bg { background: #2563eb; width: 85%; }
+    .clip-overlay { background: #7c3aed; width: 65%; }
 
     /* Tabs */
     .tabs-nav {
@@ -210,8 +245,8 @@
       padding: 4px 0;
     }
     .wheel-container {
-      width: 72px;
-      height: 72px;
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
       background: #1c1c1e;
       border: 2px solid #3a3a3c;
@@ -224,12 +259,12 @@
     }
     .wheel-indicator {
       width: 4px;
-      height: 24px;
+      height: 22px;
       background: #fff;
       border-radius: 2px;
       position: absolute;
       top: 6px;
-      transform-origin: 2px 30px;
+      transform-origin: 2px 28px;
     }
     .btn-step {
       background: #fff;
@@ -248,7 +283,7 @@
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.85);
-      z-index: 999;
+      z-index: 9999;
       align-items: center;
       justify-content: center;
       padding: 16px;
@@ -272,11 +307,13 @@
   <div class="screen active" id="screen-hub">
     <div class="hub-header">
       <div style="font-weight:800; font-size:16px;">Nobu Anim <span class="badge-pro" onclick="openPro()">PRO</span></div>
+      <div id="projCount" style="font-size:12px; color:#888;">0 проектов</div>
     </div>
-    <div class="btn-create-proj" onclick="startStudio()">
+    <div class="btn-create-proj" onclick="startNewStudio()">
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
       Создать новый проект
     </div>
+    <div class="projects-grid" id="projList"></div>
   </div>
 
   <!-- СТУДИЯ -->
@@ -285,8 +322,11 @@
       <button class="btn-icon" onclick="exitStudio()">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <div style="font-weight:700; font-size:14px;">Nobu Anim Studio</div>
-      <button class="btn-export" onclick="exportRender()">
+      <button class="btn-header" onclick="saveCurrentProject()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Сохранить
+      </button>
+      <button class="btn-export" id="mainExportBtn" onclick="triggerExport()">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
         Экспорт
       </button>
@@ -298,12 +338,19 @@
       </div>
     </div>
 
+    <!-- Панель таймкода и перемотки -->
     <div class="transport">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button class="btn-icon" id="playBtn" onclick="togglePlay()">
-          <svg id="playSvg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <button class="btn-icon" onclick="seekRelative(-5)">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
         </button>
-        <span id="timecode" style="font-size:12px; color:#888;">00:00:00 / 00:15:00</span>
+        <button class="btn-icon" id="playBtn" onclick="togglePlay()">
+          <svg id="playSvg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="btn-icon" onclick="seekRelative(5)">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+        </button>
+        <span id="timecode" style="font-size:11px; color:#888; font-variant-numeric:tabular-nums;">00:00:00 / 00:15:00</span>
       </div>
       <div style="display:flex; gap:6px;">
         <button class="btn-action delete" onclick="deleteCurrentClip()">
@@ -313,17 +360,15 @@
       </div>
     </div>
 
-    <!-- Таймлайн с поддержкой прямого клика -->
+    <!-- Мульти-трековый таймлайн -->
     <div class="timeline" id="tlBox">
       <div class="timeline-track" id="tr-bg">
         <div class="clip clip-bg" id="clip-bg" onclick="selectClip('bg')">Фон (Видео)</div>
       </div>
-      <div class="timeline-track" id="tr-overlay">
-        <div class="clip clip-overlay" id="clip-overlay" onclick="selectClip('overlay')">Наложение (Эдит)</div>
-      </div>
+      <div id="overlaysTracksList"></div>
     </div>
 
-    <!-- Табы -->
+    <!-- Меню табов -->
     <div class="tabs-nav">
       <button class="tab-btn" onclick="tab('media')">Медиа</button>
       <button class="tab-btn active" onclick="tab('overlay')">Наложение</button>
@@ -337,12 +382,12 @@
     <div class="panel" id="p-media">
       <div style="display:flex; gap:8px;">
         <label style="flex:1; background:#1c1c1e; padding:10px; border-radius:8px; text-align:center; font-size:11px; cursor:pointer;">
-          + Фоновое видео
-          <input type="file" accept="video/*,image/*" hidden onchange="loadFile(event, 'bg')">
+          + Фон (Видео/Фото)
+          <input type="file" accept="video/*,image/*" hidden onchange="loadMediaFile(event, 'bg')">
         </label>
         <label style="flex:1; background:#1c1c1e; padding:10px; border-radius:8px; text-align:center; font-size:11px; cursor:pointer;">
-          + Наложение (Эдит)
-          <input type="file" accept="video/*,image/*" hidden onchange="loadFile(event, 'overlay')">
+          + Добавить наложение
+          <input type="file" accept="video/*,image/*" hidden onchange="addOverlayFile(event)">
         </label>
       </div>
     </div>
@@ -350,7 +395,7 @@
     <div class="panel active" id="p-overlay">
       <div class="wheel-wrap">
         <div style="text-align:center;">
-          <div style="font-size:10px; color:#aaa; margin-bottom:4px;">Вращение</div>
+          <div style="font-size:10px; color:#aaa; margin-bottom:4px;">Nobu Wheel</div>
           <div class="wheel-container" id="rotWheel">
             <div class="wheel-indicator" id="wheelInd"></div>
           </div>
@@ -363,28 +408,28 @@
       </div>
       <div class="row" style="margin-top:6px;">
         <label>Масштаб:</label>
-        <input type="range" min="20" max="250" value="70" oninput="state.overlay.scale = this.value/100; draw();">
+        <input type="range" id="ovScale" min="20" max="250" value="70" oninput="updateActiveOverlay('scale', this.value/100)">
       </div>
       <div class="row">
         <label>Позиция Y:</label>
-        <input type="range" min="100" max="1600" value="700" oninput="state.overlay.y = +this.value; draw();">
+        <input type="range" id="ovY" min="100" max="1600" value="700" oninput="updateActiveOverlay('y', +this.value)">
       </div>
     </div>
 
     <div class="panel" id="p-chroma">
       <div class="row">
         <label>Удалить зеленый фон:</label>
-        <input type="checkbox" id="ck-chroma" onchange="state.chroma.enabled = this.checked; draw();">
+        <input type="checkbox" id="ck-chroma" onchange="updateActiveOverlay('chromaEnabled', this.checked)">
       </div>
       <div class="row">
         <label>Сила среза:</label>
-        <input type="range" min="10" max="100" value="45" oninput="state.chroma.tol = +this.value; draw();">
+        <input type="range" min="10" max="100" value="45" oninput="updateActiveOverlay('chromaTol', +this.value)">
       </div>
     </div>
 
     <div class="panel" id="p-text">
       <div class="row">
-        <input type="text" placeholder="Текст эдита..." style="flex:1; background:#1c1c1e; border:1px solid #333; color:#fff; padding:6px; border-radius:6px;" oninput="state.text.str = this.value; draw();">
+        <input type="text" id="txtInput" placeholder="Текст эдита..." style="flex:1; background:#1c1c1e; border:1px solid #333; color:#fff; padding:6px; border-radius:6px;" oninput="state.text.str = this.value; draw();">
       </div>
       <div class="row">
         <label>Размер шрифта:</label>
@@ -426,19 +471,70 @@
       curTime: 0,
       totalDur: 15,
       playing: false,
-      selected: 'overlay',
+      selectedType: 'bg',
+      selectedOverlayIdx: -1,
       bg: null,
-      overlay: { el: null, scale: 0.7, x: 270, y: 700, rot: 0 },
-      steps: [], // Шаги плавной анимации колеса
-      chroma: { enabled: false, tol: 45 },
+      overlays: [], // Массив множественных наложений
       text: { str: '', size: 64, y: 1500 },
       shake: { enabled: true, power: 18 }
     };
 
-    function startStudio() {
+    // --- HUB И ПРОЕКТЫ ---
+    function loadSavedProjects() {
+      const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
+      const container = document.getElementById('projList');
+      container.innerHTML = '';
+      document.getElementById('projCount').innerText = list.length + ' проектов';
+
+      list.forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.className = 'project-card';
+        item.innerHTML = `
+          <div>
+            <div style="font-weight:700; font-size:13px;">${p.name}</div>
+            <div style="font-size:10px; color:#888;">${p.date} • ${p.dur} сек</div>
+          </div>
+          <button style="background:none; border:none; color:#ff453a; padding:6px;" onclick="event.stopPropagation(); deleteProject(${idx})">✕</button>
+        `;
+        item.onclick = () => openProject(p);
+        container.appendChild(item);
+      });
+    }
+
+    function saveCurrentProject() {
+      const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
+      const newProj = {
+        name: 'Проект ' + (list.length + 1),
+        date: new Date().toLocaleDateString(),
+        dur: Math.round(state.totalDur),
+        text: state.text.str
+      };
+      list.unshift(newProj);
+      localStorage.setItem('nobu_projects', JSON.stringify(list));
+      alert('Проект сохранен в Nobu Hub!');
+    }
+
+    function deleteProject(idx) {
+      const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
+      list.splice(idx, 1);
+      localStorage.setItem('nobu_projects', JSON.stringify(list));
+      loadSavedProjects();
+    }
+
+    function openProject(p) {
+      startNewStudio();
+      state.totalDur = p.dur || 15;
+      state.text.str = p.text || '';
+      document.getElementById('txtInput').value = state.text.str;
+      updateTimeDisplay();
+      draw();
+    }
+
+    function startNewStudio() {
       document.getElementById('screen-hub').classList.remove('active');
       document.getElementById('screen-studio').classList.add('active');
-      selectClip('overlay');
+      selectClip('bg');
+      updateTimeDisplay();
       draw();
     }
 
@@ -446,6 +542,7 @@
       pauseVideo();
       document.getElementById('screen-studio').classList.remove('active');
       document.getElementById('screen-hub').classList.add('active');
+      loadSavedProjects();
     }
 
     function openPro() { document.getElementById('proModal').classList.add('active'); }
@@ -458,85 +555,17 @@
       document.getElementById('p-' + name).classList.add('active');
     }
 
-    function selectClip(type) {
-      state.selected = type;
-      document.getElementById('clip-bg').classList.toggle('selected', type === 'bg');
-      document.getElementById('clip-overlay').classList.toggle('selected', type === 'overlay');
-    }
-
-    function deleteCurrentClip() {
-      if (state.selected === 'bg') {
-        state.bg = null;
-        document.getElementById('clip-bg').style.opacity = '0.3';
-      }
-      if (state.selected === 'overlay') {
-        state.overlay.el = null;
-        state.steps = [];
-        document.getElementById('clip-overlay').style.opacity = '0.3';
-        document.getElementById('stepCount').innerText = 'Шагов: 0';
-      }
+    // --- ОТМОТКА ВПЕРЕД / НАЗАД ---
+    function seekRelative(sec) {
+      state.curTime = Math.max(0, Math.min(state.totalDur, state.curTime + sec));
+      if (state.bg?.isVid) state.bg.el.currentTime = state.curTime;
+      state.overlays.forEach(ov => { if (ov.isVid) ov.el.currentTime = state.curTime; });
+      updateTimeDisplay();
       draw();
     }
 
-    // Обработка колеса вращения
-    const wheel = document.getElementById('rotWheel');
-    let isDraggingWheel = false;
-
-    function handleWheelMove(e) {
-      if (!isDraggingWheel) return;
-      const rect = wheel.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const rad = Math.atan2(clientY - cy, clientX - cx);
-      let deg = Math.round(rad * (180 / Math.PI)) + 90;
-      if (deg < 0) deg += 360;
-      state.overlay.rot = deg;
-      document.getElementById('wheelInd').style.transform = `rotate(${deg}deg)`;
-      document.getElementById('rotVal').innerText = deg + '°';
-      draw();
-    }
-
-    wheel.addEventListener('pointerdown', () => { isDraggingWheel = true; });
-    window.addEventListener('pointermove', handleWheelMove);
-    window.addEventListener('pointerup', () => { isDraggingWheel = false; });
-
-    function addAnimStep() {
-      state.steps.push({
-        time: state.curTime,
-        rot: state.overlay.rot,
-        y: state.overlay.y,
-        scale: state.overlay.scale
-      });
-      state.steps.sort((a,b) => a.time - b.time);
-      document.getElementById('stepCount').innerText = 'Шагов: ' + state.steps.length;
-    }
-
-    function getInterpolatedTransform(t) {
-      if (state.steps.length === 0) return { rot: state.overlay.rot, y: state.overlay.y, scale: state.overlay.scale };
-      if (state.steps.length === 1) return state.steps[0];
-      if (t <= state.steps[0].time) return state.steps[0];
-      if (t >= state.steps[state.steps.length - 1].time) return state.steps[state.steps.length - 1];
-
-      for (let i = 0; i < state.steps.length - 1; i++) {
-        const s1 = state.steps[i];
-        const s2 = state.steps[i+1];
-        if (t >= s1.time && t <= s2.time) {
-          const factor = (t - s1.time) / (s2.time - s1.time);
-          // Плавное кубическое сглаживание
-          const smooth = factor * factor * (3 - 2 * factor);
-          return {
-            rot: s1.rot + (s2.rot - s1.rot) * smooth,
-            y: s1.y + (s2.y - s1.y) * smooth,
-            scale: s1.scale + (s2.scale - s1.scale) * smooth
-          };
-        }
-      }
-      return state.steps[0];
-    }
-
-    function loadFile(e, type) {
+    // --- ДОБАВЛЕНИЕ МЕДИА И МУЛЬТИ-НАЛОЖЕНИЙ ---
+    function loadMediaFile(e, type) {
       const f = e.target.files[0];
       if (!f) return;
       const url = URL.createObjectURL(f);
@@ -545,19 +574,12 @@
       if (isVid) {
         const v = document.createElement('video');
         v.src = url;
-        v.crossOrigin = 'anonymous';
         v.playsInline = true;
         v.muted = false;
         v.onloadedmetadata = () => {
-          if (type === 'bg') {
-            state.bg = { el: v, isVid: true, dur: v.duration };
-            state.totalDur = v.duration;
-            document.getElementById('clip-bg').style.opacity = '1';
-          } else {
-            state.overlay.el = v;
-            state.overlay.isVid = true;
-            document.getElementById('clip-overlay').style.opacity = '1';
-          }
+          state.bg = { el: v, isVid: true, dur: v.duration };
+          state.totalDur = v.duration;
+          document.getElementById('clip-bg').style.opacity = '1';
           updateTimeDisplay();
           draw();
         };
@@ -565,20 +587,175 @@
         const img = new Image();
         img.src = url;
         img.onload = () => {
-          if (type === 'bg') {
-            state.bg = { el: img, isVid: false, dur: 15 };
-            document.getElementById('clip-bg').style.opacity = '1';
-          } else {
-            state.overlay.el = img;
-            state.overlay.isVid = false;
-            document.getElementById('clip-overlay').style.opacity = '1';
-          }
+          state.bg = { el: img, isVid: false, dur: 15 };
+          document.getElementById('clip-bg').style.opacity = '1';
           updateTimeDisplay();
           draw();
         };
       }
     }
 
+    function addOverlayFile(e) {
+      const f = e.target.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      const isVid = f.type.startsWith('video');
+
+      const overlayObj = {
+        id: Date.now(),
+        el: null,
+        isVid: isVid,
+        scale: 0.7,
+        y: 700,
+        rot: 0,
+        chromaEnabled: false,
+        chromaTol: 45,
+        steps: []
+      };
+
+      if (isVid) {
+        const v = document.createElement('video');
+        v.src = url;
+        v.playsInline = true;
+        v.muted = false;
+        v.onloadedmetadata = () => {
+          overlayObj.el = v;
+          state.overlays.push(overlayObj);
+          selectOverlay(state.overlays.length - 1);
+          renderOverlaysTimeline();
+          draw();
+        };
+      } else {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => {
+          overlayObj.el = img;
+          state.overlays.push(overlayObj);
+          selectOverlay(state.overlays.length - 1);
+          renderOverlaysTimeline();
+          draw();
+        };
+      }
+    }
+
+    function renderOverlaysTimeline() {
+      const container = document.getElementById('overlaysTracksList');
+      container.innerHTML = '';
+      state.overlays.forEach((ov, idx) => {
+        const row = document.createElement('div');
+        row.className = 'timeline-track';
+        row.innerHTML = `<div class="clip clip-overlay ${state.selectedOverlayIdx === idx ? 'selected' : ''}" onclick="selectOverlay(${idx})">Наложение #${idx + 1} (${ov.isVid ? 'Видео' : 'Фото'})</div>`;
+        container.appendChild(row);
+      });
+    }
+
+    function selectClip(type) {
+      state.selectedType = type;
+      state.selectedOverlayIdx = -1;
+      document.getElementById('clip-bg').classList.toggle('selected', type === 'bg');
+      renderOverlaysTimeline();
+    }
+
+    function selectOverlay(idx) {
+      state.selectedType = 'overlay';
+      state.selectedOverlayIdx = idx;
+      document.getElementById('clip-bg').classList.remove('selected');
+      renderOverlaysTimeline();
+
+      const ov = state.overlays[idx];
+      if (ov) {
+        document.getElementById('ovScale').value = ov.scale * 100;
+        document.getElementById('ovY').value = ov.y;
+        document.getElementById('ck-chroma').checked = ov.chromaEnabled;
+        document.getElementById('wheelInd').style.transform = `rotate(${ov.rot}deg)`;
+        document.getElementById('rotVal').innerText = ov.rot + '°';
+        document.getElementById('stepCount').innerText = 'Шагов: ' + ov.steps.length;
+      }
+    }
+
+    function updateActiveOverlay(prop, val) {
+      if (state.selectedOverlayIdx >= 0 && state.overlays[state.selectedOverlayIdx]) {
+        state.overlays[state.selectedOverlayIdx][prop] = val;
+        draw();
+      }
+    }
+
+    function deleteCurrentClip() {
+      if (state.selectedType === 'bg') {
+        state.bg = null;
+        document.getElementById('clip-bg').style.opacity = '0.3';
+      } else if (state.selectedOverlayIdx >= 0) {
+        state.overlays.splice(state.selectedOverlayIdx, 1);
+        state.selectedOverlayIdx = -1;
+        renderOverlaysTimeline();
+      }
+      draw();
+    }
+
+    // --- NOBU WHEEL ДЛЯ ВЫБРАННОГО СЛОЯ ---
+    const wheel = document.getElementById('rotWheel');
+    let isDraggingWheel = false;
+
+    function handleWheelMove(e) {
+      if (!isDraggingWheel || state.selectedOverlayIdx < 0) return;
+      const rect = wheel.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const rad = Math.atan2(clientY - cy, clientX - cx);
+      let deg = Math.round(rad * (180 / Math.PI)) + 90;
+      if (deg < 0) deg += 360;
+
+      const ov = state.overlays[state.selectedOverlayIdx];
+      if (ov) {
+        ov.rot = deg;
+        document.getElementById('wheelInd').style.transform = `rotate(${deg}deg)`;
+        document.getElementById('rotVal').innerText = deg + '°';
+        draw();
+      }
+    }
+
+    wheel.addEventListener('pointerdown', () => { isDraggingWheel = true; });
+    window.addEventListener('pointermove', handleWheelMove);
+    window.addEventListener('pointerup', () => { isDraggingWheel = false; });
+
+    function addAnimStep() {
+      if (state.selectedOverlayIdx < 0) return;
+      const ov = state.overlays[state.selectedOverlayIdx];
+      ov.steps.push({
+        time: state.curTime,
+        rot: ov.rot,
+        y: ov.y,
+        scale: ov.scale
+      });
+      ov.steps.sort((a,b) => a.time - b.time);
+      document.getElementById('stepCount').innerText = 'Шагов: ' + ov.steps.length;
+    }
+
+    function getInterpolatedTransform(ov, t) {
+      if (ov.steps.length === 0) return { rot: ov.rot, y: ov.y, scale: ov.scale };
+      if (ov.steps.length === 1) return ov.steps[0];
+      if (t <= ov.steps[0].time) return ov.steps[0];
+      if (t >= ov.steps[ov.steps.length - 1].time) return ov.steps[ov.steps.length - 1];
+
+      for (let i = 0; i < ov.steps.length - 1; i++) {
+        const s1 = ov.steps[i];
+        const s2 = ov.steps[i+1];
+        if (t >= s1.time && t <= s2.time) {
+          const factor = (t - s1.time) / (s2.time - s1.time);
+          const smooth = factor * factor * (3 - 2 * factor);
+          return {
+            rot: s1.rot + (s2.rot - s1.rot) * smooth,
+            y: s1.y + (s2.y - s1.y) * smooth,
+            scale: s1.scale + (s2.scale - s1.scale) * smooth
+          };
+        }
+      }
+      return ov.steps[0];
+    }
+
+    // --- ПЛЕЕР И ЦИКЛ ---
     function togglePlay() {
       state.playing = !state.playing;
       document.getElementById('playSvg').innerHTML = state.playing 
@@ -587,7 +764,7 @@
 
       if (state.playing) {
         if (state.bg?.isVid) { state.bg.el.currentTime = state.curTime; state.bg.el.play(); }
-        if (state.overlay?.isVid) { state.overlay.el.currentTime = state.curTime; state.overlay.el.play(); }
+        state.overlays.forEach(ov => { if (ov.isVid) { ov.el.currentTime = state.curTime; ov.el.play(); } });
         loop();
       } else {
         pauseVideo();
@@ -596,7 +773,7 @@
 
     function pauseVideo() {
       if (state.bg?.isVid) state.bg.el.pause();
-      if (state.overlay?.isVid) state.overlay.el.pause();
+      state.overlays.forEach(ov => { if (ov.isVid) ov.el.pause(); });
     }
 
     let lastTime = 0;
@@ -609,7 +786,7 @@
       if (state.curTime >= state.totalDur) {
         state.curTime = 0;
         if (state.bg?.isVid) state.bg.el.currentTime = 0;
-        if (state.overlay?.isVid) state.overlay.el.currentTime = 0;
+        state.overlays.forEach(ov => { if (ov.isVid) ov.el.currentTime = 0; });
       }
 
       updateTimeDisplay();
@@ -627,6 +804,7 @@
       document.getElementById('timecode').innerText = `${format(state.curTime)} / ${format(state.totalDur)}`;
     }
 
+    // --- ОТРИСОВКА CANVAS ---
     function draw() {
       ctx.clearRect(0, 0, cv.width, cv.height);
 
@@ -644,12 +822,12 @@
         ctx.drawImage(state.bg.el, 0, 0, cv.width, cv.height);
       }
 
-      // 2. Наложение с вращением и шагами
-      if (state.overlay?.el) {
-        const currentTransform = getInterpolatedTransform(state.curTime);
-        const el = state.overlay.el;
-        const ow = (el.videoWidth || el.width || 400) * currentTransform.scale;
-        const oh = (el.videoHeight || el.height || 400) * currentTransform.scale;
+      // 2. Все наложения по очереди
+      state.overlays.forEach(ov => {
+        if (!ov.el) return;
+        const currentTransform = getInterpolatedTransform(ov, state.curTime);
+        const ow = (ov.el.videoWidth || ov.el.width || 400) * currentTransform.scale;
+        const oh = (ov.el.videoHeight || ov.el.height || 400) * currentTransform.scale;
         const ox = cv.width / 2;
         const oy = currentTransform.y;
 
@@ -657,14 +835,14 @@
         ctx.translate(ox, oy);
         ctx.rotate((currentTransform.rot * Math.PI) / 180);
 
-        if (state.chroma.enabled) {
+        if (ov.chromaEnabled) {
           const offCv = document.createElement('canvas');
           offCv.width = ow; offCv.height = oh;
           const offCtx = offCv.getContext('2d');
-          offCtx.drawImage(el, 0, 0, ow, oh);
+          offCtx.drawImage(ov.el, 0, 0, ow, oh);
           const imgData = offCtx.getImageData(0, 0, ow, oh);
           const d = imgData.data;
-          const tol = state.chroma.tol * 2.4;
+          const tol = ov.chromaTol * 2.4;
 
           for (let i = 0; i < d.length; i += 4) {
             const r = d[i], g = d[i+1], b = d[i+2];
@@ -673,10 +851,10 @@
           offCtx.putImageData(imgData, 0, 0);
           ctx.drawImage(offCv, -ow/2, -oh/2);
         } else {
-          ctx.drawImage(el, -ow/2, -oh/2, ow, oh);
+          ctx.drawImage(ov.el, -ow/2, -oh/2, ow, oh);
         }
         ctx.restore();
-      }
+      });
 
       // 3. Текст
       if (state.text.str) {
@@ -691,7 +869,7 @@
         ctx.restore();
       }
 
-      // Неудаляемый вотермарк Nobu Anim
+      // Вотермарк
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
       ctx.font = '700 24px -apple-system';
       ctx.textAlign = 'center';
@@ -700,20 +878,32 @@
       ctx.restore();
     }
 
-    // Экспорт для iOS Safari
-    async function exportRender() {
+    // --- ЭКСПОРТ (ГАРАНТИРОВАННЫЙ КЛИК И РАБОТА НА IOS SAFARI) ---
+    function triggerExport() {
+      const btn = document.getElementById('mainExportBtn');
+      btn.innerText = 'Рендер...';
+      btn.style.opacity = '0.6';
+
       pauseVideo();
+      state.curTime = 0;
+
       const stream = cv.captureStream(30);
       let recorder;
       try {
         recorder = new MediaRecorder(stream, { mimeType: 'video/mp4;codecs=avc1' });
-      } catch (e) {
-        recorder = new MediaRecorder(stream);
+      } catch (err) {
+        try {
+          recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        } catch (e) {
+          recorder = new MediaRecorder(stream);
+        }
       }
-      
+
       const chunks = [];
-      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
       recorder.onstop = () => {
+        btn.innerText = 'Экспорт';
+        btn.style.opacity = '1';
         const blob = new Blob(chunks, { type: recorder.mimeType || 'video/mp4' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -725,26 +915,26 @@
       };
 
       recorder.start();
-      let t = 0;
-      const step = 1 / 30;
-      const dur = Math.min(state.totalDur, 10);
 
-      while (t < dur) {
-        state.curTime = t;
-        if (state.bg?.isVid) {
-          state.bg.el.currentTime = t;
-          await new Promise(r => state.bg.el.onseeked = r);
-        }
-        if (state.overlay?.isVid) {
-          state.overlay.el.currentTime = t;
-          await new Promise(r => state.overlay.el.onseeked = r);
-        }
+      let exportTimer = 0;
+      const targetDuration = Math.min(state.totalDur, 8); // быстрый экспорт превью
+      const renderInterval = setInterval(() => {
+        exportTimer += 0.05;
+        state.curTime = exportTimer;
+        if (state.bg?.isVid) state.bg.el.currentTime = exportTimer;
+        state.overlays.forEach(ov => { if (ov.isVid) ov.el.currentTime = exportTimer; });
         draw();
-        await new Promise(r => setTimeout(r, 20));
-        t += step;
-      }
-      recorder.stop();
+
+        if (exportTimer >= targetDuration) {
+          clearInterval(renderInterval);
+          recorder.stop();
+        }
+      }, 50);
     }
+
+    // Инициализация при старте
+    loadSavedProjects();
+    draw();
   </script>
 </body>
 </html>
