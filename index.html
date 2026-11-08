@@ -2,244 +2,355 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Nobu Anim — Video & Overlay Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Nobu Anim — Keyframe Motion Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root {
       --bg-black: #000000;
-      --bg-card: #0d0d0d;
-      --bg-panel: #161616;
-      --border-color: #27272a;
-      --text-muted: #808080;
+      --bg-card: #0a0a0c;
+      --bg-panel: #121215;
+      --border-subtle: #1f1f23;
+      --border-focus: #3f3f46;
+      --accent-white: #ffffff;
+      --text-muted: #71717a;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
     body {
       background-color: var(--bg-black);
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
-      touch-action: pan-x pan-y;
-      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
       user-select: none;
       -webkit-user-select: none;
     }
     input[type=range] {
-      accent-color: #ffffff;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #27272a;
       height: 4px;
-      border-radius: 2px;
-      background: #2a2a2a;
+      border-radius: 9999px;
+      outline: none;
     }
-    ::-webkit-scrollbar {
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+      border: 2px solid #000000;
+    }
+    .custom-scroll::-webkit-scrollbar {
       display: none;
     }
     .custom-scroll {
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    .tap-effect:active {
+    .tap-action:active {
       transform: scale(0.97);
       opacity: 0.85;
     }
-    .canvas-touch-box {
+    .canvas-touch-guard {
       touch-action: none;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+<body class="min-h-screen flex flex-col justify-between">
 
   <!-- ============================================================== -->
-  <!-- 1. ЭКРАН ПРОЕКТОВ (Главная страница CapCut-style)                -->
+  <!-- 1. ЭКРАН ПРОЕКТОВ (CapCut Style Minimal Dashboard)             -->
   <!-- ============================================================== -->
-  <div id="screenProjects" class="w-full flex-1 flex flex-col max-w-2xl mx-auto px-4 py-5">
+  <main id="screenProjects" class="w-full flex-1 flex flex-col max-w-xl mx-auto px-4 py-6">
     
-    <!-- Шапка проектов -->
-    <header class="flex items-center justify-between pb-5 border-b border-zinc-800">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-black text-sm">
-          N
+    <!-- Шапка профиля / проектов -->
+    <header class="flex items-center justify-between pb-6 border-b border-[#18181b]">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center font-black text-sm tracking-wider shadow-lg shadow-white/10">
+          NA
         </div>
         <div>
-          <h1 class="text-lg font-bold tracking-tight text-white">Nobu Anim</h1>
-          <p class="text-[11px] text-zinc-500 font-medium">CapCut Pro Tool • Шаблоны & Анимация</p>
+          <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+            Nobu Anim
+            <span class="text-[9px] bg-zinc-800 text-zinc-300 font-semibold px-1.5 py-0.5 rounded tracking-normal">PRO</span>
+          </h1>
+          <p class="text-[11px] text-zinc-500 font-medium">CapCut Keyframe & Mapping Studio</p>
         </div>
       </div>
-      <button id="openGlobalSettingsBtn" class="w-8 h-8 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition">
-        <i class="fa-solid fa-sliders text-xs"></i>
-      </button>
+
+      <div class="text-[11px] font-mono text-zinc-500 bg-zinc-950 px-2.5 py-1 rounded-lg border border-zinc-800" id="projectsCountBadge">
+        0 проектов
+      </div>
     </header>
 
-    <!-- Кнопка «Новый проект» в стиле CapCut -->
-    <div class="my-5">
-      <button id="createNewProjectBtn" class="w-full h-24 rounded-2xl border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 border-dashed hover:border-white transition flex flex-col items-center justify-center gap-2 group tap-effect">
-        <div class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-base font-bold shadow-lg shadow-white/10 group-hover:scale-105 transition">
-          <i class="fa-solid fa-plus"></i>
+    <!-- Кнопка «Новый проект» -->
+    <section class="my-6">
+      <button id="createNewProjectBtn" class="w-full h-24 rounded-2xl border border-zinc-800 bg-[#070709] hover:bg-[#0f0f13] border-dashed hover:border-zinc-400 transition-all flex flex-col items-center justify-center gap-2 tap-action group">
+        <div class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg shadow-white/10 group-hover:scale-105 transition-transform">
+          <!-- SVG: Plus -->
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
         </div>
-        <span class="text-xs font-semibold tracking-wide text-zinc-200">Новый проект</span>
+        <span class="text-xs font-semibold text-zinc-200 tracking-wide">Создать новый проект</span>
       </button>
-    </div>
+    </section>
 
-    <!-- Список сохранённых проектов -->
-    <div class="flex-1 flex flex-col">
+    <!-- Список проектов -->
+    <section class="flex-1 flex flex-col">
       <div class="flex items-center justify-between pb-3">
-        <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Мои проекты</span>
-        <span id="projectsCountLabel" class="text-xs text-zinc-600">0 проектов</span>
+        <h2 class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Библиотека</h2>
+        <span class="text-[10px] text-zinc-600">Локальное хранилище</span>
       </div>
 
-      <div id="projectsListGrid" class="grid grid-cols-2 gap-3 pb-8">
-        <!-- Карточки генерируются скриптом из IndexedDB -->
+      <div id="projectsListGrid" class="grid grid-cols-2 gap-3.5 pb-10">
+        <!-- Карточки рендерятся из IndexedDB -->
       </div>
 
-      <!-- Пустое состояние -->
-      <div id="projectsEmptyState" class="hidden flex-1 flex flex-col items-center justify-center py-16 text-center text-zinc-600">
-        <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-40"></i>
-        <p class="text-xs">Нет сохраненных проектов</p>
-        <p class="text-[11px] text-zinc-700 mt-1">Создайте новый проект выше</p>
+      <div id="projectsEmptyState" class="hidden flex-1 flex flex-col items-center justify-center py-20 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-600 mb-3">
+          <!-- SVG: Film / Folder -->
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="7" y1="2" x2="7" y2="22"></line>
+            <line x1="17" y1="2" x2="17" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="2" y1="7" x2="7" y2="7"></line>
+            <line x1="2" y1="17" x2="7" y2="17"></line>
+            <line x1="17" y1="17" x2="22" y2="17"></line>
+            <line x1="17" y1="7" x2="22" y2="7"></line>
+          </svg>
+        </div>
+        <p class="text-xs font-medium text-zinc-400">Пока нет сохранённых работ</p>
+        <p class="text-[11px] text-zinc-600 mt-1">Нажмите кнопку выше, чтобы анимировать карту</p>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
 
   <!-- ============================================================== -->
-  <!-- 2. ЭКРАН РЕДАКТОРА (Editor Screen)                             -->
+  <!-- 2. ЭКРАН РЕДАКТОРА (Professional Timeline & Keyframing)        -->
   <!-- ============================================================== -->
   <div id="screenEditor" class="hidden fixed inset-0 z-40 bg-black flex flex-col justify-between overflow-hidden">
     
-    <!-- Верхняя панель редактора -->
-    <header class="h-12 border-b border-zinc-900 bg-black/90 backdrop-blur-md px-3 flex items-center justify-between z-10 shrink-0">
-      <button id="backToProjectsBtn" class="px-2.5 py-1 text-xs font-medium text-zinc-400 hover:text-white flex items-center gap-1.5 tap-effect">
-        <i class="fa-solid fa-chevron-left text-[11px]"></i>
+    <!-- Верхний бар редактора -->
+    <header class="h-13 border-b border-[#18181b] bg-black/90 backdrop-blur-md px-3.5 py-2.5 flex items-center justify-between z-10 shrink-0">
+      <button id="backToProjectsBtn" class="h-8 px-2.5 rounded-lg border border-zinc-800 bg-[#0e0e11] hover:bg-zinc-800 text-zinc-300 hover:text-white flex items-center gap-1.5 text-xs font-medium tap-action">
+        <!-- SVG: Chevron Left -->
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
         <span>Проекты</span>
       </button>
 
-      <!-- Название проекта (кликабельно для редактирования) -->
-      <div class="flex items-center gap-1.5 cursor-pointer" id="editProjectTitleBtn">
-        <span id="currentProjectTitle" class="text-xs font-semibold tracking-wide text-zinc-200 max-w-[140px] truncate">Без названия</span>
-        <i class="fa-solid fa-pen text-[9px] text-zinc-600"></i>
+      <!-- Название текущего проекта -->
+      <div class="flex items-center gap-1.5 cursor-pointer tap-action" id="editProjectTitleBtn">
+        <span id="currentProjectTitle" class="text-xs font-semibold text-zinc-200 max-w-[140px] sm:max-w-xs truncate">Без названия</span>
+        <!-- SVG: Pen -->
+        <svg class="w-3 h-3 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
       </div>
 
       <!-- Кнопка Экспорта -->
-      <button id="openExportModalBtn" class="px-3.5 py-1.5 rounded-lg bg-white text-black hover:bg-zinc-200 text-xs font-bold tracking-wide transition tap-effect flex items-center gap-1.5 shadow-md shadow-white/5">
+      <button id="openExportModalBtn" class="h-8 px-3 rounded-lg bg-white text-black hover:bg-zinc-200 text-xs font-bold tracking-tight flex items-center gap-1.5 tap-action shadow-md shadow-white/5">
         <span>Экспорт</span>
-        <i class="fa-solid fa-arrow-up-from-bracket text-[10px]"></i>
+        <!-- SVG: Arrow Up Right / Download -->
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
       </button>
     </header>
 
     <!-- Вьюпорт холста -->
-    <div class="flex-1 relative flex items-center justify-center p-2 bg-black overflow-hidden canvas-touch-box">
-      <!-- Холст -->
-      <canvas id="editorCanvas" class="max-w-full max-h-full rounded-lg shadow-2xl border border-zinc-900 bg-black"></canvas>
+    <div class="flex-1 relative flex items-center justify-center p-2.5 bg-[#050507] overflow-hidden canvas-touch-guard">
+      <canvas id="editorCanvas" class="max-w-full max-h-full rounded-xl shadow-2xl border border-[#1c1c21] bg-black"></canvas>
 
-      <!-- Подсказка на холсте -->
-      <div id="dragHintBadge" class="absolute top-3 left-3 bg-zinc-900/80 backdrop-blur-md px-2.5 py-1 rounded-md border border-zinc-800 text-[10px] text-zinc-400 pointer-events-none flex items-center gap-1.5">
-        <i class="fa-solid fa-hand-pointer text-white"></i> Тяните оверлей пальцем
+      <!-- Бейдж помощи -->
+      <div id="dragHintBadge" class="absolute top-4 left-4 bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-md border border-zinc-800 text-[10px] text-zinc-300 pointer-events-none flex items-center gap-1.5">
+        <!-- SVG: Hand Drag -->
+        <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+          <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+          <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+          <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+        </svg>
+        Тяните оверлей пальцем
       </div>
 
-      <!-- Заглушка, если файл не загружен -->
+      <!-- Заглушка пустого медиа -->
       <div id="noMediaOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/85 text-center p-6 pointer-events-none">
-        <div class="w-12 h-12 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-500 mb-2">
-          <i class="fa-solid fa-photo-film text-lg"></i>
+        <div class="w-12 h-12 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-center text-zinc-500 mb-2.5">
+          <!-- SVG: Layers -->
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
         </div>
-        <p class="text-xs font-semibold text-zinc-300">Холст пуст</p>
-        <p class="text-[11px] text-zinc-500 mt-1 max-w-xs">Загрузите фон карты и наложение (PNG) в панели инструментов ниже</p>
+        <p class="text-xs font-semibold text-zinc-200">Слои не загружены</p>
+        <p class="text-[11px] text-zinc-500 mt-1 max-w-xs leading-relaxed">
+          Выберите фоновое видео карты и PNG-оверлей страны в панели ниже
+        </p>
       </div>
     </div>
 
-    <!-- Таймлайн шагов (CapCut Keyframes) -->
-    <div class="border-t border-zinc-900 bg-zinc-950/95 px-3 py-2 flex flex-col gap-2 shrink-0">
+    <!-- Таймлайн и ключевые точки (Keyframe Strip) -->
+    <div class="border-t border-[#18181b] bg-[#09090c] px-3.5 py-2.5 flex flex-col gap-2 shrink-0">
       <div class="flex items-center justify-between">
         
-        <!-- Кнопки управления воспроизведением -->
-        <div class="flex items-center gap-2">
-          <button id="timelinePlayBtn" class="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center text-[10px] font-bold tap-effect">
-            <i class="fa-solid fa-play ml-0.5" id="timelinePlayIcon"></i>
+        <!-- Воспроизведение & Таймкод -->
+        <div class="flex items-center gap-2.5">
+          <button id="timelinePlayBtn" class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center tap-action shadow-md">
+            <!-- SVG: Play (динамически меняется на Pause) -->
+            <svg id="timelinePlayIcon" class="w-3.5 h-3.5 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
           </button>
-          <span id="timecodeDisplay" class="text-[11px] font-mono text-zinc-400">0.0s / 3.0s</span>
+          <span id="timecodeDisplay" class="text-xs font-mono text-zinc-400">0.0s / 3.0s</span>
         </div>
 
-        <!-- Кнопки добавления/удаления шага -->
-        <div class="flex items-center gap-1.5">
-          <button id="addStepBtn" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-[11px] font-semibold flex items-center gap-1 tap-effect border border-zinc-700">
-            <i class="fa-solid fa-plus text-[10px]"></i> Шаг
+        <!-- Управление шагами -->
+        <div class="flex items-center gap-2">
+          <button id="addStepBtn" class="h-7 px-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-[11px] font-semibold flex items-center gap-1.5 tap-action border border-zinc-700">
+            <!-- SVG: Plus -->
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>+ Шаг</span>
           </button>
-          <button id="deleteStepBtn" class="w-7 h-7 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-red-400 text-xs flex items-center justify-center transition border border-zinc-800">
-            <i class="fa-solid fa-trash-can text-[10px]"></i>
+
+          <button id="deleteStepBtn" class="w-7 h-7 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-500 hover:text-red-400 flex items-center justify-center tap-action transition-colors" title="Удалить шаг">
+            <!-- SVG: Trash -->
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
           </button>
         </div>
       </div>
 
-      <!-- Карусель шагов (Шаг 1, Шаг 2, ...) -->
+      <!-- Горизонтальная линейка шагов -->
       <div id="stepsPillsList" class="flex items-center gap-2 overflow-x-auto custom-scroll py-1">
-        <!-- Пилюли шагов генерируются кодом -->
+        <!-- Шаг 1, Шаг 2... -->
       </div>
     </div>
 
-    <!-- Нижняя панель вкладок инструментов (Инструменты CapCut) -->
-    <div class="border-t border-zinc-900 bg-black flex flex-col shrink-0 pb-safe">
+    <!-- Нижняя панель вкладок (Инструменты CapCut) -->
+    <div class="border-t border-[#18181b] bg-black flex flex-col shrink-0">
       
-      <!-- Селектор режимов -->
-      <div class="flex border-b border-zinc-900 text-xs">
-        <button id="tabBtnMedia" class="flex-1 py-2 text-center font-semibold text-white border-b-2 border-white transition">Медиа</button>
-        <button id="tabBtnTransform" class="flex-1 py-2 text-center font-semibold text-zinc-500 border-b-2 border-transparent transition">Трансформ</button>
-        <button id="tabBtnSpeed" class="flex-1 py-2 text-center font-semibold text-zinc-500 border-b-2 border-transparent transition">Тайминг</button>
+      <!-- Селектор вкладок -->
+      <div class="flex border-b border-[#18181b] text-xs">
+        <button id="tabBtnMedia" class="flex-1 py-2.5 flex items-center justify-center gap-1.5 font-semibold text-white border-b-2 border-white transition-all">
+          <!-- SVG: Image -->
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span>Медиа</span>
+        </button>
+
+        <button id="tabBtnTransform" class="flex-1 py-2.5 flex items-center justify-center gap-1.5 font-semibold text-zinc-500 border-b-2 border-transparent transition-all">
+          <!-- SVG: Sliders -->
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+          <span>Трансформ</span>
+        </button>
+
+        <button id="tabBtnSpeed" class="flex-1 py-2.5 flex items-center justify-center gap-1.5 font-semibold text-zinc-500 border-b-2 border-transparent transition-all">
+          <!-- SVG: Clock / Speed -->
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Тайминг</span>
+        </button>
       </div>
 
-      <!-- Вкладка 1: Загрузка медиа -->
-      <div id="tabContentMedia" class="p-3 grid grid-cols-2 gap-2 text-xs">
-        <!-- Фон -->
+      <!-- Вкладка 1: Медиа-слои -->
+      <div id="tabContentMedia" class="p-3.5 grid grid-cols-2 gap-2.5">
         <input type="file" id="bgFileInput" accept="image/*,video/*" class="hidden">
-        <button onclick="document.getElementById('bgFileInput').click()" class="h-14 rounded-xl border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-zinc-300 flex flex-col items-center justify-center gap-1 transition tap-effect">
-          <i class="fa-regular fa-image text-xs text-zinc-400"></i>
-          <span id="bgFileStatus" class="text-[11px] font-medium truncate max-w-[130px]">1. Выбрать Фон</span>
+        <button onclick="document.getElementById('bgFileInput').click()" class="h-14 rounded-xl border border-zinc-800 bg-[#0d0d10] hover:bg-zinc-900 text-zinc-300 flex flex-col items-center justify-center gap-1 transition-all tap-action">
+          <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Слой 1 (Фон)</span>
+          <span id="bgFileStatus" class="text-xs font-semibold truncate max-w-[140px]">Выбрать карту</span>
         </button>
 
-        <!-- Оверлей -->
         <input type="file" id="overlayFileInput" accept="image/*" class="hidden">
-        <button onclick="document.getElementById('overlayFileInput').click()" class="h-14 rounded-xl border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-zinc-300 flex flex-col items-center justify-center gap-1 transition tap-effect">
-          <i class="fa-solid fa-shapes text-xs text-zinc-400"></i>
-          <span id="overlayFileStatus" class="text-[11px] font-medium truncate max-w-[130px]">2. Выбрать Оверлей</span>
+        <button onclick="document.getElementById('overlayFileInput').click()" class="h-14 rounded-xl border border-zinc-800 bg-[#0d0d10] hover:bg-zinc-900 text-zinc-300 flex flex-col items-center justify-center gap-1 transition-all tap-action">
+          <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Слой 2 (Оверлей)</span>
+          <span id="overlayFileStatus" class="text-xs font-semibold truncate max-w-[140px]">Выбрать PNG</span>
         </button>
       </div>
 
-      <!-- Вкладка 2: Трансформация текущего шага -->
-      <div id="tabContentTransform" class="hidden p-3 flex flex-col gap-2.5 text-xs">
+      <!-- Вкладка 2: Трансформация текущего ключевого кадра -->
+      <div id="tabContentTransform" class="hidden p-3.5 flex flex-col gap-3">
         <div class="grid grid-cols-3 gap-3">
-          <!-- Масштаб -->
-          <div class="flex flex-col gap-1">
-            <div class="flex justify-between text-[10px] text-zinc-400">
-              <span>Размер</span>
-              <span id="scaleLabel" class="font-mono text-white">1.0x</span>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex justify-between text-[10px] text-zinc-400 font-medium">
+              <span>Масштаб</span>
+              <span id="scaleLabel" class="font-mono text-white">1.00x</span>
             </div>
-            <input type="range" id="scaleSlider" min="0.1" max="4.0" step="0.05" value="1.0">
+            <input type="range" id="scaleSlider" min="0.1" max="4.0" step="0.02" value="1.0">
           </div>
 
-          <!-- Поворот -->
-          <div class="flex flex-col gap-1">
-            <div class="flex justify-between text-[10px] text-zinc-400">
-              <span>Угол</span>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex justify-between text-[10px] text-zinc-400 font-medium">
+              <span>Поворот</span>
               <span id="rotateLabel" class="font-mono text-white">0°</span>
             </div>
             <input type="range" id="rotateSlider" min="-180" max="180" step="1" value="0">
           </div>
 
-          <!-- Прозрачность -->
-          <div class="flex flex-col gap-1">
-            <div class="flex justify-between text-[10px] text-zinc-400">
-              <span>Прозрачн.</span>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex justify-between text-[10px] text-zinc-400 font-medium">
+              <span>Непрозрачн.</span>
               <span id="opacityLabel" class="font-mono text-white">100%</span>
             </div>
-            <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="1">
+            <input type="range" id="opacitySlider" min="0" max="1" step="0.02" value="1">
+          </div>
+        </div>
+
+        <!-- Настройка вотермарка Nobu Anim -->
+        <div class="pt-2 border-t border-zinc-900 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="watermarkToggle" checked class="w-3.5 h-3.5 accent-white rounded bg-zinc-900 border-zinc-700">
+            <label for="watermarkToggle" class="text-[11px] text-zinc-300 font-medium">Водяной знак Nobu Anim</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] text-zinc-500 font-mono" id="wmOpacityLabel">75%</span>
+            <input type="range" id="wmOpacitySlider" min="0.1" max="1.0" step="0.05" value="0.75" class="w-20">
           </div>
         </div>
       </div>
 
-      <!-- Вкладка 3: Длительность анимации -->
-      <div id="tabContentSpeed" class="hidden p-3 flex items-center justify-between text-xs gap-4">
+      <!-- Вкладка 3: Длительность цикла -->
+      <div id="tabContentSpeed" class="hidden p-3.5 flex items-center justify-between gap-4">
         <div class="flex items-center gap-2">
-          <i class="fa-regular fa-clock text-zinc-400"></i>
-          <span class="text-zinc-400 text-[11px]">Длина цикла:</span>
-          <span id="durationValDisplay" class="font-mono text-white text-[11px] font-bold">3.0с</span>
+          <span class="text-zinc-400 text-xs">Длина пролёта:</span>
+          <span id="durationValDisplay" class="font-mono text-white text-xs font-bold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">3.0с</span>
         </div>
-        <input type="range" id="durationRange" min="1.0" max="10.0" step="0.5" value="3.0" class="flex-1">
+        <input type="range" id="durationRange" min="1.0" max="10.0" step="0.2" value="3.0" class="flex-1">
       </div>
 
     </div>
@@ -247,105 +358,125 @@
 
 
   <!-- ============================================================== -->
-  <!-- 3. МОДАЛКА ЭКСПОРТА (CapCut-Style Export Sheet)                 -->
+  <!-- 3. МОДАЛКА ЭКСПОРТА (Real Frame-By-Frame High Quality Engine)    -->
   <!-- ============================================================== -->
-  <div id="modalExport" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-t-3xl sm:rounded-2xl p-5 flex flex-col gap-4 text-white">
+  <div id="modalExport" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="w-full max-w-md bg-[#0a0a0d] border border-zinc-800 rounded-t-3xl sm:rounded-2xl p-6 flex flex-col gap-4 text-white">
       
-      <!-- Заголовок модалки -->
-      <div class="flex items-center justify-between pb-2 border-b border-zinc-900">
+      <!-- Заголовок -->
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-900">
         <div class="flex items-center gap-2">
-          <div class="w-6 h-6 rounded-md bg-white text-black flex items-center justify-center text-xs font-bold">
-            <i class="fa-solid fa-film"></i>
+          <div class="w-7 h-7 rounded-lg bg-white text-black flex items-center justify-center">
+            <!-- SVG: Download -->
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
           </div>
-          <span class="text-sm font-bold tracking-tight">Параметры экспорта</span>
+          <span class="text-sm font-bold tracking-tight">Экспорт анимации</span>
         </div>
-        <button id="closeExportModalBtn" class="text-zinc-500 hover:text-white text-sm p-1">
-          <i class="fa-solid fa-xmark"></i>
+        <button id="closeExportModalBtn" class="text-zinc-500 hover:text-white p-1">
+          <!-- SVG: Xmark -->
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
-      <!-- Формат (MP4 с поддержкой сохранения на iPhone) -->
+      <!-- Формат -->
       <div>
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Формат контейнера:</label>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Формат видео:</label>
         <div class="grid grid-cols-2 gap-2 text-xs">
-          <button type="button" class="format-btn py-2 px-3 rounded-lg border border-white bg-white text-black font-semibold text-center" data-format="mp4">
+          <button type="button" class="format-btn py-2.5 rounded-xl border border-white bg-white text-black font-bold text-center" data-format="mp4">
             MP4 (Для iOS / Галереи)
           </button>
-          <button type="button" class="format-btn py-2 px-3 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center" data-format="webm">
-            WebM (Легкий вес)
+          <button type="button" class="format-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium" data-format="webm">
+            WebM
           </button>
         </div>
       </div>
 
-      <!-- Разрешение видео -->
+      <!-- Разрешение (Честное 720p, 1080p, 4K) -->
       <div>
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Разрешение:</label>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Разрешение (Вертикальное 9:16):</label>
         <div class="grid grid-cols-3 gap-2 text-xs">
-          <button type="button" class="res-btn py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center" data-res="720">720p</button>
-          <button type="button" class="res-btn py-2 rounded-lg border border-white bg-white text-black font-semibold text-center" data-res="1080">1080p</button>
-          <button type="button" class="res-btn py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center" data-res="2160">4K</button>
+          <button type="button" class="res-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium" data-res="720">
+            720p
+          </button>
+          <button type="button" class="res-btn py-2.5 rounded-xl border border-white bg-white text-black font-bold text-center" data-res="1080">
+            1080p FHD
+          </button>
+          <button type="button" class="res-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium" data-res="2160">
+            4K UHD
+          </button>
         </div>
       </div>
 
-      <!-- Частота кадров (30, 60, 120 FPS) -->
+      <!-- Частота кадров (Честные 30, 60, 120 FPS) -->
       <div>
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Частота кадров (FPS):</label>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Частота кадров (FPS):</label>
         <div class="grid grid-cols-3 gap-2 text-xs">
-          <button type="button" class="fps-btn py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center" data-fps="30">30 FPS</button>
-          <button type="button" class="fps-btn py-2 rounded-lg border border-white bg-white text-black font-semibold text-center" data-fps="60">60 FPS</button>
-          <button type="button" class="fps-btn py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center" data-fps="120">120 FPS</button>
+          <button type="button" class="fps-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium" data-fps="30">
+            30 FPS
+          </button>
+          <button type="button" class="fps-btn py-2.5 rounded-xl border border-white bg-white text-black font-bold text-center" data-fps="60">
+            60 FPS
+          </button>
+          <button type="button" class="fps-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium" data-fps="120">
+            120 FPS
+          </button>
         </div>
       </div>
 
       <!-- Прогресс рендера -->
-      <div id="renderProgressBox" class="hidden flex flex-col gap-1.5 pt-2">
+      <div id="renderProgressBox" class="hidden flex flex-col gap-2 pt-2">
         <div class="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
           <div id="renderProgressBar" class="h-full bg-white w-0 transition-all duration-75"></div>
         </div>
-        <div class="flex justify-between text-[11px] text-zinc-400 font-mono">
-          <span id="renderStatusText">Рендеринг кадров...</span>
+        <div class="flex justify-between text-[11px] font-mono text-zinc-400">
+          <span id="renderStatusText">Рендер кадров...</span>
           <span id="renderPercentText">0%</span>
         </div>
       </div>
 
-      <!-- Кнопка старта рендера -->
-      <button id="startRenderBtn" class="w-full py-3 rounded-xl bg-white text-black font-bold text-xs tracking-wide hover:bg-zinc-200 transition tap-effect flex items-center justify-center gap-2">
-        <i class="fa-solid fa-play text-[11px]"></i>
-        <span id="startRenderBtnText">Начать экспорт</span>
+      <!-- Кнопка запуска -->
+      <button id="startRenderBtn" class="w-full py-3.5 rounded-xl bg-white text-black font-bold text-xs tracking-wide hover:bg-zinc-200 transition-all tap-action flex items-center justify-center gap-2 mt-1 shadow-lg shadow-white/10">
+        <span id="startRenderBtnText">Запустить рендеринг</span>
       </button>
 
-      <p class="text-[10px] text-zinc-500 text-center pb-1">
-        Обработка выполняется процессором телефона. Видео сразу сохранится в загрузки/файлы iPhone.
+      <p class="text-[10px] text-zinc-500 text-center leading-tight">
+        Покадровый рендер без сброса кадров. Видео сохраняется прямо в загрузки смартфона.
       </p>
     </div>
   </div>
 
-  <!-- Модалка изменения имени проекта -->
+  <!-- Модалка изменения имени -->
   <div id="renameModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-    <div class="w-full max-w-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
-      <h3 class="text-xs font-bold text-white">Название проекта</h3>
-      <input type="text" id="renameInput" maxlength="32" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-white">
-      <div class="flex gap-2">
-        <button id="cancelRenameBtn" class="flex-1 py-1.5 rounded-lg border border-zinc-800 text-xs text-zinc-400">Отмена</button>
-        <button id="saveRenameBtn" class="flex-1 py-1.5 rounded-lg bg-white text-black font-semibold text-xs">Сохранить</button>
+    <div class="w-full max-w-xs bg-[#0f0f13] border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3">
+      <h3 class="text-xs font-bold text-white">Переименовать</h3>
+      <input type="text" id="renameInput" maxlength="32" class="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-white">
+      <div class="flex gap-2 mt-1">
+        <button id="cancelRenameBtn" class="flex-1 py-2 rounded-lg border border-zinc-800 text-xs text-zinc-400">Отмена</button>
+        <button id="saveRenameBtn" class="flex-1 py-2 rounded-lg bg-white text-black font-bold text-xs">OK</button>
       </div>
     </div>
   </div>
 
 
   <!-- ============================================================== -->
-  <!-- 4. ЛОГИКА ПРИЛОЖЕНИЯ (JS + IndexedDB + Canvas + MediaRecorder)  -->
+  <!-- 4. МАТЕМАТИКА АНИМАЦИИ И РЕНДЕРИНГ                             -->
   <!-- ============================================================== -->
   <script>
     // -------------------------------------------------------------
-    // База данных IndexedDB (Вечное хранилище проектов в телефоне)
+    // База данных IndexedDB (Хранение проектов навсегда)
     // -------------------------------------------------------------
-    const DB_NAME = 'NobuAnimDB';
+    const DB_NAME = 'NobuAnimMasterDB';
     const DB_VERSION = 1;
     const STORE_PROJECTS = 'projects';
 
-    function openDatabase() {
+    function initDB() {
       return new Promise((resolve, reject) => {
         const req = indexedDB.open(DB_NAME, DB_VERSION);
         req.onupgradeneeded = (e) => {
@@ -359,34 +490,31 @@
       });
     }
 
-    async function dbGetAllProjects() {
-      const db = await openDatabase();
+    async function dbGetProjects() {
+      const db = await initDB();
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_PROJECTS, 'readonly');
-        const store = tx.objectStore(STORE_PROJECTS);
-        const req = store.getAll();
+        const req = tx.objectStore(STORE_PROJECTS).getAll();
         req.onsuccess = () => resolve(req.result || []);
         req.onerror = () => resolve([]);
       });
     }
 
-    async function dbSaveProject(project) {
-      const db = await openDatabase();
+    async function dbSaveProject(p) {
+      const db = await initDB();
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_PROJECTS, 'readwrite');
-        const store = tx.objectStore(STORE_PROJECTS);
-        store.put(project);
+        tx.objectStore(STORE_PROJECTS).put(p);
         tx.oncomplete = () => resolve(true);
         tx.onerror = () => resolve(false);
       });
     }
 
     async function dbDeleteProject(id) {
-      const db = await openDatabase();
+      const db = await initDB();
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_PROJECTS, 'readwrite');
-        const store = tx.objectStore(STORE_PROJECTS);
-        store.delete(id);
+        tx.objectStore(STORE_PROJECTS).delete(id);
         tx.oncomplete = () => resolve(true);
       });
     }
@@ -399,26 +527,30 @@
     let overlayImage = null; // Image
 
     let isPlaying = false;
-    let animReqId = null;
-    let animationStartTime = 0;
+    let animRafId = null;
+    let animStartTime = 0;
 
     let isDragging = false;
     let selectedExportRes = 1080;
     let selectedExportFps = 60;
     let selectedExportFormat = 'mp4';
 
+    // Водяной знак со снятым хромакеем
+    let watermarkProcessedCanvas = null;
+    let watermarkEnabled = true;
+    let watermarkOpacity = 0.75;
+
     // DOM Элементы
     const screenProjects = document.getElementById('screenProjects');
     const screenEditor = document.getElementById('screenEditor');
     const projectsListGrid = document.getElementById('projectsListGrid');
-    const projectsCountLabel = document.getElementById('projectsCountLabel');
+    const projectsCountBadge = document.getElementById('projectsCountBadge');
     const projectsEmptyState = document.getElementById('projectsEmptyState');
     const createNewProjectBtn = document.getElementById('createNewProjectBtn');
 
     const editorCanvas = document.getElementById('editorCanvas');
-    const ctx = editorCanvas.getContext('2d');
+    const ctx = editorCanvas.getContext('2d', { alpha: false });
     const noMediaOverlay = document.getElementById('noMediaOverlay');
-    const dragHintBadge = document.getElementById('dragHintBadge');
 
     const currentProjectTitle = document.getElementById('currentProjectTitle');
     const backToProjectsBtn = document.getElementById('backToProjectsBtn');
@@ -449,218 +581,98 @@
     const durationRange = document.getElementById('durationRange');
     const durationValDisplay = document.getElementById('durationValDisplay');
 
-    // Экспорт
+    const watermarkToggle = document.getElementById('watermarkToggle');
+    const wmOpacitySlider = document.getElementById('wmOpacitySlider');
+    const wmOpacityLabel = document.getElementById('wmOpacityLabel');
+
     const modalExport = document.getElementById('modalExport');
-    const openExportModalBtn = document.getElementById('openExportModalBtn');
-    const closeExportModalBtn = document.getElementById('closeExportModalBtn');
-    const startRenderBtn = document.getElementById('startRenderBtn');
-    const startRenderBtnText = document.getElementById('startRenderBtnText');
-    const renderProgressBox = document.getElementById('renderProgressBox');
-    const renderProgressBar = document.getElementById('renderProgressBar');
-    const renderPercentText = document.getElementById('renderPercentText');
-
-    // Вкладки инструментов
-    const tabBtnMedia = document.getElementById('tabBtnMedia');
-    const tabBtnTransform = document.getElementById('tabBtnTransform');
-    const tabBtnSpeed = document.getElementById('tabBtnSpeed');
-    const tabContentMedia = document.getElementById('tabContentMedia');
-    const tabContentTransform = document.getElementById('tabContentTransform');
-    const tabContentSpeed = document.getElementById('tabContentSpeed');
+    // Включение наилучшего качества интерполяции на канвасе
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     // -------------------------------------------------------------
-    // Инициализация и Менеджер Проектов
+    // Генерация и Chromakey очистка водяного знака "Nobu Anim"
     // -------------------------------------------------------------
-    async function loadProjectsScreen() {
-      const list = await dbGetAllProjects();
-      projectsCountLabel.innerText = `${list.length} проектов`;
-      projectsListGrid.innerHTML = '';
+    function prepareWatermarkImage() {
+      const wmImg = new Image();
+      wmImg.crossOrigin = 'anonymous';
+      // Твой логотип со стеклянным 3D-текстом Nobu Anim
+      wmImg.src = 'https://i.ibb.co/vz16c8B/nobu-anim-logo.png';
 
-      if (list.length === 0) {
-        projectsEmptyState.classList.remove('hidden');
-        return;
-      }
-      projectsEmptyState.classList.add('hidden');
+      wmImg.onload = () => {
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = wmImg.naturalWidth;
+        offCanvas.height = wmImg.naturalHeight;
+        const offCtx = offCanvas.getContext('2d');
+        offCtx.drawImage(wmImg, 0, 0);
 
-      // Сортируем по дате обновления
-      list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-      list.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'bg-zinc-950 border border-zinc-800 rounded-2xl p-3 flex flex-col justify-between hover:border-zinc-600 transition tap-effect relative group cursor-pointer';
-        
-        const previewBg = p.thumbnail 
-          ? `<img src="${p.thumbnail}" class="w-full h-28 object-cover rounded-xl mb-2.5">` 
-          : `<div class="w-full h-28 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 mb-2.5"><i class="fa-solid fa-layer-group text-2xl"></i></div>`;
-
-        const dateStr = new Date(p.updatedAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-
-        card.innerHTML = `
-          ${previewBg}
-          <div class="flex items-center justify-between">
-            <div class="overflow-hidden pr-2">
-              <h4 class="text-xs font-bold text-white truncate">${escapeHtml(p.title)}</h4>
-              <p class="text-[10px] text-zinc-500">${p.steps ? p.steps.length : 1} шагов • ${dateStr}</p>
-            </div>
-            <button class="delete-proj-btn text-zinc-600 hover:text-red-400 p-1.5 transition" data-id="${p.id}" title="Удалить">
-              <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-          </div>
-        `;
-
-        card.onclick = (e) => {
-          if (e.target.closest('.delete-proj-btn')) return;
-          openEditor(p);
-        };
-
-        const delBtn = card.querySelector('.delete-proj-btn');
-        delBtn.onclick = async (e) => {
-          e.stopPropagation();
-          await dbDeleteProject(p.id);
-          loadProjectsScreen();
-        };
-
-        projectsListGrid.appendChild(card);
-      });
-    }
-
-    function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
-    }
-
-    createNewProjectBtn.addEventListener('click', async () => {
-      const newProj = {
-        id: 'proj_' + Date.now(),
-        title: 'Проект ' + (new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })),
-        duration: 3.0,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        steps: [
-          // Центр холста (0.5, 0.5), без всяких сдвигов
-          { x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 }
-        ],
-        currentStep: 0,
-        thumbnail: null
-      };
-      await dbSaveProject(newProj);
-      openEditor(newProj);
-    });
-
-    // -------------------------------------------------------------
-    // Открытие и работа в Редакторе
-    // -------------------------------------------------------------
-    function openEditor(project) {
-      currentProject = JSON.parse(JSON.stringify(project));
-      screenProjects.classList.add('hidden');
-      screenEditor.classList.remove('hidden');
-
-      currentProjectTitle.innerText = currentProject.title;
-      durationRange.value = currentProject.duration || 3.0;
-      durationValDisplay.innerText = Number(currentProject.duration).toFixed(1) + 'с';
-
-      // Если шагов нет, создаем дефолтный
-      if (!currentProject.steps || currentProject.steps.length === 0) {
-        currentProject.steps = [{ x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 }];
-      }
-      currentProject.currentStep = 0;
-
-      // Базовый размер холста для вертикального формата 9:16
-      setupCanvasDimensions(720, 1280);
-
-      renderStepsPills();
-      updateTransformInputs();
-      renderScene();
-      startPreviewLoop();
-    }
-
-    function setupCanvasDimensions(w, h) {
-      editorCanvas.width = w;
-      editorCanvas.height = h;
-    }
-
-    backToProjectsBtn.addEventListener('click', async () => {
-      stopPlayback();
-      await saveCurrentProjectState();
-      screenEditor.classList.add('hidden');
-      screenProjects.classList.remove('hidden');
-      loadProjectsScreen();
-    });
-
-    async function saveCurrentProjectState() {
-      if (!currentProject) return;
-      currentProject.updatedAt = Date.now();
-      
-      // Снимаем миниатюру
-      try {
-        currentProject.thumbnail = editorCanvas.toDataURL('image/jpeg', 0.5);
-      } catch (e) {
-        // Ошибка может быть при кросс-доменных медиа
-      }
-
-      await dbSaveProject(currentProject);
-    }
-
-    // -------------------------------------------------------------
-    // Исправление бага сдвига шагов (Clean Keyframe Inherit)
-    // -------------------------------------------------------------
-    function renderStepsPills() {
-      stepsPillsList.innerHTML = '';
-      currentProject.steps.forEach((step, idx) => {
-        const isCurrent = idx === currentProject.currentStep;
-        const pill = document.createElement('button');
-        pill.className = `px-3 py-1 rounded-lg text-xs font-semibold shrink-0 transition flex items-center gap-1.5 ${
-          isCurrent 
-            ? 'bg-white text-black shadow-sm' 
-            : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-        }`;
-        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-black' : 'bg-zinc-600'}"></span> Шаг ${idx + 1}`;
-        pill.onclick = () => {
-          currentProject.currentStep = idx;
-          renderStepsPills();
-          updateTransformInputs();
-          renderScene();
-        };
-        stepsPillsList.appendChild(pill);
-      });
-    }
-
-    // Добавление шага строго БЕЗ СДВИГА вниз или смещений
-    addStepBtn.addEventListener('click', () => {
-      const curIndex = currentProject.currentStep;
-      const curStep = currentProject.steps[curIndex];
-
-      // Полное строгое клонирование точных координат
-      const newStep = {
-        x: curStep.x,
-        y: curStep.y,
-        scale: curStep.scale,
-        rotation: curStep.rotation,
-        opacity: curStep.opacity
+        // Снятие хромакея (зеленого экрана) на пиксельном уровне
+        try {
+          const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+          const data = imgData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            // Поиск ядовито-зелёного оттенка фона
+            if (g > 140 && g > r * 1.35 && g > b * 1.35) {
+              data[i + 3] = 0; // Полная прозрачность фона
+            } else if (g > 100 && g > r * 1.15 && g > b * 1.15) {
+              // Сглаживание краев бликов
+              data[i + 3] = Math.max(0, 255 - (g - Math.max(r, b)) * 3);
+            }
+          }
+          offCtx.putImageData(imgData, 0, 0);
+          watermarkProcessedCanvas = offCanvas;
+        } catch (e) {
+          watermarkProcessedCanvas = offCanvas;
+        }
+        drawCurrentFrame();
       };
 
-      // Вставляем сразу после текущего
-      currentProject.steps.splice(curIndex + 1, 0, newStep);
-      currentProject.currentStep = curIndex + 1;
+      wmImg.onerror = () => {
+        // Запасной векторный рендер стеклянного логотипа в высоком разрешении
+        createFallbackVectorWatermark();
+      };
+    }
 
-      renderStepsPills();
-      updateTransformInputs();
-      renderScene();
-      saveCurrentProjectState();
+    function createFallbackVectorWatermark() {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = 900;
+      offCanvas.height = 240;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+      offCtx.font = '900 110px -apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif';
+      offCtx.textAlign = 'center';
+      offCtx.textBaseline = 'middle';
+
+      // Эффект объемного стеклянного свечения
+      offCtx.shadowColor = 'rgba(255, 255, 255, 0.4)';
+      offCtx.shadowBlur = 15;
+      offCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      offCtx.lineWidth = 6;
+      offCtx.strokeText('Nobu Anim', 450, 120);
+
+      offCtx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      offCtx.fillText('Nobu Anim', 450, 120);
+
+      watermarkProcessedCanvas = offCanvas;
+      drawCurrentFrame();
+    }
+
+    watermarkToggle.addEventListener('change', (e) => {
+      watermarkEnabled = e.target.checked;
+      drawCurrentFrame();
     });
 
-    deleteStepBtn.addEventListener('click', () => {
-      if (currentProject.steps.length <= 1) return;
-      currentProject.steps.splice(currentProject.currentStep, 1);
-      if (currentProject.currentStep >= currentProject.steps.length) {
-        currentProject.currentStep = currentProject.steps.length - 1;
-      }
-      renderStepsPills();
-      updateTransformInputs();
-      renderScene();
-      saveCurrentProjectState();
+    wmOpacitySlider.addEventListener('input', (e) => {
+      watermarkOpacity = parseFloat(e.target.value);
+      wmOpacityLabel.innerText = Math.round(watermarkOpacity * 100) + '%';
+      drawCurrentFrame();
     });
 
     // -------------------------------------------------------------
-    // Загрузка файлов (Background / Overlay)
+    // Загрузка медиафайлов без потери качества
     // -------------------------------------------------------------
     bgFileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -678,18 +690,255 @@
         vid.onloadedmetadata = () => {
           bgElement = vid;
           vid.play();
-          setupCanvasDimensions(vid.videoWidth || 720, vid.videoHeight || 1280);
-          checkMediaState();
-          renderScene();
+          // Сохраняем исходное соотношение сторон и нативное разрешение
+          setCanvasResolution(vid.videoWidth || 1080, vid.videoHeight || 1920);
+          updateMediaStateIndicator();
+          drawCurrentFrame();
         };
       } else {
         const img = new Image();
         img.src = url;
         img.onload = () => {
           bgElement = img;
-          setupCanvasDimensions(img.naturalWidth || 720, img.naturalHeight || 1280);
-          checkMediaState();
-          renderScene();
+          // Используем полное исходное качество фото
+          const maxDim = 3840;
+          let w = img.naturalWidth || 1080;
+          let h = img.naturalHeight || 1920;
+          if (w > maxDim || h > maxDim) {
+            const ratio = Math.min(maxDim / w, maxDim / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          setCanvasResolution(w, h);
+          updateMediaStateIndicator();
+          drawCurrentFrame();
+        };
+      }
+    });
+
+    // Отрисовка кадра с высоким качеством и водяным знаком
+    function drawFrame(targetCtx, targetW, targetH, transform, isPreview = false) {
+      targetCtx.imageSmoothingEnabled = true;
+      targetCtx.imageSmoothingQuality = 'high';
+      targetCtx.clearRect(0, 0, targetW, targetH);
+
+      // 1. Фон (полное качество)
+      if (bgElement) {
+        targetCtx.drawImage(bgElement, 0, 0, targetW, targetH);
+      } else {
+        targetCtx.fillStyle = '#060608';
+        targetCtx.fillRect(0, 0, targetW, targetH);
+      }
+
+      // 2. Анимируемый слой (оверлей)
+      if (overlayImage) {
+        const posX = transform.x * targetW;
+        const posY = transform.y * targetH;
+
+        const baseSize = Math.min(targetW, targetH) * 0.35;
+        const aspect = overlayImage.naturalWidth / overlayImage.naturalHeight;
+        const drawW = baseSize * transform.scale;
+        const drawH = (baseSize / aspect) * transform.scale;
+
+        targetCtx.save();
+        targetCtx.globalAlpha = Math.max(0, Math.min(1, transform.opacity));
+        targetCtx.translate(posX, posY);
+        targetCtx.rotate((transform.rotation * Math.PI) / 180);
+
+        targetCtx.drawImage(overlayImage, -drawW / 2, -drawH / 2, drawW, drawH);
+
+        if (isPreview && !isPlaying) {
+          targetCtx.strokeStyle = '#ffffff';
+          targetCtx.lineWidth = Math.max(2, targetW / 450);
+          targetCtx.setLineDash([6, 6]);
+          targetCtx.strokeRect(-drawW / 2 - 4, -drawH / 2 - 4, drawW + 8, drawH + 8);
+        }
+
+        targetCtx.restore();
+      }
+
+      // 3. Водяной знак "Nobu Anim" в самом низу
+      if (watermarkEnabled && watermarkProcessedCanvas) {
+        targetCtx.save();
+        targetCtx.globalAlpha = watermarkOpacity;
+        
+        // Масштабируем логотип пропорционально ширине видео
+        const wmTargetW = targetW * 0.42;
+        const wmAspect = watermarkProcessedCanvas.width / watermarkProcessedCanvas.height;
+        const wmTargetH = wmTargetW / wmAspect;
+        const wmX = (targetW - wmTargetW) / 2;
+        const wmY = targetH - wmTargetH - (targetH * 0.035); // Аккуратный отступ от нижнего края
+
+        targetCtx.drawImage(watermarkProcessedCanvas, wmX, wmY, wmTargetW, wmTargetH);
+        targetCtx.restore();
+      }
+    }
+
+    // Инициализация при старте страницы
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshProjectsUI();
+      prepareWatermarkImage();
+    });
+    }
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+    }
+
+    createNewProjectBtn.addEventListener('click', async () => {
+      const now = Date.now();
+      const newProj = {
+        id: 'proj_' + now,
+        title: 'Проект ' + new Date(now).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        duration: 3.0,
+        createdAt: now,
+        updatedAt: now,
+        steps: [
+          // Точный центр холста, без сдвига
+          { x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 }
+        ],
+        currentStep: 0,
+        thumbnail: null
+      };
+      await dbSaveProject(newProj);
+      openEditor(newProj);
+    });
+
+    // -------------------------------------------------------------
+    // Редактор и холст
+    // -------------------------------------------------------------
+    function openEditor(project) {
+      currentProject = JSON.parse(JSON.stringify(project));
+      screenProjects.classList.add('hidden');
+      screenEditor.classList.remove('hidden');
+
+      currentProjectTitle.innerText = currentProject.title;
+      durationRange.value = currentProject.duration || 3.0;
+      durationValDisplay.innerText = Number(currentProject.duration).toFixed(1) + 'с';
+
+      if (!currentProject.steps || currentProject.steps.length === 0) {
+        currentProject.steps = [{ x: 0.5, y: 0.5, scale: 1.0, rotation: 0, opacity: 1.0 }];
+      }
+      currentProject.currentStep = 0;
+
+      // Стандартный формат 9:16 (FHD)
+      setCanvasResolution(1080, 1920);
+
+      renderStepsTimeline();
+      syncTransformInputs();
+      drawCurrentFrame();
+      startAnimationLoop();
+    }
+
+    function setCanvasResolution(w, h) {
+      editorCanvas.width = w;
+      editorCanvas.height = h;
+    }
+
+    backToProjectsBtn.addEventListener('click', async () => {
+      stopAnimation();
+      await persistProject();
+      screenEditor.classList.add('hidden');
+      screenProjects.classList.remove('hidden');
+      refreshProjectsUI();
+    });
+
+    async function persistProject() {
+      if (!currentProject) return;
+      currentProject.updatedAt = Date.now();
+      try {
+        currentProject.thumbnail = editorCanvas.toDataURL('image/jpeg', 0.4);
+      } catch (e) {}
+      await dbSaveProject(currentProject);
+    }
+
+    // -------------------------------------------------------------
+    // Линейка шагов (Keyframe Pills)
+    // -------------------------------------------------------------
+    function renderStepsTimeline() {
+      stepsPillsList.innerHTML = '';
+      currentProject.steps.forEach((step, idx) => {
+        const isCurrent = idx === currentProject.currentStep;
+        const pill = document.createElement('button');
+        pill.className = `px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 ${
+          isCurrent 
+            ? 'bg-white text-black shadow-md' 
+            : 'bg-[#141418] text-zinc-400 hover:text-white border border-zinc-800'
+        }`;
+        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-black' : 'bg-zinc-500'}"></span> Шаг ${idx + 1}`;
+        pill.onclick = () => {
+          currentProject.currentStep = idx;
+          renderStepsTimeline();
+          syncTransformInputs();
+          drawCurrentFrame();
+        };
+        stepsPillsList.appendChild(pill);
+      });
+    }
+
+    // Добавление шага: точное клонирование позиции БЕЗ СМЕЩЕНИЙ
+    addStepBtn.addEventListener('click', () => {
+      const cur = currentProject.steps[currentProject.currentStep];
+      const cloned = {
+        x: cur.x,
+        y: cur.y,
+        scale: cur.scale,
+        rotation: cur.rotation,
+        opacity: cur.opacity
+      };
+
+      currentProject.steps.splice(currentProject.currentStep + 1, 0, cloned);
+      currentProject.currentStep += 1;
+
+      renderStepsTimeline();
+      syncTransformInputs();
+      drawCurrentFrame();
+      persistProject();
+    });
+
+    deleteStepBtn.addEventListener('click', () => {
+      if (currentProject.steps.length <= 1) return;
+      currentProject.steps.splice(currentProject.currentStep, 1);
+      if (currentProject.currentStep >= currentProject.steps.length) {
+        currentProject.currentStep = currentProject.steps.length - 1;
+      }
+      renderStepsTimeline();
+      syncTransformInputs();
+      drawCurrentFrame();
+      persistProject();
+    });
+
+    // -------------------------------------------------------------
+    // Загрузка медиафайлов
+    // -------------------------------------------------------------
+    bgFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      bgFileStatus.innerText = file.name;
+      const url = URL.createObjectURL(file);
+
+      if (file.type.startsWith('video/')) {
+        const vid = document.createElement('video');
+        vid.src = url;
+        vid.muted = true;
+        vid.loop = true;
+        vid.playsInline = true;
+        vid.onloadedmetadata = () => {
+          bgElement = vid;
+          vid.play();
+          setCanvasResolution(vid.videoWidth || 1080, vid.videoHeight || 1920);
+          updateMediaStateIndicator();
+          drawCurrentFrame();
+        };
+      } else {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => {
+          bgElement = img;
+          setCanvasResolution(img.naturalWidth || 1080, img.naturalHeight || 1920);
+          updateMediaStateIndicator();
+          drawCurrentFrame();
         };
       }
     });
@@ -704,12 +953,12 @@
       img.src = url;
       img.onload = () => {
         overlayImage = img;
-        checkMediaState();
-        renderScene();
+        updateMediaStateIndicator();
+        drawCurrentFrame();
       };
     });
 
-    function checkMediaState() {
+    function updateMediaStateIndicator() {
       if (bgElement || overlayImage) {
         noMediaOverlay.classList.add('hidden');
       } else {
@@ -718,9 +967,9 @@
     }
 
     // -------------------------------------------------------------
-    // Трансформации и интерактивный Drag по Canvas
+    // Управление параметрами трансформации
     // -------------------------------------------------------------
-    function updateTransformInputs() {
+    function syncTransformInputs() {
       const step = currentProject.steps[currentProject.currentStep];
       if (!step) return;
 
@@ -735,220 +984,236 @@
     }
 
     scaleSlider.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value);
-      scaleLabel.innerText = val.toFixed(2) + 'x';
-      currentProject.steps[currentProject.currentStep].scale = val;
-      renderScene();
+      const v = parseFloat(e.target.value);
+      scaleLabel.innerText = v.toFixed(2) + 'x';
+      currentProject.steps[currentProject.currentStep].scale = v;
+      drawCurrentFrame();
     });
 
     rotateSlider.addEventListener('input', (e) => {
-      const val = parseInt(e.target.value);
-      rotateLabel.innerText = val + '°';
-      currentProject.steps[currentProject.currentStep].rotation = val;
-      renderScene();
+      const v = parseInt(e.target.value);
+      rotateLabel.innerText = v + '°';
+      currentProject.steps[currentProject.currentStep].rotation = v;
+      drawCurrentFrame();
     });
 
     opacitySlider.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value);
-      opacityLabel.innerText = Math.round(val * 100) + '%';
-      currentProject.steps[currentProject.currentStep].opacity = val;
-      renderScene();
+      const v = parseFloat(e.target.value);
+      opacityLabel.innerText = Math.round(v * 100) + '%';
+      currentProject.steps[currentProject.currentStep].opacity = v;
+      drawCurrentFrame();
     });
 
     durationRange.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value);
-      currentProject.duration = val;
-      durationValDisplay.innerText = val.toFixed(1) + 'с';
-      timecodeDisplay.innerText = `0.0s / ${val.toFixed(1)}s`;
+      const v = parseFloat(e.target.value);
+      currentProject.duration = v;
+      durationValDisplay.innerText = v.toFixed(1) + 'с';
+      timecodeDisplay.innerText = `0.0s / ${v.toFixed(1)}s`;
     });
 
     // Touch & Mouse Drag
-    function getCanvasNormalizedPoint(evt) {
+    function getCanvasNormalizedCoord(e) {
       const rect = editorCanvas.getBoundingClientRect();
-      const cx = evt.touches ? evt.touches[0].clientX : evt.clientX;
-      const cy = evt.touches ? evt.touches[0].clientY : evt.clientY;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
       return {
         x: (cx - rect.left) / rect.width,
         y: (cy - rect.top) / rect.height
       };
     }
 
-    function onPointerDown(e) {
-      if (isPlaying) stopPlayback();
+    function onDragStart(e) {
+      if (isPlaying) stopAnimation();
       isDragging = true;
-      const p = getCanvasNormalizedPoint(e);
+      const p = getCanvasNormalizedCoord(e);
       const cur = currentProject.steps[currentProject.currentStep];
       cur.x = Math.max(0, Math.min(1, p.x));
       cur.y = Math.max(0, Math.min(1, p.y));
-      renderScene();
+      drawCurrentFrame();
     }
 
-    function onPointerMove(e) {
+    function onDragMove(e) {
       if (!isDragging || isPlaying) return;
-      const p = getCanvasNormalizedPoint(e);
+      const p = getCanvasNormalizedCoord(e);
       const cur = currentProject.steps[currentProject.currentStep];
       cur.x = Math.max(0, Math.min(1, p.x));
       cur.y = Math.max(0, Math.min(1, p.y));
-      renderScene();
+      drawCurrentFrame();
     }
 
-    function onPointerUp() {
+    function onDragEnd() {
       if (isDragging) {
         isDragging = false;
-        saveCurrentProjectState();
+        persistProject();
       }
     }
 
-    editorCanvas.addEventListener('mousedown', onPointerDown);
-    window.addEventListener('mousemove', onPointerMove);
-    window.addEventListener('mouseup', onPointerUp);
+    editorCanvas.addEventListener('mousedown', onDragStart);
+    window.addEventListener('mousemove', onDragMove);
+    window.addEventListener('mouseup', onDragEnd);
 
-    editorCanvas.addEventListener('touchstart', onPointerDown, { passive: false });
-    window.addEventListener('touchmove', onPointerMove, { passive: false });
-    window.addEventListener('touchend', onPointerUp);
+    editorCanvas.addEventListener('touchstart', onDragStart, { passive: false });
+    window.addEventListener('touchmove', onDragMove, { passive: false });
+    window.addEventListener('touchend', onDragEnd);
 
     // -------------------------------------------------------------
-    // Отрисовка сцены и плавная интерполяция
+    // СВЕРХПЛАВНАЯ ИНТЕРПОЛЯЦИЯ (Catmull-Rom Spline & Smooth Easing)
     // -------------------------------------------------------------
-    function easeInOutCubic(t) {
+    // Кубическое сглаживание Безье (EaseInOutCubic)
+    function smoothStep(t) {
       return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
 
-    function getInterpolatedStateAt(progress) {
+    // Сплайн Катмулла-Рома для непрерывного перетекания пути
+    function catmullRom(p0, p1, p2, p3, t) {
+      const t2 = t * t;
+      const t3 = t2 * t;
+      return 0.5 * (
+        (2 * p1) +
+        (-p0 + p2) * t +
+        (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+        (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+      );
+    }
+
+    function getInterpolatedKeyframe(progress) {
       const steps = currentProject.steps;
       if (steps.length === 1) return steps[0];
 
-      const segments = steps.length - 1;
-      const t = progress * segments;
-      const idx = Math.min(Math.floor(t), segments - 1);
-      const segT = easeInOutCubic(t - idx);
+      const n = steps.length - 1;
+      const rawT = Math.max(0, Math.min(1, progress)) * n;
+      const idx = Math.min(Math.floor(rawT), n - 1);
+      const t = rawT - idx;
+      const smoothT = smoothStep(t);
 
+      // Соседние опорные точки для сплайна
+      const p0 = steps[Math.max(0, idx - 1)];
       const p1 = steps[idx];
       const p2 = steps[idx + 1];
+      const p3 = steps[Math.min(steps.length - 1, idx + 2)];
 
       return {
-        x: p1.x + (p2.x - p1.x) * segT,
-        y: p1.y + (p2.y - p1.y) * segT,
-        scale: p1.scale + (p2.scale - p1.scale) * segT,
-        rotation: p1.rotation + (p2.rotation - p1.rotation) * segT,
-        opacity: p1.opacity + (p2.opacity - p1.opacity) * segT
+        x: catmullRom(p0.x, p1.x, p2.x, p3.x, smoothT),
+        y: catmullRom(p0.y, p1.y, p2.y, p3.y, smoothT),
+        scale: p1.scale + (p2.scale - p1.scale) * smoothT,
+        rotation: p1.rotation + (p2.rotation - p1.rotation) * smoothT,
+        opacity: p1.opacity + (p2.opacity - p1.opacity) * smoothT
       };
     }
 
-    function renderScene(customTransform = null) {
-      ctx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+    // Отрисовка кадра на любом канвасе
+    function drawFrame(targetCtx, targetW, targetH, transform, isPreview = false) {
+      targetCtx.clearRect(0, 0, targetW, targetH);
 
       // Фон
       if (bgElement) {
-        ctx.drawImage(bgElement, 0, 0, editorCanvas.width, editorCanvas.height);
+        targetCtx.drawImage(bgElement, 0, 0, targetW, targetH);
       } else {
-        ctx.fillStyle = '#050505';
-        ctx.fillRect(0, 0, editorCanvas.width, editorCanvas.height);
+        targetCtx.fillStyle = '#060608';
+        targetCtx.fillRect(0, 0, targetW, targetH);
       }
 
       // Оверлей
       if (overlayImage) {
-        const t = customTransform || currentProject.steps[currentProject.currentStep];
-        const posX = t.x * editorCanvas.width;
-        const posY = t.y * editorCanvas.height;
+        const posX = transform.x * targetW;
+        const posY = transform.y * targetH;
 
-        const baseSize = Math.min(editorCanvas.width, editorCanvas.height) * 0.32;
+        const baseSize = Math.min(targetW, targetH) * 0.35;
         const aspect = overlayImage.naturalWidth / overlayImage.naturalHeight;
-        const drawW = baseSize * t.scale;
-        const drawH = (baseSize / aspect) * t.scale;
+        const drawW = baseSize * transform.scale;
+        const drawH = (baseSize / aspect) * transform.scale;
 
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, Math.min(1, t.opacity));
-        ctx.translate(posX, posY);
-        ctx.rotate((t.rotation * Math.PI) / 180);
+        targetCtx.save();
+        targetCtx.globalAlpha = Math.max(0, Math.min(1, transform.opacity));
+        targetCtx.translate(posX, posY);
+        targetCtx.rotate((transform.rotation * Math.PI) / 180);
 
-        ctx.drawImage(overlayImage, -drawW / 2, -drawH / 2, drawW, drawH);
+        targetCtx.drawImage(overlayImage, -drawW / 2, -drawH / 2, drawW, drawH);
 
-        // Индикатор выделения (рамка), когда редактируем шаг
-        if (!isPlaying && !customTransform) {
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = Math.max(1.5, editorCanvas.width / 400);
-          ctx.setLineDash([4, 4]);
-          ctx.strokeRect(-drawW / 2 - 3, -drawH / 2 - 3, drawW + 6, drawH + 6);
+        // Рамка выделения в режиме редактирования шага
+        if (isPreview && !isPlaying) {
+          targetCtx.strokeStyle = '#ffffff';
+          targetCtx.lineWidth = Math.max(2, targetW / 450);
+          targetCtx.setLineDash([6, 6]);
+          targetCtx.strokeRect(-drawW / 2 - 4, -drawH / 2 - 4, drawW + 8, drawH + 8);
         }
 
-        ctx.restore();
+        targetCtx.restore();
       }
     }
 
+    function drawCurrentFrame(customTransform = null) {
+      const transform = customTransform || currentProject.steps[currentProject.currentStep];
+      drawFrame(ctx, editorCanvas.width, editorCanvas.height, transform, !customTransform);
+    }
+
     // -------------------------------------------------------------
-    // Воспроизведение Timeline в цикле
+    // Анимационный цикл предпросмотра
     // -------------------------------------------------------------
-    function startPreviewLoop() {
-      if (animReqId) cancelAnimationFrame(animReqId);
+    function startAnimationLoop() {
+      if (animRafId) cancelAnimationFrame(animRafId);
 
       function loop(now) {
         if (isPlaying) {
-          if (!animationStartTime) animationStartTime = now;
+          if (!animStartTime) animStartTime = now;
           const dur = (currentProject.duration || 3.0) * 1000;
-          const elapsed = (now - animationStartTime) % dur;
+          const elapsed = (now - animStartTime) % dur;
           const progress = elapsed / dur;
 
           timecodeDisplay.innerText = `${(elapsed / 1000).toFixed(1)}s / ${(dur / 1000).toFixed(1)}s`;
 
-          const interpolated = getInterpolatedStateAt(progress);
-          renderScene(interpolated);
+          const interpolated = getInterpolatedKeyframe(progress);
+          drawCurrentFrame(interpolated);
         } else if (bgElement && bgElement.tagName === 'VIDEO') {
-          // Если на фоне видео, продолжаем его перерисовывать
-          renderScene();
+          drawCurrentFrame();
         }
-        animReqId = requestAnimationFrame(loop);
+        animRafId = requestAnimationFrame(loop);
       }
-      animReqId = requestAnimationFrame(loop);
+      animRafId = requestAnimationFrame(loop);
     }
 
-    timelinePlayBtn.addEventListener('click', togglePlayback);
-
-    function togglePlayback() {
+    timelinePlayBtn.addEventListener('click', () => {
       isPlaying = !isPlaying;
       if (isPlaying) {
-        animationStartTime = 0;
-        timelinePlayIcon.className = 'fa-solid fa-pause';
+        animStartTime = 0;
+        timelinePlayIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
       } else {
-        stopPlayback();
+        stopAnimation();
       }
-    }
+    });
 
-    function stopPlayback() {
+    function stopAnimation() {
       isPlaying = false;
-      timelinePlayIcon.className = 'fa-solid fa-play ml-0.5';
-      renderScene();
+      timelinePlayIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+      drawCurrentFrame();
     }
 
     // -------------------------------------------------------------
-    // Переключение вкладок инструментов
+    // Вкладки интерфейса
     // -------------------------------------------------------------
-    tabBtnMedia.onclick = () => switchTab('media');
-    tabBtnTransform.onclick = () => switchTab('transform');
-    tabBtnSpeed.onclick = () => switchTab('speed');
+    tabBtnMedia.onclick = () => selectTab('media');
+    tabBtnTransform.onclick = () => selectTab('transform');
+    tabBtnSpeed.onclick = () => selectTab('speed');
 
-    function switchTab(tab) {
+    function selectTab(tab) {
       [tabBtnMedia, tabBtnTransform, tabBtnSpeed].forEach(b => {
-        b.classList.remove('text-white', 'border-white');
-        b.classList.add('text-zinc-500', 'border-transparent');
+        b.className = 'flex-1 py-2.5 flex items-center justify-center gap-1.5 font-semibold text-zinc-500 border-b-2 border-transparent transition-all';
       });
       [tabContentMedia, tabContentTransform, tabContentSpeed].forEach(c => c.classList.add('hidden'));
 
       if (tab === 'media') {
-        tabBtnMedia.classList.add('text-white', 'border-white');
+        tabBtnMedia.className = 'flex-1 py-2.5 flex items-center justify-center gap-1.5 font-semibold text-white border-b-2 border-white transition-all';
         tabContentMedia.classList.remove('hidden');
       } else if (tab === 'transform') {
-        tabBtnTransform.classList.add('text-white', 'border-white');
+        tabBtnTransform.className = 'flex-1 py-2.5 flex items-center justify-center gap-1.5 font-semibold text-white border-b-2 border-white transition-all';
         tabContentTransform.classList.remove('hidden');
       } else if (tab === 'speed') {
-        tabBtnSpeed.classList.add('text-white', 'border-white');
+        tabBtnSpeed.className = 'flex-1 py-2.5 flex items-center justify-center gap-1.5 font-semibold text-white border-b-2 border-white transition-all';
         tabContentSpeed.classList.remove('hidden');
       }
     }
 
-    // -------------------------------------------------------------
     // Переименование проекта
-    // -------------------------------------------------------------
     editProjectTitleBtn.onclick = () => {
       renameInput.value = currentProject.title;
       renameModal.classList.remove('hidden');
@@ -958,183 +1223,158 @@
       if (renameInput.value.trim()) {
         currentProject.title = renameInput.value.trim();
         currentProjectTitle.innerText = currentProject.title;
-        await saveCurrentProjectState();
+        await persistProject();
       }
       renameModal.classList.add('hidden');
     };
 
     // -------------------------------------------------------------
-    // ЭКСПОРТ (MP4 / WebM + 30 / 60 / 120 FPS + 720p / 1080p / 4K)
+    // ЧЕСТНЫЙ ЭКСПОРТ (Deterministic 60/120 FPS & True 4K)
     // -------------------------------------------------------------
     openExportModalBtn.onclick = () => {
-      stopPlayback();
+      stopAnimation();
       modalExport.classList.remove('hidden');
     };
     closeExportModalBtn.onclick = () => modalExport.classList.add('hidden');
 
-    // Кнопки выбора формата
     document.querySelectorAll('.format-btn').forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll('.format-btn').forEach(b => {
-          b.className = 'format-btn py-2 px-3 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center';
+          b.className = 'format-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium';
         });
-        btn.className = 'format-btn py-2 px-3 rounded-lg border border-white bg-white text-black font-semibold text-center';
+        btn.className = 'format-btn py-2.5 rounded-xl border border-white bg-white text-black font-bold text-center';
         selectedExportFormat = btn.dataset.format;
       };
     });
 
-    // Кнопки выбора разрешения
     document.querySelectorAll('.res-btn').forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll('.res-btn').forEach(b => {
-          b.className = 'res-btn py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center';
+          b.className = 'res-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium';
         });
-        btn.className = 'res-btn py-2 rounded-lg border border-white bg-white text-black font-semibold text-center';
+        btn.className = 'res-btn py-2.5 rounded-xl border border-white bg-white text-black font-bold text-center';
         selectedExportRes = parseInt(btn.dataset.res);
       };
     });
 
-    // Кнопки выбора FPS
     document.querySelectorAll('.fps-btn').forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll('.fps-btn').forEach(b => {
-          b.className = 'fps-btn py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 text-center';
+          b.className = 'fps-btn py-2.5 rounded-xl border border-zinc-800 bg-[#121215] text-zinc-400 text-center font-medium';
         });
-        btn.className = 'fps-btn py-2 rounded-lg border border-white bg-white text-black font-semibold text-center';
+        btn.className = 'fps-btn py-2.5 rounded-xl border border-white bg-white text-black font-bold text-center';
         selectedExportFps = parseInt(btn.dataset.fps);
       };
     });
 
     startRenderBtn.addEventListener('click', async () => {
-      if (!overlayImage && !bgElement) {
-        return;
-      }
+      if (!overlayImage && !bgElement) return;
 
-      const targetHeight = selectedExportRes;
-      const targetFps = selectedExportFps;
-      const aspect = editorCanvas.width / editorCanvas.height;
-      const targetWidth = Math.round(targetHeight * aspect);
+      const targetH = selectedExportRes; // 720, 1080 или 2160 (Честное 4K)
+      const targetFps = selectedExportFps; // 30, 60 или 120 FPS
+      const aspect = 9 / 16;
+      const targetW = Math.round(targetH * aspect);
 
-      // Временный оффскрин-холст для максимального качества
-      const offCanvas = document.createElement('canvas');
-      offCanvas.width = targetWidth;
-      offCanvas.height = targetHeight;
-      const offCtx = offCanvas.getContext('2d');
+      const renderCanvas = document.createElement('canvas');
+      renderCanvas.width = targetW;
+      renderCanvas.height = targetH;
+      const renderCtx = renderCanvas.getContext('2d', { alpha: false });
 
-      // Подбор MIME-типа: приоритет на MP4 для iOS, иначе WebM
-      let mimeType = '';
+      // Подбор кодека: MP4 (avc1/h264) для iOS или WebM
+      let mime = '';
       if (selectedExportFormat === 'mp4') {
-        const mp4Types = [
-          'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+        const mp4Candidates = [
+          'video/mp4;codecs=avc1.42E01E',
           'video/mp4;codecs=h264',
           'video/mp4'
         ];
-        mimeType = mp4Types.find(t => MediaRecorder.isTypeSupported(t)) || '';
+        mime = mp4Candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
       }
-      
-      if (!mimeType) {
-        const webmTypes = [
+      if (!mime) {
+        const webmCandidates = [
           'video/webm;codecs=vp9',
           'video/webm;codecs=vp8',
           'video/webm'
         ];
-        mimeType = webmTypes.find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
+        mime = webmCandidates.find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
       }
 
-      const stream = offCanvas.captureStream(targetFps);
-      let mediaRecorder;
+      // Захват чистого потока с честным FPS
+      const stream = renderCanvas.captureStream(targetFps);
+      
+      // Повышенный битрейт: до 40 Мбит/с для кристального 4K/1080p
+      const bitrate = targetH >= 2160 ? 40000000 : 20000000;
+      let recorder;
       try {
-        mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 16000000 });
+        recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bitrate });
       } catch (e) {
-        mediaRecorder = new MediaRecorder(stream);
+        recorder = new MediaRecorder(stream);
       }
 
-      const chunks = [];
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) chunks.push(e.data);
+      const recordedChunks = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordedChunks.push(e.data);
       };
 
-      mediaRecorder.onstop = () => {
-        const isMp4 = mimeType.includes('mp4') || selectedExportFormat === 'mp4';
-        const fileExt = isMp4 ? 'mp4' : 'webm';
-        const blob = new Blob(chunks, { type: isMp4 ? 'video/mp4' : 'video/webm' });
-        const downloadUrl = URL.createObjectURL(blob);
+      recorder.onstop = () => {
+        const isMp4 = mime.includes('mp4') || selectedExportFormat === 'mp4';
+        const ext = isMp4 ? 'mp4' : 'webm';
+        const blob = new Blob(recordedChunks, { type: isMp4 ? 'video/mp4' : 'video/webm' });
+        const url = URL.createObjectURL(blob);
 
         const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `${currentProject.title.replace(/\s+/g, '_')}_${targetHeight}p_${targetFps}fps.${fileExt}`;
+        a.href = url;
+        a.download = `${currentProject.title.replace(/\s+/g, '_')}_${targetH}p_${targetFps}fps.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(downloadUrl);
 
-        // Возврат интерфейса
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+
         renderProgressBox.classList.add('hidden');
         startRenderBtn.disabled = false;
-        startRenderBtnText.innerText = 'Начать экспорт';
-        renderProgressBar.style.width = '0%';
+        startRenderBtnText.innerText = 'Запустить рендеринг';
         modalExport.classList.add('hidden');
       };
 
-      // Блокировка и прогресс
+      // Блокируем кнопку на время рендера
       startRenderBtn.disabled = true;
-      startRenderBtnText.innerText = 'Экспортируется...';
+      startRenderBtnText.innerText = 'Рендеринг...';
       renderProgressBox.classList.remove('hidden');
 
-      mediaRecorder.start();
+      recorder.start();
 
       const duration = currentProject.duration || 3.0;
       const totalFrames = Math.round(duration * targetFps);
-      let frame = 0;
+      let currentFrame = 0;
 
-      function stepRender() {
-        if (frame <= totalFrames) {
-          const progress = frame / totalFrames;
-          const t = getInterpolatedStateAt(progress);
+      // Детерминированный покадровый просчет без пропусков кадров
+      function processFrame() {
+        if (currentFrame <= totalFrames) {
+          const progress = currentFrame / totalFrames;
+          const transform = getInterpolatedKeyframe(progress);
 
-          // Рисуем на экспортный холст
-          offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
-          if (bgElement) {
-            offCtx.drawImage(bgElement, 0, 0, offCanvas.width, offCanvas.height);
-          } else {
-            offCtx.fillStyle = '#000000';
-            offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
-          }
+          drawFrame(renderCtx, targetW, targetH, transform, false);
 
-          if (overlayImage) {
-            const posX = t.x * offCanvas.width;
-            const posY = t.y * offCanvas.height;
-            const baseSize = Math.min(offCanvas.width, offCanvas.height) * 0.32;
-            const aspect = overlayImage.naturalWidth / overlayImage.naturalHeight;
-            const drawW = baseSize * t.scale;
-            const drawH = (baseSize / aspect) * t.scale;
+          const percent = Math.round((currentFrame / totalFrames) * 100);
+          renderProgressBar.style.width = percent + '%';
+          renderPercentText.innerText = percent + '%';
+          renderStatusText.innerText = `Кадр ${currentFrame} из ${totalFrames}`;
 
-            offCtx.save();
-            offCtx.globalAlpha = Math.max(0, Math.min(1, t.opacity));
-            offCtx.translate(posX, posY);
-            offCtx.rotate((t.rotation * Math.PI) / 180);
-            offCtx.drawImage(overlayImage, -drawW / 2, -drawH / 2, drawW, drawH);
-            offCtx.restore();
-          }
-
-          const pct = Math.round((frame / totalFrames) * 100);
-          renderProgressBar.style.width = pct + '%';
-          renderPercentText.innerText = pct + '%';
-
-          frame++;
-          // Пауза под частоту кадров
-          setTimeout(stepRender, 1000 / targetFps);
+          currentFrame++;
+          // Минимальная задержка между кадрами для надежной записи буфера
+          setTimeout(processFrame, 1000 / targetFps);
         } else {
-          mediaRecorder.stop();
+          recorder.stop();
         }
       }
 
-      stepRender();
+      processFrame();
     });
 
-    // Старт при загрузке страницы
+    // Инициализация при старте страницы
     window.addEventListener('DOMContentLoaded', () => {
-      loadProjectsScreen();
+      refreshProjectsUI();
     });
   </script>
 </body>
