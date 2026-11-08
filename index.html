@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Nobu Anim Pro</title>
+  <title>Nobu Anim Studio</title>
   <style>
     :root {
       --bg: #000;
@@ -133,37 +133,40 @@
 
     /* Timeline */
     .timeline {
-      height: 100px;
+      height: 95px;
       background: #080808;
       border-top: 1px solid var(--border);
       overflow-x: auto;
-      padding: 8px 0;
+      padding: 8px 12px;
       position: relative;
     }
     .timeline-track {
-      height: 22px;
-      margin-bottom: 4px;
+      height: 28px;
+      margin-bottom: 6px;
       position: relative;
-      width: 1200px;
+      width: 100%;
       background: rgba(255,255,255,0.03);
-    }
-    .clip {
-      position: absolute;
-      top: 0; bottom: 0;
-      border-radius: 4px;
-      font-size: 10px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
-      padding: 0 6px;
+    }
+    .clip {
+      height: 100%;
+      border-radius: 6px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
       color: #fff;
       font-weight: 600;
-      border: 1px solid transparent;
+      border: 2px solid transparent;
       cursor: pointer;
+      user-select: none;
+      transition: border-color 0.15s ease;
     }
-    .clip.selected { border-color: #fff; }
-    .clip-bg { background: #2563eb; }
-    .clip-overlay { background: #7c3aed; }
-    .clip-text { background: #ea580c; }
+    .clip.selected { border-color: #fff !important; box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+    .clip-bg { background: #2563eb; width: 70%; }
+    .clip-overlay { background: #7c3aed; width: 60%; }
 
     /* Tabs */
     .tabs-nav {
@@ -188,9 +191,9 @@
     .tab-btn.active { color: #fff; font-weight: 700; border-bottom: 2px solid #fff; }
 
     .panel {
-      height: 130px;
+      height: 145px;
       background: var(--surface);
-      padding: 12px 14px;
+      padding: 10px 14px;
       padding-bottom: calc(var(--safe-bottom) + 8px);
       overflow-y: auto;
       display: none;
@@ -198,6 +201,46 @@
     .panel.active { display: block; }
     .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
     .row input[type="range"] { flex: 1; margin: 0 10px; accent-color: #fff; }
+
+    /* Колесо вращения Nobu Wheel */
+    .wheel-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 4px 0;
+    }
+    .wheel-container {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #1c1c1e;
+      border: 2px solid #3a3a3c;
+      position: relative;
+      touch-action: none;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wheel-indicator {
+      width: 4px;
+      height: 24px;
+      background: #fff;
+      border-radius: 2px;
+      position: absolute;
+      top: 6px;
+      transform-origin: 2px 30px;
+    }
+    .btn-step {
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
     /* Modal PRO */
     .modal-pro {
@@ -270,17 +313,20 @@
       </div>
     </div>
 
-    <!-- Таймлайн -->
+    <!-- Таймлайн с поддержкой прямого клика -->
     <div class="timeline" id="tlBox">
-      <div class="timeline-track" id="tr-bg"></div>
-      <div class="timeline-track" id="tr-overlay"></div>
-      <div class="timeline-track" id="tr-text"></div>
+      <div class="timeline-track" id="tr-bg">
+        <div class="clip clip-bg" id="clip-bg" onclick="selectClip('bg')">Фон (Видео)</div>
+      </div>
+      <div class="timeline-track" id="tr-overlay">
+        <div class="clip clip-overlay" id="clip-overlay" onclick="selectClip('overlay')">Наложение (Эдит)</div>
+      </div>
     </div>
 
     <!-- Табы -->
     <div class="tabs-nav">
-      <button class="tab-btn active" onclick="tab('media')">Медиа</button>
-      <button class="tab-btn" onclick="tab('overlay')">Наложение</button>
+      <button class="tab-btn" onclick="tab('media')">Медиа</button>
+      <button class="tab-btn active" onclick="tab('overlay')">Наложение</button>
       <button class="tab-btn" onclick="tab('chroma')">Хромакей</button>
       <button class="tab-btn" onclick="tab('text')">Текст</button>
       <button class="tab-btn" onclick="tab('shake')">Шейк</button>
@@ -288,7 +334,7 @@
     </div>
 
     <!-- Панели -->
-    <div class="panel active" id="p-media">
+    <div class="panel" id="p-media">
       <div style="display:flex; gap:8px;">
         <label style="flex:1; background:#1c1c1e; padding:10px; border-radius:8px; text-align:center; font-size:11px; cursor:pointer;">
           + Фоновое видео
@@ -301,14 +347,27 @@
       </div>
     </div>
 
-    <div class="panel" id="p-overlay">
-      <div class="row">
-        <label>Размер наложения:</label>
+    <div class="panel active" id="p-overlay">
+      <div class="wheel-wrap">
+        <div style="text-align:center;">
+          <div style="font-size:10px; color:#aaa; margin-bottom:4px;">Вращение</div>
+          <div class="wheel-container" id="rotWheel">
+            <div class="wheel-indicator" id="wheelInd"></div>
+          </div>
+          <div id="rotVal" style="font-size:11px; margin-top:2px;">0°</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button class="btn-step" onclick="addAnimStep()">+ Зафиксировать шаг</button>
+          <div style="font-size:10px; color:#888; text-align:center;" id="stepCount">Шагов: 0</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <label>Масштаб:</label>
         <input type="range" min="20" max="250" value="70" oninput="state.overlay.scale = this.value/100; draw();">
       </div>
       <div class="row">
         <label>Позиция Y:</label>
-        <input type="range" min="100" max="1600" value="400" oninput="state.overlay.y = +this.value; draw();">
+        <input type="range" min="100" max="1600" value="700" oninput="state.overlay.y = +this.value; draw();">
       </div>
     </div>
 
@@ -318,20 +377,14 @@
         <input type="checkbox" id="ck-chroma" onchange="state.chroma.enabled = this.checked; draw();">
       </div>
       <div class="row">
-        <label>Сила среза (порог):</label>
+        <label>Сила среза:</label>
         <input type="range" min="10" max="100" value="45" oninput="state.chroma.tol = +this.value; draw();">
       </div>
     </div>
 
     <div class="panel" id="p-text">
       <div class="row">
-        <input type="text" id="inp-txt" placeholder="Текст эдита..." style="flex:1; background:#1c1c1e; border:1px solid #333; color:#fff; padding:6px; border-radius:6px; margin-right:8px;" oninput="state.text.str = this.value; draw();">
-        <select style="background:#1c1c1e; color:#fff; border:1px solid #333; padding:6px; border-radius:6px;" onchange="state.text.font = this.value; draw();">
-          <option value="Impact">Impact (TikTok)</option>
-          <option value="Arial Black">Arial Black</option>
-          <option value="Montserrat, sans-serif">Montserrat</option>
-          <option value="Georgia, serif">Кинематограф</option>
-        </select>
+        <input type="text" placeholder="Текст эдита..." style="flex:1; background:#1c1c1e; border:1px solid #333; color:#fff; padding:6px; border-radius:6px;" oninput="state.text.str = this.value; draw();">
       </div>
       <div class="row">
         <label>Размер шрифта:</label>
@@ -342,7 +395,7 @@
     <div class="panel" id="p-shake">
       <div class="row">
         <label>Шейк эдита (бит):</label>
-        <input type="checkbox" id="ck-shake" onchange="state.shake.enabled = this.checked; draw();">
+        <input type="checkbox" id="ck-shake" checked onchange="state.shake.enabled = this.checked; draw();">
       </div>
       <div class="row">
         <label>Сила тряски:</label>
@@ -357,7 +410,7 @@
       <img src="https://images2.imgbox.com/39/17/7tQ4WmsL_o.png" alt="PRO Banner">
       <div style="padding:16px;">
         <div style="font-weight:800; font-size:16px; margin-bottom:6px;">Nobu Anim PRO</div>
-        <p style="font-size:12px; color:#aaa; margin-bottom:12px;">Честный 4K UHD, 120 FPS, Bass-Shake и неограниченный хромакей</p>
+        <p style="font-size:12px; color:#aaa; margin-bottom:12px;">Честный 4K UHD, 120 FPS и экспорт без ограничений</p>
         <button style="width:100%; background:#2c2c2e; color:#777; border:none; padding:10px; border-radius:10px; font-weight:700; font-size:13px; cursor:not-allowed;">
           10 Звезд Telegram / 1 год (Скоро)
         </button>
@@ -373,17 +426,19 @@
       curTime: 0,
       totalDur: 15,
       playing: false,
-      selected: null,
+      selected: 'overlay',
       bg: null,
-      overlay: { el: null, scale: 0.7, x: 270, y: 400 },
+      overlay: { el: null, scale: 0.7, x: 270, y: 700, rot: 0 },
+      steps: [], // Шаги плавной анимации колеса
       chroma: { enabled: false, tol: 45 },
-      text: { str: '', size: 64, font: 'Impact', y: 1500 },
-      shake: { enabled: false, power: 18 }
+      text: { str: '', size: 64, y: 1500 },
+      shake: { enabled: true, power: 18 }
     };
 
     function startStudio() {
       document.getElementById('screen-hub').classList.remove('active');
       document.getElementById('screen-studio').classList.add('active');
+      selectClip('overlay');
       draw();
     }
 
@@ -403,6 +458,84 @@
       document.getElementById('p-' + name).classList.add('active');
     }
 
+    function selectClip(type) {
+      state.selected = type;
+      document.getElementById('clip-bg').classList.toggle('selected', type === 'bg');
+      document.getElementById('clip-overlay').classList.toggle('selected', type === 'overlay');
+    }
+
+    function deleteCurrentClip() {
+      if (state.selected === 'bg') {
+        state.bg = null;
+        document.getElementById('clip-bg').style.opacity = '0.3';
+      }
+      if (state.selected === 'overlay') {
+        state.overlay.el = null;
+        state.steps = [];
+        document.getElementById('clip-overlay').style.opacity = '0.3';
+        document.getElementById('stepCount').innerText = 'Шагов: 0';
+      }
+      draw();
+    }
+
+    // Обработка колеса вращения
+    const wheel = document.getElementById('rotWheel');
+    let isDraggingWheel = false;
+
+    function handleWheelMove(e) {
+      if (!isDraggingWheel) return;
+      const rect = wheel.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const rad = Math.atan2(clientY - cy, clientX - cx);
+      let deg = Math.round(rad * (180 / Math.PI)) + 90;
+      if (deg < 0) deg += 360;
+      state.overlay.rot = deg;
+      document.getElementById('wheelInd').style.transform = `rotate(${deg}deg)`;
+      document.getElementById('rotVal').innerText = deg + '°';
+      draw();
+    }
+
+    wheel.addEventListener('pointerdown', () => { isDraggingWheel = true; });
+    window.addEventListener('pointermove', handleWheelMove);
+    window.addEventListener('pointerup', () => { isDraggingWheel = false; });
+
+    function addAnimStep() {
+      state.steps.push({
+        time: state.curTime,
+        rot: state.overlay.rot,
+        y: state.overlay.y,
+        scale: state.overlay.scale
+      });
+      state.steps.sort((a,b) => a.time - b.time);
+      document.getElementById('stepCount').innerText = 'Шагов: ' + state.steps.length;
+    }
+
+    function getInterpolatedTransform(t) {
+      if (state.steps.length === 0) return { rot: state.overlay.rot, y: state.overlay.y, scale: state.overlay.scale };
+      if (state.steps.length === 1) return state.steps[0];
+      if (t <= state.steps[0].time) return state.steps[0];
+      if (t >= state.steps[state.steps.length - 1].time) return state.steps[state.steps.length - 1];
+
+      for (let i = 0; i < state.steps.length - 1; i++) {
+        const s1 = state.steps[i];
+        const s2 = state.steps[i+1];
+        if (t >= s1.time && t <= s2.time) {
+          const factor = (t - s1.time) / (s2.time - s1.time);
+          // Плавное кубическое сглаживание
+          const smooth = factor * factor * (3 - 2 * factor);
+          return {
+            rot: s1.rot + (s2.rot - s1.rot) * smooth,
+            y: s1.y + (s2.y - s1.y) * smooth,
+            scale: s1.scale + (s2.scale - s1.scale) * smooth
+          };
+        }
+      }
+      return state.steps[0];
+    }
+
     function loadFile(e, type) {
       const f = e.target.files[0];
       if (!f) return;
@@ -419,12 +552,13 @@
           if (type === 'bg') {
             state.bg = { el: v, isVid: true, dur: v.duration };
             state.totalDur = v.duration;
+            document.getElementById('clip-bg').style.opacity = '1';
           } else {
             state.overlay.el = v;
             state.overlay.isVid = true;
-            state.overlay.dur = v.duration;
+            document.getElementById('clip-overlay').style.opacity = '1';
           }
-          refreshTl();
+          updateTimeDisplay();
           draw();
         };
       } else {
@@ -433,35 +567,16 @@
         img.onload = () => {
           if (type === 'bg') {
             state.bg = { el: img, isVid: false, dur: 15 };
+            document.getElementById('clip-bg').style.opacity = '1';
           } else {
             state.overlay.el = img;
             state.overlay.isVid = false;
-            state.overlay.dur = 15;
+            document.getElementById('clip-overlay').style.opacity = '1';
           }
-          refreshTl();
+          updateTimeDisplay();
           draw();
         };
       }
-    }
-
-    function refreshTl() {
-      const trBg = document.getElementById('tr-bg');
-      const trOv = document.getElementById('tr-overlay');
-      trBg.innerHTML = ''; trOv.innerHTML = '';
-      if (state.bg) {
-        trBg.innerHTML = `<div class="clip clip-bg" style="width:280px;" onclick="state.selected='bg'">Фон (Видео)</div>`;
-      }
-      if (state.overlay.el) {
-        trOv.innerHTML = `<div class="clip clip-overlay" style="width:240px;" onclick="state.selected='overlay'">Наложение (Эдит)</div>`;
-      }
-    }
-
-    function deleteCurrentClip() {
-      if (state.selected === 'bg') state.bg = null;
-      if (state.selected === 'overlay') state.overlay.el = null;
-      state.selected = null;
-      refreshTl();
-      draw();
     }
 
     function togglePlay() {
@@ -497,8 +612,19 @@
         if (state.overlay?.isVid) state.overlay.el.currentTime = 0;
       }
 
+      updateTimeDisplay();
       draw();
       requestAnimationFrame(loop);
+    }
+
+    function updateTimeDisplay() {
+      const format = s => {
+        const m = Math.floor(s / 60);
+        const sec = Math.floor(s % 60);
+        const ms = Math.floor((s % 1) * 100);
+        return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}:${String(ms).padStart(2,'0')}`;
+      };
+      document.getElementById('timecode').innerText = `${format(state.curTime)} / ${format(state.totalDur)}`;
     }
 
     function draw() {
@@ -518,41 +644,44 @@
         ctx.drawImage(state.bg.el, 0, 0, cv.width, cv.height);
       }
 
-      // 2. Наложение + Хромакей
+      // 2. Наложение с вращением и шагами
       if (state.overlay?.el) {
+        const currentTransform = getInterpolatedTransform(state.curTime);
         const el = state.overlay.el;
-        const ow = (el.videoWidth || el.width || 400) * state.overlay.scale;
-        const oh = (el.videoHeight || el.height || 400) * state.overlay.scale;
-        const ox = (cv.width - ow) / 2;
-        const oy = state.overlay.y;
+        const ow = (el.videoWidth || el.width || 400) * currentTransform.scale;
+        const oh = (el.videoHeight || el.height || 400) * currentTransform.scale;
+        const ox = cv.width / 2;
+        const oy = currentTransform.y;
+
+        ctx.save();
+        ctx.translate(ox, oy);
+        ctx.rotate((currentTransform.rot * Math.PI) / 180);
 
         if (state.chroma.enabled) {
-          // Отрисовка через буфер для среза зеленого
           const offCv = document.createElement('canvas');
           offCv.width = ow; offCv.height = oh;
           const offCtx = offCv.getContext('2d');
           offCtx.drawImage(el, 0, 0, ow, oh);
           const imgData = offCtx.getImageData(0, 0, ow, oh);
           const d = imgData.data;
-          const tol = state.chroma.tol * 2.5;
+          const tol = state.chroma.tol * 2.4;
 
           for (let i = 0; i < d.length; i += 4) {
             const r = d[i], g = d[i+1], b = d[i+2];
-            if (g > 80 && (g - r) > tol && (g - b) > tol) {
-              d[i+3] = 0; // в прозрачность
-            }
+            if (g > 70 && (g - r) > tol && (g - b) > tol) d[i+3] = 0;
           }
           offCtx.putImageData(imgData, 0, 0);
-          ctx.drawImage(offCv, ox, oy);
+          ctx.drawImage(offCv, -ow/2, -oh/2);
         } else {
-          ctx.drawImage(el, ox, oy, ow, oh);
+          ctx.drawImage(el, -ow/2, -oh/2, ow, oh);
         }
+        ctx.restore();
       }
 
       // 3. Текст
       if (state.text.str) {
         ctx.save();
-        ctx.font = `900 ${state.text.size}px ${state.text.font}`;
+        ctx.font = `900 ${state.text.size}px Impact, sans-serif`;
         ctx.textAlign = 'center';
         ctx.lineWidth = 8;
         ctx.strokeStyle = '#000';
@@ -562,7 +691,7 @@
         ctx.restore();
       }
 
-      // Вотермарк
+      // Неудаляемый вотермарк Nobu Anim
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
       ctx.font = '700 24px -apple-system';
       ctx.textAlign = 'center';
@@ -571,19 +700,28 @@
       ctx.restore();
     }
 
-    // Экспорт с покадровым захватом
+    // Экспорт для iOS Safari
     async function exportRender() {
       pauseVideo();
-      const stream = cv.captureStream(60);
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/mp4;codecs=avc1', videoBitsPerSecond: 15000000 });
+      const stream = cv.captureStream(30);
+      let recorder;
+      try {
+        recorder = new MediaRecorder(stream, { mimeType: 'video/mp4;codecs=avc1' });
+      } catch (e) {
+        recorder = new MediaRecorder(stream);
+      }
+      
       const chunks = [];
-      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'video/mp4' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
+        a.href = url;
         a.download = `NobuAnim_${Date.now()}.mp4`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
       };
 
       recorder.start();
@@ -602,7 +740,7 @@
           await new Promise(r => state.overlay.el.onseeked = r);
         }
         draw();
-        await new Promise(r => setTimeout(r, 30));
+        await new Promise(r => setTimeout(r, 20));
         t += step;
       }
       recorder.stop();
