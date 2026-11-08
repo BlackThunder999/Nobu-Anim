@@ -6,11 +6,11 @@
   <title>Nobu Anim Studio Pro</title>
   <style>
     :root {
-      --bg: #000;
+      --bg: #000000;
       --surface: #121214;
       --surface-2: #1c1c1e;
       --border: #2c2c2e;
-      --accent: #fff;
+      --accent: #ffffff;
       --accent-muted: #8e8e93;
       --pro-color: #a855f7;
       --safe-bottom: env(safe-area-inset-bottom, 16px);
@@ -237,7 +237,7 @@
     .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
     .row input[type="range"] { flex: 1; margin: 0 10px; accent-color: #fff; }
 
-    /* Колесо вращения Nobu Wheel */
+    /* Wheel */
     .wheel-wrap {
       display: flex;
       align-items: center;
@@ -277,7 +277,7 @@
       cursor: pointer;
     }
 
-    /* Modal PRO */
+    /* PRO Modal */
     .modal-pro {
       display: none;
       position: fixed;
@@ -303,7 +303,7 @@
 </head>
 <body>
 
-  <!-- ХАБ ПРОЕКТОВ -->
+  <!-- ХАБ -->
   <div class="screen active" id="screen-hub">
     <div class="hub-header">
       <div style="font-weight:800; font-size:16px;">Nobu Anim <span class="badge-pro" onclick="openPro()">PRO</span></div>
@@ -338,7 +338,6 @@
       </div>
     </div>
 
-    <!-- Панель таймкода и перемотки -->
     <div class="transport">
       <div style="display:flex; align-items:center; gap:6px;">
         <button class="btn-icon" onclick="seekRelative(-5)">
@@ -360,7 +359,6 @@
       </div>
     </div>
 
-    <!-- Мульти-трековый таймлайн -->
     <div class="timeline" id="tlBox">
       <div class="timeline-track" id="tr-bg">
         <div class="clip clip-bg" id="clip-bg" onclick="selectClip('bg')">Фон (Видео)</div>
@@ -368,7 +366,6 @@
       <div id="overlaysTracksList"></div>
     </div>
 
-    <!-- Меню табов -->
     <div class="tabs-nav">
       <button class="tab-btn" onclick="tab('media')">Медиа</button>
       <button class="tab-btn active" onclick="tab('overlay')">Наложение</button>
@@ -378,7 +375,6 @@
       <button class="tab-btn" onclick="openPro()">PRO 4K</button>
     </div>
 
-    <!-- Панели -->
     <div class="panel" id="p-media">
       <div style="display:flex; gap:8px;">
         <label style="flex:1; background:#1c1c1e; padding:10px; border-radius:8px; text-align:center; font-size:11px; cursor:pointer;">
@@ -449,7 +445,7 @@
     </div>
   </div>
 
-  <!-- PRO МОДАЛКА -->
+  <!-- PRO Modal -->
   <div class="modal-pro" id="proModal" onclick="closePro(event)">
     <div class="modal-card">
       <img src="https://images2.imgbox.com/39/17/7tQ4WmsL_o.png" alt="PRO Banner">
@@ -474,12 +470,11 @@
       selectedType: 'bg',
       selectedOverlayIdx: -1,
       bg: null,
-      overlays: [], // Массив множественных наложений
+      overlays: [],
       text: { str: '', size: 64, y: 1500 },
       shake: { enabled: true, power: 18 }
     };
 
-    // --- HUB И ПРОЕКТЫ ---
     function loadSavedProjects() {
       const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
       const container = document.getElementById('projList');
@@ -555,7 +550,6 @@
       document.getElementById('p-' + name).classList.add('active');
     }
 
-    // --- ОТМОТКА ВПЕРЕД / НАЗАД ---
     function seekRelative(sec) {
       state.curTime = Math.max(0, Math.min(state.totalDur, state.curTime + sec));
       if (state.bg?.isVid) state.bg.el.currentTime = state.curTime;
@@ -564,7 +558,6 @@
       draw();
     }
 
-    // --- ДОБАВЛЕНИЕ МЕДИА И МУЛЬТИ-НАЛОЖЕНИЙ ---
     function loadMediaFile(e, type) {
       const f = e.target.files[0];
       if (!f) return;
@@ -692,7 +685,6 @@
       draw();
     }
 
-    // --- NOBU WHEEL ДЛЯ ВЫБРАННОГО СЛОЯ ---
     const wheel = document.getElementById('rotWheel');
     let isDraggingWheel = false;
 
@@ -735,7 +727,7 @@
 
     function getInterpolatedTransform(ov, t) {
       if (ov.steps.length === 0) return { rot: ov.rot, y: ov.y, scale: ov.scale };
-      if (ov.steps.length === 1) return ov.steps[0];
+      if (ov.steps.length === 1) return state.steps ? state.steps[0] : ov.steps[0];
       if (t <= ov.steps[0].time) return ov.steps[0];
       if (t >= ov.steps[ov.steps.length - 1].time) return ov.steps[ov.steps.length - 1];
 
@@ -755,7 +747,6 @@
       return ov.steps[0];
     }
 
-    // --- ПЛЕЕР И ЦИКЛ ---
     function togglePlay() {
       state.playing = !state.playing;
       document.getElementById('playSvg').innerHTML = state.playing 
@@ -804,7 +795,6 @@
       document.getElementById('timecode').innerText = `${format(state.curTime)} / ${format(state.totalDur)}`;
     }
 
-    // --- ОТРИСОВКА CANVAS ---
     function draw() {
       ctx.clearRect(0, 0, cv.width, cv.height);
 
@@ -817,12 +807,10 @@
       ctx.save();
       ctx.translate(offX, offY);
 
-      // 1. Фон
       if (state.bg?.el) {
         ctx.drawImage(state.bg.el, 0, 0, cv.width, cv.height);
       }
 
-      // 2. Все наложения по очереди
       state.overlays.forEach(ov => {
         if (!ov.el) return;
         const currentTransform = getInterpolatedTransform(ov, state.curTime);
@@ -856,7 +844,6 @@
         ctx.restore();
       });
 
-      // 3. Текст
       if (state.text.str) {
         ctx.save();
         ctx.font = `900 ${state.text.size}px Impact, sans-serif`;
@@ -869,7 +856,6 @@
         ctx.restore();
       }
 
-      // Вотермарк
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
       ctx.font = '700 24px -apple-system';
       ctx.textAlign = 'center';
@@ -878,24 +864,54 @@
       ctx.restore();
     }
 
-    // --- ЭКСПОРТ (ГАРАНТИРОВАННЫЙ КЛИК И РАБОТА НА IOS SAFARI) ---
-    function triggerExport() {
+    async function triggerExport() {
       const btn = document.getElementById('mainExportBtn');
-      btn.innerText = 'Рендер...';
+      btn.innerText = 'Рендер со звуком...';
       btn.style.opacity = '0.6';
 
       pauseVideo();
       state.curTime = 0;
 
-      const stream = cv.captureStream(30);
+      const canvasStream = cv.captureStream(30);
+
+      const exportAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (exportAudioCtx.state === 'suspended') {
+        await exportAudioCtx.resume();
+      }
+      const audioDest = exportAudioCtx.createMediaStreamDestination();
+
+      if (state.bg?.isVid && state.bg.el) {
+        try {
+          const bgSource = exportAudioCtx.createMediaElementSource(state.bg.el);
+          bgSource.connect(audioDest);
+          bgSource.connect(exportAudioCtx.destination);
+        } catch (e) {}
+      }
+
+      state.overlays.forEach(ov => {
+        if (ov.isVid && ov.el) {
+          try {
+            const ovSource = exportAudioCtx.createMediaElementSource(ov.el);
+            ovSource.connect(audioDest);
+            ovSource.connect(exportAudioCtx.destination);
+          } catch (e) {}
+        }
+      });
+
+      const audioTracks = audioDest.stream.getAudioTracks();
+      const combinedStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...(audioTracks.length > 0 ? audioTracks : [])
+      ]);
+
       let recorder;
       try {
-        recorder = new MediaRecorder(stream, { mimeType: 'video/mp4;codecs=avc1' });
+        recorder = new MediaRecorder(combinedStream, { mimeType: 'video/mp4;codecs=avc1,mp4a.40.2' });
       } catch (err) {
         try {
-          recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+          recorder = new MediaRecorder(combinedStream, { mimeType: 'video/mp4' });
         } catch (e) {
-          recorder = new MediaRecorder(stream);
+          recorder = new MediaRecorder(combinedStream);
         }
       }
 
@@ -904,6 +920,8 @@
       recorder.onstop = () => {
         btn.innerText = 'Экспорт';
         btn.style.opacity = '1';
+        exportAudioCtx.close();
+
         const blob = new Blob(chunks, { type: recorder.mimeType || 'video/mp4' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -916,23 +934,32 @@
 
       recorder.start();
 
+      if (state.bg?.isVid) {
+        state.bg.el.currentTime = 0;
+        state.bg.el.play();
+      }
+      state.overlays.forEach(ov => {
+        if (ov.isVid) {
+          ov.el.currentTime = 0;
+          ov.el.play();
+        }
+      });
+
       let exportTimer = 0;
-      const targetDuration = Math.min(state.totalDur, 8); // быстрый экспорт превью
+      const targetDuration = Math.min(state.totalDur, 15);
       const renderInterval = setInterval(() => {
         exportTimer += 0.05;
         state.curTime = exportTimer;
-        if (state.bg?.isVid) state.bg.el.currentTime = exportTimer;
-        state.overlays.forEach(ov => { if (ov.isVid) ov.el.currentTime = exportTimer; });
         draw();
 
         if (exportTimer >= targetDuration) {
           clearInterval(renderInterval);
+          pauseVideo();
           recorder.stop();
         }
       }, 50);
     }
 
-    // Инициализация при старте
     loadSavedProjects();
     draw();
   </script>
