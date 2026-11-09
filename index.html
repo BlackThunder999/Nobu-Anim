@@ -2,975 +2,524 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Nobu Anim Studio Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nyxflow Social</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --bg: #000000;
-      --surface: #121214;
-      --surface-2: #1c1c1e;
-      --border: #2c2c2e;
-      --accent: #ffffff;
-      --accent-muted: #8e8e93;
-      --pro-color: #a855f7;
-      --safe-bottom: env(safe-area-inset-bottom, 16px);
-    }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
-      height: 100dvh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      background-color: #060709;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-
-    .screen { display: none; width: 100%; height: 100%; flex-direction: column; }
-    .screen.active { display: flex; }
-
-    /* HUB */
-    .hub-header {
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-    }
-    .badge-pro {
-      background: linear-gradient(135deg, #a855f7, #6366f1);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn-create-proj {
-      margin: 16px;
-      background: var(--surface);
-      border: 1px dashed #3a3a3c;
-      border-radius: 14px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .projects-grid {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 16px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .project-card {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-    }
-
-    /* STUDIO */
-    header {
-      height: 48px;
-      padding: 0 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      background: #09090b;
-      position: relative;
-      z-index: 100;
-    }
-    .btn-header {
-      background: var(--surface-2);
-      color: #fff;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .btn-export {
-      background: #fff;
-      color: #000;
-      border: none;
-      border-radius: 18px;
-      padding: 6px 14px;
-      font-size: 13px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      z-index: 101;
-    }
-
-    .viewport {
-      flex: 1;
-      background: #050505;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .canvas-wrap {
-      position: relative;
-      height: 94%;
-      aspect-ratio: 9/16;
-      background: #000;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.9);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    canvas { width: 100%; height: 100%; display: block; }
-
-    /* Transport */
-    .transport {
-      height: 40px;
-      padding: 0 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #0d0d0e;
-      border-top: 1px solid var(--border);
-    }
-    .btn-icon { background: none; border: none; color: #fff; display: flex; align-items: center; justify-content: center; padding: 6px; cursor: pointer; }
-    .btn-action {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      color: #fff;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 11px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-    .btn-action.delete { color: #ff453a; }
-
-    /* Timeline */
-    .timeline {
-      height: 105px;
-      background: #080808;
-      border-top: 1px solid var(--border);
-      overflow-x: auto;
-      padding: 8px 12px;
-      position: relative;
-    }
-    .timeline-track {
-      height: 26px;
-      margin-bottom: 5px;
-      position: relative;
-      width: 100%;
-      min-width: 500px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-    }
-    .clip {
-      height: 100%;
-      border-radius: 6px;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      padding: 0 8px;
-      color: #fff;
-      font-weight: 600;
-      border: 2px solid transparent;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-    }
-    .clip.selected { border-color: #fff !important; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
-    .clip-bg { background: #2563eb; width: 85%; }
-    .clip-overlay { background: #7c3aed; width: 65%; }
-
-    /* Tabs */
-    .tabs-nav {
-      display: flex;
-      background: #0c0c0e;
-      border-top: 1px solid var(--border);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .tabs-nav::-webkit-scrollbar { display: none; }
-    .tab-btn {
-      flex: 1;
-      min-width: 65px;
-      padding: 10px 0;
-      text-align: center;
-      font-size: 11px;
-      color: var(--accent-muted);
-      border: none;
-      background: none;
-      cursor: pointer;
-    }
-    .tab-btn.active { color: #fff; font-weight: 700; border-bottom: 2px solid #fff; }
-
-    .panel {
-      height: 145px;
-      background: var(--surface);
-      padding: 10px 14px;
-      padding-bottom: calc(var(--safe-bottom) + 8px);
-      overflow-y: auto;
-      display: none;
-    }
-    .panel.active { display: block; }
-    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
-    .row input[type="range"] { flex: 1; margin: 0 10px; accent-color: #fff; }
-
-    /* Nobu Wheel */
-    .wheel-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      padding: 4px 0;
-    }
-    .wheel-container {
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      background: #1c1c1e;
-      border: 2px solid #3a3a3c;
-      position: relative;
-      touch-action: none;
-      cursor: grab;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .wheel-indicator {
-      width: 4px;
-      height: 22px;
-      background: #fff;
-      border-radius: 2px;
-      position: absolute;
-      top: 6px;
-      transform-origin: 2px 28px;
-    }
-    .btn-step {
-      background: #fff;
-      color: #000;
-      border: none;
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    /* Modal PRO */
-    .modal-pro {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .modal-pro.active { display: flex; }
-    .modal-card {
-      background: #141416;
-      border: 1px solid #2d2d30;
-      border-radius: 16px;
-      max-width: 360px;
-      width: 100%;
-      overflow: hidden;
-      text-align: center;
-    }
-    .modal-card img { width: 100%; display: block; border-bottom: 1px solid var(--border); }
+    .custom-scroll::-webkit-scrollbar { display: none; }
+    .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body>
+<body class="flex justify-center h-screen w-screen overflow-hidden select-none bg-black">
 
-  <!-- ХАБ ПРОЕКТОВ -->
-  <div class="screen active" id="screen-hub">
-    <div class="hub-header">
-      <div style="font-weight:800; font-size:16px;">Nobu Anim <span class="badge-pro" onclick="openPro()">PRO</span></div>
-      <div id="projCount" style="font-size:12px; color:#888;">0 проектов</div>
-    </div>
-    <div class="btn-create-proj" onclick="startNewStudio()">
-      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-      Создать новый проект
-    </div>
-    <div class="projects-grid" id="projList"></div>
-  </div>
+  <div class="w-full max-w-md h-full flex flex-col bg-[#0b0d14] border-x border-[#1c2133] relative">
 
-  <!-- СТУДИЯ -->
-  <div class="screen" id="screen-studio">
-    <header>
-      <button class="btn-icon" onclick="exitStudio()">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <button class="btn-header" onclick="saveCurrentProject()">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Сохранить
-      </button>
-      <button class="btn-export" id="mainExportBtn" onclick="triggerExport()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-        Экспорт
+    <!-- ВЕРХНЯЯ ШАПКА -->
+    <header class="px-4 py-3 flex justify-between items-center z-10 bg-[#0b0d14]/90 backdrop-blur-md border-b border-[#1c2133]">
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">
+          NYXFLOW
+        </h1>
+        <span id="admin-badge" class="hidden text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40">
+          Admin Panel
+        </span>
+      </div>
+      <button id="logout-btn" class="text-xs text-gray-400 hover:text-white transition px-2 py-1 rounded bg-[#161a29] border border-[#272e47]">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Выйти
       </button>
     </header>
 
-    <div class="viewport">
-      <div class="canvas-wrap">
-        <canvas id="cv" width="1080" height="1920"></canvas>
-      </div>
-    </div>
+    <!-- ОСНОВНОЙ СКРОЛЛ -->
+    <main class="flex-1 overflow-y-auto custom-scroll relative">
+      
+      <!-- ВКЛАДКА: ЛЕНТА -->
+      <section id="feed-page" class="p-3 space-y-3 pb-32">
+        <div id="posts-container" class="space-y-3">
+          <!-- Сюда генерятся посты из Supabase -->
+        </div>
+      </section>
 
-    <div class="transport">
-      <div style="display:flex; align-items:center; gap:6px;">
-        <button class="btn-icon" onclick="seekRelative(-5)">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
-        </button>
-        <button class="btn-icon" id="playBtn" onclick="togglePlay()">
-          <svg id="playSvg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-        <button class="btn-icon" onclick="seekRelative(5)">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
-        </button>
-        <span id="timecode" style="font-size:11px; color:#888; font-variant-numeric:tabular-nums;">00:00:00 / 00:15:00</span>
-      </div>
-      <div style="display:flex; gap:6px;">
-        <button class="btn-action delete" onclick="deleteCurrentClip()">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-          Удалить
-        </button>
-      </div>
-    </div>
-
-    <div class="timeline" id="tlBox">
-      <div class="timeline-track" id="tr-bg">
-        <div class="clip clip-bg" id="clip-bg" onclick="selectClip('bg')">Фон (Видео)</div>
-      </div>
-      <div id="overlaysTracksList"></div>
-    </div>
-
-    <div class="tabs-nav">
-      <button class="tab-btn" onclick="tab('media')">Медиа</button>
-      <button class="tab-btn active" onclick="tab('overlay')">Наложение</button>
-      <button class="tab-btn" onclick="tab('chroma')">Хромакей</button>
-      <button class="tab-btn" onclick="tab('text')">Текст</button>
-      <button class="tab-btn" onclick="tab('shake')">Шейк</button>
-      <button class="tab-btn" onclick="openPro()">PRO 4K</button>
-    </div>
-
-    <div class="panel" id="p-media">
-      <div style="display:flex; gap:8px;">
-        <label style="flex:1; background:#1c1c1e; padding:10px; border-radius:8px; text-align:center; font-size:11px; cursor:pointer;">
-          + Фон (Видео/Фото)
-          <input type="file" accept="video/*,image/*" hidden onchange="loadMediaFile(event, 'bg')">
-        </label>
-        <label style="flex:1; background:#1c1c1e; padding:10px; border-radius:8px; text-align:center; font-size:11px; cursor:pointer;">
-          + Добавить наложение
-          <input type="file" accept="video/*,image/*" hidden onchange="addOverlayFile(event)">
-        </label>
-      </div>
-    </div>
-
-    <div class="panel active" id="p-overlay">
-      <div class="wheel-wrap">
-        <div style="text-align:center;">
-          <div style="font-size:10px; color:#aaa; margin-bottom:4px;">Nobu Wheel</div>
-          <div class="wheel-container" id="rotWheel">
-            <div class="wheel-indicator" id="wheelInd"></div>
+      <!-- ВКЛАДКА: ПРОФИЛЬ -->
+      <section id="profile-page" class="hidden pb-28">
+        <!-- Баннер профиля -->
+        <div class="relative h-36 w-full bg-[#161a29] border-b border-[#232a42] overflow-hidden group cursor-pointer" onclick="document.getElementById('banner-file-input').click()">
+          <img id="profile-banner-img" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+            <span class="text-xs font-semibold bg-black/60 px-3 py-1.5 rounded-xl border border-white/20"><i class="fa-solid fa-camera mr-1"></i> Сменить баннер</span>
           </div>
-          <div id="rotVal" style="font-size:11px; margin-top:2px;">0°</div>
+          <input type="file" id="banner-file-input" accept="image/*" class="hidden">
         </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <button class="btn-step" onclick="addAnimStep()">+ Зафиксировать шаг</button>
-          <div style="font-size:10px; color:#888; text-align:center;" id="stepCount">Шагов: 0</div>
+
+        <div class="px-4">
+          <!-- Аватарка и Ник -->
+          <div class="relative -mt-12 flex justify-between items-end mb-3">
+            <div class="relative group cursor-pointer" onclick="document.getElementById('avatar-file-input').click()">
+              <img id="profile-avatar-img" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" 
+                   class="w-24 h-24 rounded-full object-cover border-4 border-[#0b0d14] bg-[#161a29] shadow-xl">
+              <div class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <i class="fa-solid fa-pen text-white text-xs"></i>
+              </div>
+              <input type="file" id="avatar-file-input" accept="image/*" class="hidden">
+            </div>
+            <div id="profile-role-tag" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/30">
+              Пользователь
+            </div>
+          </div>
+
+          <h2 id="profile-username-header" class="text-lg font-black text-white">username</h2>
+          <p class="text-xs text-gray-500 mb-4">Настраивай кастом под себя</p>
+
+          <!-- Spotify Плеер -->
+          <div id="spotify-player-box" class="hidden mb-4 rounded-xl overflow-hidden border border-[#232a42]">
+            <iframe id="spotify-iframe" style="border-radius:12px" src="" width="100%" height="80" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+          </div>
+
+          <!-- Настройки профиля -->
+          <div class="bg-[#121522] border border-[#232a42] rounded-2xl p-4 space-y-3">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Кастомизация</p>
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1">Никнейм</label>
+              <input type="text" id="edit-username-input" class="w-full bg-[#0b0d14] border border-[#29314d] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500">
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-400 block mb-1">Ссылка на Spotify трек / альбом</label>
+              <input type="text" id="edit-spotify-input" placeholder="https://open.spotify.com/track/..." class="w-full bg-[#0b0d14] border border-[#29314d] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500">
+            </div>
+            <button id="save-profile-btn" class="w-full bg-purple-600 hover:bg-purple-700 active:scale-95 py-2.5 rounded-xl font-bold text-xs transition">
+              Сохранить профиль
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="row" style="margin-top:6px;">
-        <label>Масштаб:</label>
-        <input type="range" id="ovScale" min="20" max="250" value="70" oninput="updateActiveOverlay('scale', this.value/100)">
-      </div>
-      <div class="row">
-        <label>Позиция Y:</label>
-        <input type="range" id="ovY" min="100" max="1600" value="700" oninput="updateActiveOverlay('y', +this.value)">
-      </div>
-    </div>
+      </section>
+    </main>
 
-    <div class="panel" id="p-chroma">
-      <div class="row">
-        <label>Удалить зеленый фон:</label>
-        <input type="checkbox" id="ck-chroma" onchange="updateActiveOverlay('chromaEnabled', this.checked)">
+    <!-- НИЖНЯЯ ПАНЕЛЬ СОЗДАНИЯ ПОСТА + НАВИГАЦИЯ -->
+    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-[#0b0d14] via-[#0b0d14]/95 to-transparent">
+      
+      <!-- Превью выбранного фото/видео (до 25MB) -->
+      <div id="file-preview-bar" class="hidden items-center justify-between bg-[#191e30] border border-[#2a3350] px-3 py-1.5 rounded-xl mb-2 text-xs">
+        <span id="preview-filename" class="text-purple-300 font-medium truncate max-w-[200px]">file</span>
+        <button id="cancel-file-btn" class="text-gray-400 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="row">
-        <label>Сила среза:</label>
-        <input type="range" min="10" max="100" value="45" oninput="updateActiveOverlay('chromaTol', +this.value)">
-      </div>
-    </div>
 
-    <div class="panel" id="p-text">
-      <div class="row">
-        <input type="text" id="txtInput" placeholder="Текст эдита..." style="flex:1; background:#1c1c1e; border:1px solid #333; color:#fff; padding:6px; border-radius:6px;" oninput="state.text.str = this.value; draw();">
-      </div>
-      <div class="row">
-        <label>Размер шрифта:</label>
-        <input type="range" min="20" max="120" value="64" oninput="state.text.size = +this.value; draw();">
-      </div>
-    </div>
-
-    <div class="panel" id="p-shake">
-      <div class="row">
-        <label>Шейк эдита (бит):</label>
-        <input type="checkbox" id="ck-shake" checked onchange="state.shake.enabled = this.checked; draw();">
-      </div>
-      <div class="row">
-        <label>Сила тряски:</label>
-        <input type="range" min="5" max="50" value="18" oninput="state.shake.power = +this.value;">
-      </div>
-    </div>
-  </div>
-
-  <!-- PRO МОДАЛКА -->
-  <div class="modal-pro" id="proModal" onclick="closePro(event)">
-    <div class="modal-card">
-      <img src="https://images2.imgbox.com/39/17/7tQ4WmsL_o.png" alt="PRO Banner">
-      <div style="padding:16px;">
-        <div style="font-weight:800; font-size:16px; margin-bottom:6px;">Nobu Anim PRO</div>
-        <p style="font-size:12px; color:#aaa; margin-bottom:12px;">Честный 4K UHD, 120 FPS и экспорт без ограничений</p>
-        <button style="width:100%; background:#2c2c2e; color:#777; border:none; padding:10px; border-radius:10px; font-weight:700; font-size:13px; cursor:not-allowed;">
-          10 Звезд Telegram / 1 год (Скоро)
+      <!-- Ввод поста с круглым + -->
+      <div id="post-creation-panel" class="flex items-center gap-2 bg-[#121522]/95 border border-[#232a42] p-2 rounded-2xl shadow-2xl mb-2">
+        <input type="file" id="media-input" accept="image/*,video/*" class="hidden">
+        <button id="choose-media-btn" title="Выбрать фото/видео (до 25MB)" 
+                class="w-10 h-10 rounded-full bg-[#1c2133] hover:bg-purple-600 active:scale-90 text-purple-300 hover:text-white flex items-center justify-center transition border border-[#2e3754] flex-shrink-0">
+          <i class="fa-solid fa-plus text-sm"></i>
+        </button>
+        <input type="text" id="post-content-input" placeholder="Что нового? Опубликуй..." 
+               class="flex-1 bg-transparent border-0 text-sm px-2 text-white placeholder-gray-500 focus:outline-none">
+        <button id="publish-btn" 
+                class="w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 active:scale-90 text-white flex items-center justify-center transition flex-shrink-0 shadow-lg shadow-purple-600/30">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
         </button>
       </div>
+
+      <!-- Нижний переключатель страниц -->
+      <nav class="flex justify-around items-center bg-[#10131d] border border-[#1e2438] rounded-xl py-1.5 px-3">
+        <button id="nav-btn-feed" class="flex items-center gap-2 text-xs font-bold text-purple-400 py-1.5 px-4 rounded-lg bg-purple-500/10">
+          <i class="fa-solid fa-stream"></i> Лента
+        </button>
+        <button id="nav-btn-profile" class="flex items-center gap-2 text-xs font-bold text-gray-400 py-1.5 px-4 rounded-lg hover:text-gray-200">
+          <i class="fa-solid fa-user"></i> Профиль
+        </button>
+      </nav>
     </div>
+
+    <!-- МОДАЛКА: ВХОД / РЕГИСТРАЦИЯ (БЕЗ ПОЧТЫ) -->
+    <div id="auth-modal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-sm bg-[#121522] border border-[#28304a] rounded-3xl p-6 shadow-2xl">
+        <h3 id="auth-title" class="text-xl font-black text-center mb-1 text-white">Вход в Nyxflow</h3>
+        <p class="text-xs text-gray-400 text-center mb-5">Никакой почты — только ник и пароль</p>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-[11px] text-gray-400 block mb-1">Никнейм</label>
+            <input type="text" id="auth-username" class="w-full bg-[#0b0d14] border border-[#28304a] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="text-[11px] text-gray-400 block mb-1">Пароль</label>
+            <input type="password" id="auth-password" class="w-full bg-[#0b0d14] border border-[#28304a] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+          </div>
+
+          <button id="auth-submit-btn" class="w-full bg-purple-600 hover:bg-purple-700 active:scale-95 py-3 rounded-xl font-black text-xs uppercase tracking-wider text-white transition mt-2 shadow-lg shadow-purple-600/30">
+            Войти
+          </button>
+
+          <p id="auth-switch-text" class="text-xs text-center text-gray-400 mt-3 cursor-pointer hover:text-purple-300">
+            Нет аккаунта? Создать в 1 клик
+          </p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    const cv = document.getElementById('cv');
-    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    // 1. Инициализация твоей Supabase
+    const SUPABASE_URL = "https://mlcfgdnwnhpfosomeutj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_X5oXLmCQy0FpOMAs2nLWuQ_HY2yaZy5";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let state = {
-      curTime: 0,
-      totalDur: 15,
-      playing: false,
-      selectedType: 'bg',
-      selectedOverlayIdx: -1,
-      bg: null,
-      overlays: [],
-      text: { str: '', size: 64, y: 1500 },
-      shake: { enabled: true, power: 18 }
-    };
+    const MAX_MEDIA_SIZE = 25 * 1024 * 1024; // 25 MB
+    let currentUser = JSON.parse(localStorage.getItem('nyxflow_session')) || null;
+    let authIsRegisterMode = false;
+    let selectedFile = null;
 
-    function loadSavedProjects() {
-      const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
-      const container = document.getElementById('projList');
-      container.innerHTML = '';
-      document.getElementById('projCount').innerText = list.length + ' проектов';
-
-      list.forEach((p, idx) => {
-        const item = document.createElement('div');
-        item.className = 'project-card';
-        item.innerHTML = `
-          <div>
-            <div style="font-weight:700; font-size:13px;">${p.name}</div>
-            <div style="font-size:10px; color:#888;">${p.date} • ${p.dur} сек</div>
-          </div>
-          <button style="background:none; border:none; color:#ff453a; padding:6px;" onclick="event.stopPropagation(); deleteProject(${idx})">✕</button>
-        `;
-        item.onclick = () => openProject(p);
-        container.appendChild(item);
-      });
+    // Хеширование sha256 на клиенте
+    async function hashPassword(str) {
+      const buffer = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    function saveCurrentProject() {
-      const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
-      const newProj = {
-        name: 'Проект ' + (list.length + 1),
-        date: new Date().toLocaleDateString(),
-        dur: Math.round(state.totalDur),
-        text: state.text.str
-      };
-      list.unshift(newProj);
-      localStorage.setItem('nobu_projects', JSON.stringify(list));
-      alert('Проект сохранен в Nobu Hub!');
-    }
-
-    function deleteProject(idx) {
-      const list = JSON.parse(localStorage.getItem('nobu_projects') || '[]');
-      list.splice(idx, 1);
-      localStorage.setItem('nobu_projects', JSON.stringify(list));
-      loadSavedProjects();
-    }
-
-    function openProject(p) {
-      startNewStudio();
-      state.totalDur = p.dur || 15;
-      state.text.str = p.text || '';
-      document.getElementById('txtInput').value = state.text.str;
-      updateTimeDisplay();
-      draw();
-    }
-
-    function startNewStudio() {
-      document.getElementById('screen-hub').classList.remove('active');
-      document.getElementById('screen-studio').classList.add('active');
-      selectClip('bg');
-      updateTimeDisplay();
-      draw();
-    }
-
-    function exitStudio() {
-      pauseVideo();
-      document.getElementById('screen-studio').classList.remove('active');
-      document.getElementById('screen-hub').classList.add('active');
-      loadSavedProjects();
-    }
-
-    function openPro() { document.getElementById('proModal').classList.add('active'); }
-    function closePro(e) { if (e.target.id === 'proModal') document.getElementById('proModal').classList.remove('active'); }
-
-    function tab(name) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById('p-' + name).classList.add('active');
-    }
-
-    function seekRelative(sec) {
-      state.curTime = Math.max(0, Math.min(state.totalDur, state.curTime + sec));
-      if (state.bg?.isVid) state.bg.el.currentTime = state.curTime;
-      state.overlays.forEach(ov => { if (ov.isVid) ov.el.currentTime = state.curTime; });
-      updateTimeDisplay();
-      draw();
-    }
-
-    function loadMediaFile(e, type) {
-      const f = e.target.files[0];
-      if (!f) return;
-      const url = URL.createObjectURL(f);
-      const isVid = f.type.startsWith('video');
-
-      if (isVid) {
-        const v = document.createElement('video');
-        v.src = url;
-        v.playsInline = true;
-        v.muted = false;
-        v.onloadedmetadata = () => {
-          state.bg = { el: v, isVid: true, dur: v.duration };
-          state.totalDur = v.duration;
-          document.getElementById('clip-bg').style.opacity = '1';
-          updateTimeDisplay();
-          draw();
-        };
+    // Проверка сессии
+    async function checkAuth() {
+      if (!currentUser) {
+        showAuthModal(false);
       } else {
-        const img = new Image();
-        img.src = url;
-        img.onload = () => {
-          state.bg = { el: img, isVid: false, dur: 15 };
-          document.getElementById('clip-bg').style.opacity = '1';
-          updateTimeDisplay();
-          draw();
-        };
+        const { data: user, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+        if (error || !user || user.is_banned) {
+          if (user?.is_banned) alert("⛔ Ваш аккаунт заблокирован администрацией!");
+          logout();
+          return;
+        }
+        currentUser = user;
+        localStorage.setItem('nyxflow_session', JSON.stringify(user));
+        hideAuthModal();
+        applyUserUI();
+        loadPosts();
       }
     }
 
-    function addOverlayFile(e) {
-      const f = e.target.files[0];
-      if (!f) return;
-      const url = URL.createObjectURL(f);
-      const isVid = f.type.startsWith('video');
-
-      const overlayObj = {
-        id: Date.now(),
-        el: null,
-        isVid: isVid,
-        scale: 0.7,
-        y: 700,
-        rot: 0,
-        chromaEnabled: false,
-        chromaTol: 45,
-        steps: []
-      };
-
-      if (isVid) {
-        const v = document.createElement('video');
-        v.src = url;
-        v.playsInline = true;
-        v.muted = false;
-        v.onloadedmetadata = () => {
-          overlayObj.el = v;
-          state.overlays.push(overlayObj);
-          selectOverlay(state.overlays.length - 1);
-          renderOverlaysTimeline();
-          draw();
-        };
+    function applyUserUI() {
+      if (currentUser.is_admin) {
+        document.getElementById('admin-badge').classList.remove('hidden');
+        document.getElementById('profile-role-tag').textContent = "👑 Создатель / Админ";
+        document.getElementById('profile-role-tag').className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-red-500/20 text-red-400 border border-red-500/40";
       } else {
-        const img = new Image();
-        img.src = url;
-        img.onload = () => {
-          overlayObj.el = img;
-          state.overlays.push(overlayObj);
-          selectOverlay(state.overlays.length - 1);
-          renderOverlaysTimeline();
-          draw();
-        };
+        document.getElementById('admin-badge').classList.add('hidden');
+        document.getElementById('profile-role-tag').textContent = "Пользователь";
+        document.getElementById('profile-role-tag').className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/30";
       }
+
+      document.getElementById('profile-username-header').textContent = currentUser.username;
+      document.getElementById('edit-username-input').value = currentUser.username;
+      document.getElementById('profile-avatar-img').src = currentUser.avatar_url;
+      document.getElementById('profile-banner-img').src = currentUser.banner_url;
+      document.getElementById('edit-spotify-input').value = currentUser.spotify_url || '';
+      renderSpotify(currentUser.spotify_url);
     }
 
-    function renderOverlaysTimeline() {
-      const container = document.getElementById('overlaysTracksList');
-      container.innerHTML = '';
-      state.overlays.forEach((ov, idx) => {
-        const row = document.createElement('div');
-        row.className = 'timeline-track';
-        row.innerHTML = `<div class="clip clip-overlay ${state.selectedOverlayIdx === idx ? 'selected' : ''}" onclick="selectOverlay(${idx})">Наложение #${idx + 1} (${ov.isVid ? 'Видео' : 'Фото'})</div>`;
-        container.appendChild(row);
-      });
-    }
-
-    function selectClip(type) {
-      state.selectedType = type;
-      state.selectedOverlayIdx = -1;
-      document.getElementById('clip-bg').classList.toggle('selected', type === 'bg');
-      renderOverlaysTimeline();
-    }
-
-    function selectOverlay(idx) {
-      state.selectedType = 'overlay';
-      state.selectedOverlayIdx = idx;
-      document.getElementById('clip-bg').classList.remove('selected');
-      renderOverlaysTimeline();
-
-      const ov = state.overlays[idx];
-      if (ov) {
-        document.getElementById('ovScale').value = ov.scale * 100;
-        document.getElementById('ovY').value = ov.y;
-        document.getElementById('ck-chroma').checked = ov.chromaEnabled;
-        document.getElementById('wheelInd').style.transform = `rotate(${ov.rot}deg)`;
-        document.getElementById('rotVal').innerText = ov.rot + '°';
-        document.getElementById('stepCount').innerText = 'Шагов: ' + ov.steps.length;
+    function renderSpotify(url) {
+      const box = document.getElementById('spotify-player-box');
+      const iframe = document.getElementById('spotify-iframe');
+      if (!url) {
+        box.classList.add('hidden');
+        return;
       }
-    }
-
-    function updateActiveOverlay(prop, val) {
-      if (state.selectedOverlayIdx >= 0 && state.overlays[state.selectedOverlayIdx]) {
-        state.overlays[state.selectedOverlayIdx][prop] = val;
-        draw();
-      }
-    }
-
-    function deleteCurrentClip() {
-      if (state.selectedType === 'bg') {
-        state.bg = null;
-        document.getElementById('clip-bg').style.opacity = '0.3';
-      } else if (state.selectedOverlayIdx >= 0) {
-        state.overlays.splice(state.selectedOverlayIdx, 1);
-        state.selectedOverlayIdx = -1;
-        renderOverlaysTimeline();
-      }
-      draw();
-    }
-
-    const wheel = document.getElementById('rotWheel');
-    let isDraggingWheel = false;
-
-    function handleWheelMove(e) {
-      if (!isDraggingWheel || state.selectedOverlayIdx < 0) return;
-      const rect = wheel.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const rad = Math.atan2(clientY - cy, clientX - cx);
-      let deg = Math.round(rad * (180 / Math.PI)) + 90;
-      if (deg < 0) deg += 360;
-
-      const ov = state.overlays[state.selectedOverlayIdx];
-      if (ov) {
-        ov.rot = deg;
-        document.getElementById('wheelInd').style.transform = `rotate(${deg}deg)`;
-        document.getElementById('rotVal').innerText = deg + '°';
-        draw();
-      }
-    }
-
-    wheel.addEventListener('pointerdown', () => { isDraggingWheel = true; });
-    window.addEventListener('pointermove', handleWheelMove);
-    window.addEventListener('pointerup', () => { isDraggingWheel = false; });
-
-    function addAnimStep() {
-      if (state.selectedOverlayIdx < 0) return;
-      const ov = state.overlays[state.selectedOverlayIdx];
-      ov.steps.push({
-        time: state.curTime,
-        rot: ov.rot,
-        y: ov.y,
-        scale: ov.scale
-      });
-      ov.steps.sort((a,b) => a.time - b.time);
-      document.getElementById('stepCount').innerText = 'Шагов: ' + ov.steps.length;
-    }
-
-    function getInterpolatedTransform(ov, t) {
-      if (!ov.steps || ov.steps.length === 0) return { rot: ov.rot, y: ov.y, scale: ov.scale };
-      if (ov.steps.length === 1) return ov.steps[0];
-      if (t <= ov.steps[0].time) return ov.steps[0];
-      if (t >= ov.steps[ov.steps.length - 1].time) return ov.steps[ov.steps.length - 1];
-
-      for (let i = 0; i < ov.steps.length - 1; i++) {
-        const s1 = ov.steps[i];
-        const s2 = ov.steps[i+1];
-        if (t >= s1.time && t <= s2.time) {
-          const factor = (t - s1.time) / (s2.time - s1.time);
-          const smooth = factor * factor * (3 - 2 * factor);
-          return {
-            rot: s1.rot + (s2.rot - s1.rot) * smooth,
-            y: s1.y + (s2.y - s1.y) * smooth,
-            scale: s1.scale + (s2.scale - s1.scale) * smooth
-          };
-        }
-      }
-      return ov.steps[0];
-    }
-
-    function togglePlay() {
-      state.playing = !state.playing;
-      document.getElementById('playSvg').innerHTML = state.playing 
-        ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' 
-        : '<path d="M8 5v14l11-7z"/>';
-
-      if (state.playing) {
-        if (state.bg?.isVid) { state.bg.el.currentTime = state.curTime; state.bg.el.play(); }
-        state.overlays.forEach(ov => { if (ov.isVid) { ov.el.currentTime = state.curTime; ov.el.play(); } });
-        loop();
+      // Преобразуем open.spotify.com/track/ID в embed
+      const match = url.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+      if (match) {
+        iframe.src = `https://open.spotify.com/embed/${match[1]}/${match[2]}?utm_source=generator&theme=0`;
+        box.classList.remove('hidden');
       } else {
-        pauseVideo();
+        box.classList.add('hidden');
       }
     }
 
-    function pauseVideo() {
-      if (state.bg?.isVid) state.bg.el.pause();
-      state.overlays.forEach(ov => { if (ov.isVid) ov.el.pause(); });
+    // Авторизация / Регистрация
+    function showAuthModal(isRegister = false) {
+      authIsRegisterMode = isRegister;
+      document.getElementById('auth-modal').classList.remove('hidden');
+      document.getElementById('auth-title').textContent = isRegister ? "Создать аккаунт" : "Вход в Nyxflow";
+      document.getElementById('auth-submit-btn').textContent = isRegister ? "Зарегистрироваться" : "Войти";
+      document.getElementById('auth-switch-text').textContent = isRegister ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Создать в 1 клик";
     }
 
-    let lastTime = 0;
-    function loop(t = 0) {
-      if (!state.playing) return;
-      const dt = (t - lastTime) / 1000;
-      lastTime = t;
-
-      if (dt > 0 && dt < 1) state.curTime += dt;
-      if (state.curTime >= state.totalDur) {
-        state.curTime = 0;
-        if (state.bg?.isVid) state.bg.el.currentTime = 0;
-        state.overlays.forEach(ov => { if (ov.isVid) ov.el.currentTime = 0; });
-      }
-
-      updateTimeDisplay();
-      draw();
-      requestAnimationFrame(loop);
+    function hideAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
     }
 
-    function updateTimeDisplay() {
-      const format = s => {
-        const m = Math.floor(s / 60);
-        const sec = Math.floor(s % 60);
-        const ms = Math.floor((s % 1) * 100);
-        return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}:${String(ms).padStart(2,'0')}`;
-      };
-      document.getElementById('timecode').innerText = `${format(state.curTime)} / ${format(state.totalDur)}`;
+    document.getElementById('auth-switch-text').addEventListener('click', () => {
+      showAuthModal(!authIsRegisterMode);
+    });
+
+    document.getElementById('auth-submit-btn').addEventListener('click', async () => {
+      const username = document.getElementById('auth-username').value.trim();
+      const password = document.getElementById('auth-password').value.trim();
+      if (!username || !password) return alert("Заполни ник и пароль!");
+
+      const passwordHash = await hashPassword(password);
+
+      if (authIsRegisterMode) {
+        // Регистрация
+        const { data, error } = await supabaseClient.from('profiles').insert([
+          { username, password_hash: passwordHash }
+        ]).select().single();
+
+        if (error) return alert("Ошибка! Возможно такой ник уже занят.");
+        currentUser = data;
+        localStorage.setItem('nyxflow_session', JSON.stringify(data));
+        location.reload();
+      } else {
+        // Вход
+        const { data, error } = await supabaseClient.from('profiles').select('*')
+          .eq('username', username)
+          .eq('password_hash', passwordHash)
+          .single();
+
+        if (error || !data) return alert("Неверный ник или пароль!");
+        if (data.is_banned) return alert("⛔ Аккаунт забанен навсегда!");
+
+        currentUser = data;
+        localStorage.setItem('nyxflow_session', JSON.stringify(data));
+        location.reload();
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem('nyxflow_session');
+      location.reload();
     }
+    document.getElementById('logout-btn').addEventListener('click', logout);
 
-    function draw() {
-      ctx.clearRect(0, 0, cv.width, cv.height);
+    // Загрузка фото/видео с лимитом 25 MB
+    const mediaInput = document.getElementById('media-input');
+    document.getElementById('choose-media-btn').addEventListener('click', () => mediaInput.click());
 
-      let offX = 0, offY = 0;
-      if (state.shake.enabled && state.playing) {
-        offX = (Math.random() - 0.5) * state.shake.power;
-        offY = (Math.random() - 0.5) * state.shake.power;
+    mediaInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > MAX_MEDIA_SIZE) {
+        alert("⚠️ Лимит 25 МБ! Сервер не принимает файлы тяжелее.");
+        mediaInput.value = '';
+        return;
+      }
+      selectedFile = file;
+      document.getElementById('preview-filename').textContent = file.name;
+      document.getElementById('file-preview-bar').classList.remove('hidden');
+      document.getElementById('file-preview-bar').classList.add('flex');
+    });
+
+    document.getElementById('cancel-file-btn').addEventListener('click', () => {
+      selectedFile = null;
+      mediaInput.value = '';
+      document.getElementById('file-preview-bar').classList.add('hidden');
+      document.getElementById('file-preview-bar').classList.remove('flex');
+    });
+
+    // Отправка поста
+    document.getElementById('publish-btn').addEventListener('click', async () => {
+      const text = document.getElementById('post-content-input').value.trim();
+      if (!text && !selectedFile) return;
+
+      let mediaUrl = null;
+      let mediaType = null;
+
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const filePath = `posts/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabaseClient.storage
+          .from('nyxflow-media')
+          .upload(filePath, selectedFile);
+
+        if (uploadError) return alert("Ошибка заливки медиа: " + uploadError.message);
+
+        const { data: publicData } = supabaseClient.storage
+          .from('nyxflow-media')
+          .getPublicUrl(filePath);
+
+        mediaUrl = publicData.publicUrl;
+        mediaType = selectedFile.type.startsWith('video/') ? 'video' : 'image';
       }
 
-      ctx.save();
-      ctx.translate(offX, offY);
-
-      if (state.bg?.el) {
-        ctx.drawImage(state.bg.el, 0, 0, cv.width, cv.height);
-      }
-
-      state.overlays.forEach(ov => {
-        if (!ov.el) return;
-        const currentTransform = getInterpolatedTransform(ov, state.curTime);
-        const ow = (ov.el.videoWidth || ov.el.width || 400) * currentTransform.scale;
-        const oh = (ov.el.videoHeight || ov.el.height || 400) * currentTransform.scale;
-        const ox = cv.width / 2;
-        const oy = currentTransform.y;
-
-        ctx.save();
-        ctx.translate(ox, oy);
-        ctx.rotate((currentTransform.rot * Math.PI) / 180);
-
-        if (ov.chromaEnabled) {
-          const offCv = document.createElement('canvas');
-          offCv.width = ow; offCv.height = oh;
-          const offCtx = offCv.getContext('2d');
-          offCtx.drawImage(ov.el, 0, 0, ow, oh);
-          const imgData = offCtx.getImageData(0, 0, ow, oh);
-          const d = imgData.data;
-          const tol = ov.chromaTol * 2.4;
-
-          for (let i = 0; i < d.length; i += 4) {
-            const r = d[i], g = d[i+1], b = d[i+2];
-            if (g > 70 && (g - r) > tol && (g - b) > tol) d[i+3] = 0;
-          }
-          offCtx.putImageData(imgData, 0, 0);
-          ctx.drawImage(offCv, -ow/2, -oh/2);
-        } else {
-          ctx.drawImage(ov.el, -ow/2, -oh/2, ow, oh);
+      const { error: postError } = await supabaseClient.from('posts').insert([
+        {
+          user_id: currentUser.id,
+          text: text,
+          media_url: mediaUrl,
+          media_type: mediaType
         }
-        ctx.restore();
-      });
-
-      if (state.text.str) {
-        ctx.save();
-        ctx.font = `900 ${state.text.size}px Impact, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.lineWidth = 8;
-        ctx.strokeStyle = '#000';
-        ctx.strokeText(state.text.str, cv.width / 2, state.text.y);
-        ctx.fillStyle = '#fff';
-        ctx.fillText(state.text.str, cv.width / 2, state.text.y);
-        ctx.restore();
-      }
-
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = '700 24px -apple-system';
-      ctx.textAlign = 'center';
-      ctx.fillText('Nobu Anim', cv.width / 2, cv.height - 180);
-
-      ctx.restore();
-    }
-
-    async function triggerExport() {
-      const btn = document.getElementById('mainExportBtn');
-      btn.innerText = 'Рендер...';
-      btn.style.opacity = '0.5';
-      btn.disabled = true;
-
-      pauseVideo();
-      state.curTime = 0;
-
-      const exportDuration = Math.max(1, Math.min(state.totalDur || 10, 15));
-      const fps = 30;
-
-      const canvasStream = cv.captureStream(fps);
-
-      const exportAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (exportAudioCtx.state === 'suspended') {
-        await exportAudioCtx.resume();
-      }
-      const audioDest = exportAudioCtx.createMediaStreamDestination();
-
-      if (state.bg?.isVid && state.bg.el) {
-        try {
-          const bgSource = exportAudioCtx.createMediaElementSource(state.bg.el);
-          bgSource.connect(audioDest);
-          bgSource.connect(exportAudioCtx.destination);
-        } catch (e) {}
-      }
-
-      state.overlays.forEach(ov => {
-        if (ov.isVid && ov.el) {
-          try {
-            const ovSource = exportAudioCtx.createMediaElementSource(ov.el);
-            ovSource.connect(audioDest);
-            ovSource.connect(exportAudioCtx.destination);
-          } catch (e) {}
-        }
-      });
-
-      const audioTracks = audioDest.stream.getAudioTracks();
-      const combinedStream = new MediaStream([
-        ...canvasStream.getVideoTracks(),
-        ...(audioTracks.length > 0 ? audioTracks : [])
       ]);
 
-      let mime = 'video/mp4';
-      if (!MediaRecorder.isTypeSupported('video/mp4')) {
-        mime = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' : 'video/webm';
-      }
+      if (postError) return alert("Ошибка отправки: " + postError.message);
 
-      const recorder = new MediaRecorder(combinedStream, { mimeType: mime });
-      const chunks = [];
+      document.getElementById('post-content-input').value = '';
+      selectedFile = null;
+      mediaInput.value = '';
+      document.getElementById('file-preview-bar').classList.add('hidden');
+      document.getElementById('file-preview-bar').classList.remove('flex');
+      loadPosts();
+    });
 
-      recorder.ondataavailable = e => {
-        if (e.data && e.data.size > 0) chunks.push(e.data);
-      };
+    // Получение постов и рендер
+    async function loadPosts() {
+      const { data: posts, error } = await supabaseClient
+        .from('posts')
+        .select(`
+          id, text, media_url, media_type, created_at, user_id,
+          profiles ( id, username, avatar_url, is_admin, is_banned )
+        `)
+        .order('created_at', { ascending: false });
 
-      recorder.onstop = () => {
-        btn.innerText = 'Экспорт';
-        btn.style.opacity = '1';
-        btn.disabled = false;
-        exportAudioCtx.close();
+      if (error) return console.error(error);
 
-        const blob = new Blob(chunks, { type: mime });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `NobuAnim_${Math.round(exportDuration)}s.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-      };
+      const container = document.getElementById('posts-container');
+      container.innerHTML = '';
 
-      recorder.start();
+      posts.forEach(post => {
+        // Пропускаем посты забаненных
+        if (post.profiles?.is_banned) return;
 
-      if (state.bg?.isVid) {
-        state.bg.el.currentTime = 0;
-        state.bg.el.play();
-      }
-      state.overlays.forEach(ov => {
-        if (ov.isVid) {
-          ov.el.currentTime = 0;
-          ov.el.play();
+        const card = document.createElement('article');
+        card.className = "bg-[#121522] border border-[#232a42] rounded-2xl p-3.5 shadow-xl relative";
+
+        let mediaHtml = '';
+        if (post.media_url) {
+          if (post.media_type === 'video') {
+            mediaHtml = `
+              <div class="rounded-xl overflow-hidden bg-black max-h-80 border border-[#232a42] mt-2.5">
+                <video src="${post.media_url}" controls class="w-full max-h-80 object-cover"></video>
+              </div>`;
+          } else {
+            mediaHtml = `
+              <div class="rounded-xl overflow-hidden bg-black max-h-80 border border-[#232a42] mt-2.5 flex items-center justify-center">
+                <img src="${post.media_url}" class="w-full object-cover">
+              </div>`;
+          }
         }
+
+        // Админские действия
+        let adminButtons = '';
+        if (currentUser && currentUser.is_admin) {
+          adminButtons = `
+            <div class="flex items-center gap-1.5 ml-auto">
+              <button onclick="adminDeletePost('${post.id}')" title="Удалить пост" class="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition text-xs">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+              ${post.profiles?.id !== currentUser.id ? `
+                <button onclick="adminBanUser('${post.profiles?.id}', '${post.profiles?.username}')" title="Забанить навсегда" class="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500 hover:text-black transition text-xs">
+                  <i class="fa-solid fa-ban"></i>
+                </button>
+              ` : ''}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2.5 mb-2">
+            <img src="${post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'}" class="w-9 h-9 rounded-full object-cover border border-purple-500/40">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <p class="font-bold text-sm text-gray-200">${post.profiles?.username || 'Аноним'}</p>
+                ${post.profiles?.is_admin ? '<i class="fa-solid fa-crown text-yellow-400 text-xs" title="Администратор"></i>' : ''}
+              </div>
+              <p class="text-[10px] text-gray-500">${new Date(post.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+            </div>
+            ${adminButtons}
+          </div>
+          ${post.text ? `<p class="text-sm text-gray-300 leading-relaxed">${post.text}</p>` : ''}
+          ${mediaHtml}
+        `;
+        container.appendChild(card);
       });
-
-      const startTime = performance.now();
-      const frameInterval = setInterval(() => {
-        const elapsed = (performance.now() - startTime) / 1000;
-        state.curTime = elapsed;
-        draw();
-
-        if (elapsed >= exportDuration) {
-          clearInterval(frameInterval);
-          pauseVideo();
-          state.curTime = 0;
-          draw();
-          recorder.requestData();
-          setTimeout(() => {
-            recorder.stop();
-          }, 150);
-        }
-      }, 1000 / fps);
     }
 
-    loadSavedProjects();
-    draw();
+    // Функции создателя (Админа)
+    window.adminDeletePost = async function(postId) {
+      if (!confirm("Удалить этот пост?")) return;
+      await supabaseClient.from('posts').delete().eq('id', postId);
+      loadPosts();
+    };
+
+    window.adminBanUser = async function(userId, username) {
+      if (!confirm(`Выдать пермач и бан пользователю ${username}?`)) return;
+      await supabaseClient.from('profiles').update({ is_banned: true }).eq('id', userId);
+      alert(`Пользователь ${username} забанен!`);
+      loadPosts();
+    };
+
+    // Смена Аватарки и Баннера в профиле
+    document.getElementById('avatar-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const path = `avatars/${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
+      await supabaseClient.storage.from('nyxflow-media').upload(path, file);
+      const { data } = supabaseClient.storage.from('nyxflow-media').getPublicUrl(path);
+      await supabaseClient.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', currentUser.id);
+      currentUser.avatar_url = data.publicUrl;
+      localStorage.setItem('nyxflow_session', JSON.stringify(currentUser));
+      applyUserUI();
+    });
+
+    document.getElementById('banner-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const path = `banners/${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
+      await supabaseClient.storage.from('nyxflow-media').upload(path, file);
+      const { data } = supabaseClient.storage.from('nyxflow-media').getPublicUrl(path);
+      await supabaseClient.from('profiles').update({ banner_url: data.publicUrl }).eq('id', currentUser.id);
+      currentUser.banner_url = data.publicUrl;
+      localStorage.setItem('nyxflow_session', JSON.stringify(currentUser));
+      applyUserUI();
+    });
+
+    // Сохранение настроек профиля (ник + Spotify)
+    document.getElementById('save-profile-btn').addEventListener('click', async () => {
+      const newUsername = document.getElementById('edit-username-input').value.trim();
+      const spotifyUrl = document.getElementById('edit-spotify-input').value.trim();
+      if (!newUsername) return alert("Ник не может быть пустым!");
+
+      const { error } = await supabaseClient.from('profiles').update({
+        username: newUsername,
+        spotify_url: spotifyUrl
+      }).eq('id', currentUser.id);
+
+      if (error) return alert("Ошибка сохранения или ник занят!");
+      currentUser.username = newUsername;
+      currentUser.spotify_url = spotifyUrl;
+      localStorage.setItem('nyxflow_session', JSON.stringify(currentUser));
+      applyUserUI();
+      alert("Профиль обновлен!");
+    });
+
+    // Навигация
+    const navFeed = document.getElementById('nav-btn-feed');
+    const navProfile = document.getElementById('nav-btn-profile');
+    const feedPage = document.getElementById('feed-page');
+    const profilePage = document.getElementById('profile-page');
+    const postPanel = document.getElementById('post-creation-panel');
+
+    navFeed.addEventListener('click', () => {
+      feedPage.classList.remove('hidden');
+      profilePage.classList.add('hidden');
+      postPanel.classList.remove('hidden');
+      navFeed.className = "flex items-center gap-2 text-xs font-bold text-purple-400 py-1.5 px-4 rounded-lg bg-purple-500/10";
+      navProfile.className = "flex items-center gap-2 text-xs font-bold text-gray-400 py-1.5 px-4 rounded-lg hover:text-gray-200";
+    });
+
+    navProfile.addEventListener('click', () => {
+      feedPage.classList.add('hidden');
+      profilePage.classList.remove('hidden');
+      postPanel.classList.add('hidden');
+      navProfile.className = "flex items-center gap-2 text-xs font-bold text-purple-400 py-1.5 px-4 rounded-lg bg-purple-500/10";
+      navFeed.className = "flex items-center gap-2 text-xs font-bold text-gray-400 py-1.5 px-4 rounded-lg hover:text-gray-200";
+    });
+
+    // Старт
+    checkAuth();
   </script>
 </body>
 </html>
