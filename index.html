@@ -237,7 +237,7 @@
     .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
     .row input[type="range"] { flex: 1; margin: 0 10px; accent-color: #fff; }
 
-    /* Wheel */
+    /* Nobu Wheel */
     .wheel-wrap {
       display: flex;
       align-items: center;
@@ -277,7 +277,7 @@
       cursor: pointer;
     }
 
-    /* PRO Modal */
+    /* Modal PRO */
     .modal-pro {
       display: none;
       position: fixed;
@@ -303,7 +303,7 @@
 </head>
 <body>
 
-  <!-- ХАБ -->
+  <!-- ХАБ ПРОЕКТОВ -->
   <div class="screen active" id="screen-hub">
     <div class="hub-header">
       <div style="font-weight:800; font-size:16px;">Nobu Anim <span class="badge-pro" onclick="openPro()">PRO</span></div>
@@ -445,7 +445,7 @@
     </div>
   </div>
 
-  <!-- PRO Modal -->
+  <!-- PRO МОДАЛКА -->
   <div class="modal-pro" id="proModal" onclick="closePro(event)">
     <div class="modal-card">
       <img src="https://images2.imgbox.com/39/17/7tQ4WmsL_o.png" alt="PRO Banner">
@@ -726,8 +726,8 @@
     }
 
     function getInterpolatedTransform(ov, t) {
-      if (ov.steps.length === 0) return { rot: ov.rot, y: ov.y, scale: ov.scale };
-      if (ov.steps.length === 1) return state.steps ? state.steps[0] : ov.steps[0];
+      if (!ov.steps || ov.steps.length === 0) return { rot: ov.rot, y: ov.y, scale: ov.scale };
+      if (ov.steps.length === 1) return ov.steps[0];
       if (t <= ov.steps[0].time) return ov.steps[0];
       if (t >= ov.steps[ov.steps.length - 1].time) return ov.steps[ov.steps.length - 1];
 
@@ -866,13 +866,17 @@
 
     async function triggerExport() {
       const btn = document.getElementById('mainExportBtn');
-      btn.innerText = 'Рендер со звуком...';
-      btn.style.opacity = '0.6';
+      btn.innerText = 'Рендер...';
+      btn.style.opacity = '0.5';
+      btn.disabled = true;
 
       pauseVideo();
       state.curTime = 0;
 
-      const canvasStream = cv.captureStream(30);
+      const exportDuration = Math.max(1, Math.min(state.totalDur || 10, 15));
+      const fps = 30;
+
+      const canvasStream = cv.captureStream(fps);
 
       const exportAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (exportAudioCtx.state === 'suspended') {
@@ -904,32 +908,33 @@
         ...(audioTracks.length > 0 ? audioTracks : [])
       ]);
 
-      let recorder;
-      try {
-        recorder = new MediaRecorder(combinedStream, { mimeType: 'video/mp4;codecs=avc1,mp4a.40.2' });
-      } catch (err) {
-        try {
-          recorder = new MediaRecorder(combinedStream, { mimeType: 'video/mp4' });
-        } catch (e) {
-          recorder = new MediaRecorder(combinedStream);
-        }
+      let mime = 'video/mp4';
+      if (!MediaRecorder.isTypeSupported('video/mp4')) {
+        mime = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' : 'video/webm';
       }
 
+      const recorder = new MediaRecorder(combinedStream, { mimeType: mime });
       const chunks = [];
-      recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+
+      recorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
       recorder.onstop = () => {
         btn.innerText = 'Экспорт';
         btn.style.opacity = '1';
+        btn.disabled = false;
         exportAudioCtx.close();
 
-        const blob = new Blob(chunks, { type: recorder.mimeType || 'video/mp4' });
+        const blob = new Blob(chunks, { type: mime });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `NobuAnim_${Date.now()}.mp4`;
+        a.download = `NobuAnim_${Math.round(exportDuration)}s.mp4`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
       };
 
       recorder.start();
@@ -945,19 +950,23 @@
         }
       });
 
-      let exportTimer = 0;
-      const targetDuration = Math.min(state.totalDur, 15);
-      const renderInterval = setInterval(() => {
-        exportTimer += 0.05;
-        state.curTime = exportTimer;
+      const startTime = performance.now();
+      const frameInterval = setInterval(() => {
+        const elapsed = (performance.now() - startTime) / 1000;
+        state.curTime = elapsed;
         draw();
 
-        if (exportTimer >= targetDuration) {
-          clearInterval(renderInterval);
+        if (elapsed >= exportDuration) {
+          clearInterval(frameInterval);
           pauseVideo();
-          recorder.stop();
+          state.curTime = 0;
+          draw();
+          recorder.requestData();
+          setTimeout(() => {
+            recorder.stop();
+          }, 150);
         }
-      }, 50);
+      }, 1000 / fps);
     }
 
     loadSavedProjects();
