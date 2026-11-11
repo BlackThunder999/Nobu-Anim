@@ -6,16 +6,15 @@
   <title>Nyxflow</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     body {
       background-color: #0b0b0e;
       color: #ededed;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .custom-scroll::-webkit-scrollbar { display: none; }
-    .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-    .active-tab {
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .tab-active {
       color: #ffffff;
       border-bottom: 2px solid #ffffff;
       font-weight: 700;
@@ -24,75 +23,88 @@
 </head>
 <body class="flex justify-center h-screen w-screen overflow-hidden select-none bg-black">
 
-  <!-- Контейнер приложения -->
   <div class="w-full max-w-md h-full flex flex-col bg-[#111115] border-x border-[#1c1c24] relative">
 
-    <!-- Верхний бар -->
-    <header class="px-4 pt-3 pb-2 flex items-center justify-between border-b border-[#1c1c24] bg-[#111115]/95 z-20">
+    <!-- Верхняя шапка -->
+    <header class="px-4 py-3 flex items-center justify-between border-b border-[#1c1c24] bg-[#111115]/95 z-20">
       <div class="flex items-center gap-2">
-        <span class="font-extrabold text-lg tracking-tight text-white">nyxflow.pro</span>
-        <span id="admin-indicator" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-bold border border-red-500/30">ADMIN</span>
+        <span class="font-extrabold text-base tracking-tight text-white">nyxflow.pro</span>
+        <span id="badge-admin" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-bold border border-red-500/30">ADMIN</span>
       </div>
-      <button id="logout-btn" title="Выйти" class="text-xs text-gray-400 hover:text-white px-2.5 py-1 rounded-lg bg-[#18181f] border border-[#272733]">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      <button id="btn-logout" title="Выйти" class="p-2 rounded-xl bg-[#18181f] border border-[#272733] text-gray-400 hover:text-white transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
       </button>
     </header>
 
-    <!-- Основной скролл -->
-    <main class="flex-1 overflow-y-auto custom-scroll relative">
+    <!-- Основная рабочая область -->
+    <main class="flex-1 overflow-y-auto no-scrollbar relative">
 
-      <!-- ================= ВКЛАДКА: ЛЕНТА ================= -->
-      <section id="feed-screen" class="pb-28">
+      <!-- ЭКРАН 1: ЛЕНТА -->
+      <section id="view-feed" class="pb-28">
         <!-- Поиск -->
         <div class="p-3">
-          <div class="flex items-center gap-2 bg-[#18181f] border border-[#252530] rounded-xl px-3 py-2 text-xs">
-            <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
-            <input type="text" id="search-input" placeholder="Поиск" class="bg-transparent border-0 text-white placeholder-gray-500 focus:outline-none w-full">
-            <i class="fa-regular fa-sun text-gray-400 cursor-pointer"></i>
+          <div class="flex items-center gap-2 bg-[#18181f] border border-[#252530] rounded-xl px-3 py-2 text-xs text-gray-400">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="feed-search" placeholder="Поиск" class="bg-transparent border-0 text-white placeholder-gray-500 focus:outline-none w-full">
+            <svg class="w-4 h-4 text-gray-400 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
           </div>
         </div>
 
-        <!-- Название ленты + табы -->
+        <!-- Переключатели ленты -->
         <div class="px-4 pt-1 pb-2 border-b border-[#1e1e28]">
-          <h2 class="text-lg font-bold text-white flex items-center gap-1 mb-2">
-            Лента <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+          <h2 class="text-base font-bold text-white flex items-center gap-1.5 mb-2">
+            Лента 
+            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
           </h2>
           <div class="flex items-center gap-6 text-xs text-gray-400">
-            <button id="tab-all" class="pb-2 active-tab">Все записи</button>
-            <button id="tab-friends" class="pb-2 hover:text-gray-200">Друзья</button>
-            <button id="tab-subs" class="pb-2 hover:text-gray-200">Подписки</button>
+            <button id="feed-all-btn" class="pb-2 tab-active">Все записи</button>
+            <button id="feed-friends-btn" class="pb-2 hover:text-gray-200">Друзья</button>
+            <button id="feed-subs-btn" class="pb-2 hover:text-gray-200">Подписки</button>
           </div>
         </div>
 
-        <!-- Поле создания поста (стиль pyLost) -->
+        <!-- Блок создания поста -->
         <div class="p-3 border-b border-[#1c1c24] bg-[#14141a]">
           <div class="flex gap-3 items-start">
-            <img id="creator-avatar" src="" class="w-10 h-10 rounded-full object-cover bg-gray-700 flex-shrink-0">
+            <img id="feed-user-avatar" src="" class="w-10 h-10 rounded-full object-cover bg-gray-700 flex-shrink-0">
             <div class="flex-1">
-              <div class="flex justify-between items-center text-xs text-gray-500 mb-1">
-                <span></span>
-                <span id="char-counter">0/2000</span>
+              <div class="flex justify-end text-[11px] text-gray-500 mb-1">
+                <span id="counter-post-chars">0/2000</span>
               </div>
-              <textarea id="post-textarea" rows="2" maxlength="2000" placeholder="Что у вас нового?" 
+              <textarea id="input-post-text" rows="2" maxlength="2000" placeholder="Что у вас нового?" 
                         class="w-full bg-transparent resize-none border-0 text-sm text-white placeholder-gray-500 focus:outline-none"></textarea>
               
               <!-- Превью файла -->
-              <div id="media-preview" class="hidden items-center justify-between bg-[#1f1f2a] px-3 py-1.5 rounded-xl border border-[#2d2d3d] mb-2 text-xs">
-                <span id="media-filename" class="text-purple-300 truncate max-w-[200px]">file</span>
-                <button id="clear-media-btn" class="text-gray-400 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button>
+              <div id="media-preview-container" class="hidden items-center justify-between bg-[#1f1f2a] px-3 py-1.5 rounded-xl border border-[#2d2d3d] mb-2 text-xs">
+                <span id="preview-file-title" class="text-purple-300 truncate max-w-[200px]">file</span>
+                <button id="btn-remove-media" class="text-gray-400 hover:text-red-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
               </div>
 
               <div class="flex items-center justify-between pt-2 border-t border-[#1e1e28]">
-                <button id="publish-submit-btn" class="bg-[#2c2d38] hover:bg-white hover:text-black font-semibold text-xs px-4 py-1.5 rounded-full text-white transition active:scale-95">
+                <button id="btn-create-post" class="bg-[#2c2d38] hover:bg-white hover:text-black font-semibold text-xs px-4 py-1.5 rounded-full text-white transition active:scale-95">
                   Опубликовать
                 </button>
                 <div class="flex items-center gap-3 text-gray-400">
-                  <input type="file" id="media-file-picker" accept="image/*,video/*" class="hidden">
-                  <button id="pick-media-btn" class="hover:text-white" title="Фото или видео (до 25MB)">
-                    <i class="fa-regular fa-image text-base"></i>
+                  <input type="file" id="input-file-media" accept="image/*,video/*" class="hidden">
+                  <button id="btn-attach-media" class="hover:text-white" title="Медиа до 25МБ">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
                   </button>
-                  <button id="pick-music-btn" class="hover:text-white" title="Прикрепить Spotify">
-                    <i class="fa-solid fa-music text-base"></i>
+                  <button id="btn-attach-spotify" class="hover:text-white" title="Музыка">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -100,129 +112,146 @@
           </div>
         </div>
 
-        <!-- Контейнер постов -->
-        <div id="posts-feed" class="divide-y divide-[#1c1c24]">
-          <!-- Посты рендерятся сюда -->
-        </div>
+        <!-- Лента постов -->
+        <div id="feed-items-list" class="divide-y divide-[#1c1c24]"></div>
       </section>
 
-      <!-- ================= ВКЛАДКА: ПРОФИЛЬ ================= -->
-      <section id="profile-screen" class="hidden pb-28">
+      <!-- ЭКРАН 2: ПРОФИЛЬ -->
+      <section id="view-profile" class="hidden pb-28">
         <!-- Баннер -->
         <div class="relative h-44 w-full bg-[#1b1c26] overflow-hidden">
-          <img id="profile-banner-view" src="" class="w-full h-full object-cover">
-          <button id="share-profile-btn" class="absolute top-3 right-3 bg-[#18181f]/80 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-semibold text-white border border-white/10 flex items-center gap-1.5 hover:bg-black">
-            <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i> Поделиться
+          <img id="view-banner-img" src="" class="w-full h-full object-cover">
+          <button id="btn-share-profile" class="absolute top-3 right-3 bg-[#18181f]/80 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-semibold text-white border border-white/10 flex items-center gap-1.5 hover:bg-black">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Поделиться
           </button>
         </div>
 
         <div class="px-4">
-          <!-- Аватарка + кнопки Редактировать / Премиум -->
+          <!-- Аватар и кнопки -->
           <div class="relative -mt-10 flex justify-between items-end mb-3">
-            <img id="profile-avatar-view" src="" class="w-20 h-20 rounded-2xl object-cover border-4 border-[#111115] bg-[#1a1a24] shadow-xl">
+            <img id="view-avatar-img" src="" class="w-20 h-20 rounded-2xl object-cover border-4 border-[#111115] bg-[#1a1a24] shadow-xl">
             <div class="flex items-center gap-2">
-              <button id="open-edit-profile-btn" class="bg-white hover:bg-gray-200 text-black font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95">
+              <button id="btn-open-editor" class="bg-white hover:bg-gray-200 text-black font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95">
                 Редактировать
               </button>
-              <button class="bg-[#1b1c26] hover:bg-[#252736] text-white text-xs px-3 py-2 rounded-xl border border-[#2b2d3d] flex items-center gap-1.5">
-                <i class="fa-solid fa-feather text-purple-400"></i> Nyx premium
+              <button class="bg-[#1b1c26] text-white text-xs px-3 py-2 rounded-xl border border-[#2b2d3d] flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2Z"/>
+                </svg>
+                Nyx premium
               </button>
             </div>
           </div>
 
-          <!-- Инфа -->
+          <!-- Никнейм с SVG верификацией -->
           <div class="flex items-center gap-1.5">
-            <h2 id="profile-name-view" class="text-xl font-bold text-white">Nyxflow</h2>
-            <i id="verified-icon" class="fa-solid fa-circle-check text-sky-400 text-sm hidden"></i>
+            <h2 id="view-name" class="text-lg font-bold text-white">Nyxflow</h2>
+            <svg id="view-verified-svg" class="w-4 h-4 text-sky-400 hidden flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
           </div>
-          <p id="profile-tag-view" class="text-xs text-gray-500 mb-2">nyxflow.pro/@nyxflow</p>
-          <p id="profile-bio-view" class="text-xs text-gray-300 leading-relaxed mb-3"></p>
+          <p id="view-tag" class="text-xs text-gray-500 mb-2">nyxflow.pro/@nyxflow</p>
+          <p id="view-bio" class="text-xs text-gray-300 leading-relaxed mb-3"></p>
 
-          <!-- Подписчики / Подписки -->
+          <!-- Подписчики -->
           <div class="flex items-center gap-4 text-xs text-gray-300 mb-2">
-            <span><strong id="followers-count" class="text-white">0</strong> Подписчики</span>
-            <span><strong id="following-count" class="text-white">0</strong> Подписки</span>
+            <span><strong id="stat-followers" class="text-white">0</strong> Подписчики</span>
+            <span><strong id="stat-following" class="text-white">0</strong> Подписки</span>
           </div>
           <p class="text-[11px] text-gray-500 mb-4 flex items-center gap-1">
-            <i class="fa-solid fa-circle-info text-[10px]"></i> дата регистрации: ноябрь 2026
+            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            дата регистрации: ноябрь 2026
           </p>
 
-          <!-- Spotify плеер профиля -->
-          <div id="profile-spotify-player" class="hidden mb-4 rounded-xl overflow-hidden border border-[#222433]">
-            <iframe id="profile-spotify-iframe" style="border-radius:12px" src="" width="100%" height="80" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+          <!-- Spotify плеер -->
+          <div id="spotify-box" class="hidden mb-4 rounded-xl overflow-hidden border border-[#222433]">
+            <iframe id="spotify-frame" style="border-radius:12px" src="" width="100%" height="80" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
           </div>
 
-          <!-- Табы стены профиля -->
+          <!-- Табы стены -->
           <div class="flex items-center gap-6 border-b border-[#1c1c24] text-xs text-gray-400 pt-2 mb-3">
-            <button class="pb-2 active-tab">Посты <i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+            <button class="pb-2 tab-active flex items-center gap-1">
+              Посты 
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
             <button class="pb-2 hover:text-gray-200">Понравившиеся</button>
           </div>
 
-          <!-- Стена постов профиля -->
-          <div id="user-posts-container" class="divide-y divide-[#1c1c24]">
-            <!-- Посты текущего пользователя -->
-          </div>
+          <!-- Посты юзера -->
+          <div id="profile-posts-list" class="divide-y divide-[#1c1c24]"></div>
         </div>
       </section>
 
     </main>
 
-    <!-- Нижний навигационный бар (Floating pill стиль) -->
+    <!-- Нижняя плавающая навигация (Floating Pill) -->
     <div class="absolute bottom-3 left-3 right-3 z-30">
       <nav class="bg-[#15161f]/95 backdrop-blur-xl border border-[#242636] rounded-2xl py-2 px-6 flex justify-around items-center shadow-2xl">
-        <button id="nav-feed" class="flex flex-col items-center gap-1 text-white">
-          <i class="fa-solid fa-house text-base"></i>
+        <button id="nav-btn-home" class="flex flex-col items-center gap-1 text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
           <span class="text-[10px] font-semibold">Лента</span>
         </button>
-        <button id="nav-profile" class="flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300">
-          <i class="fa-regular fa-user text-base"></i>
+        <button id="nav-btn-account" class="flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
           <span class="text-[10px] font-semibold">Профиль</span>
         </button>
-        <button id="nav-notifs" class="flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300">
-          <i class="fa-regular fa-bell text-base"></i>
+        <button class="flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
           <span class="text-[10px] font-semibold">Уведы</span>
         </button>
       </nav>
     </div>
 
-    <!-- МОДАЛКА: РЕДАКТИРОВАТЬ ПРОФИЛЬ (стиль из скринов) -->
-    <div id="edit-modal" class="hidden absolute inset-0 bg-[#0f0f14] z-50 flex flex-col">
+    <!-- МОДАЛКА НАСТРОЕК ПРОФИЛЯ -->
+    <div id="modal-editor" class="hidden absolute inset-0 bg-[#0f0f14] z-50 flex flex-col">
       <div class="px-4 py-3 flex justify-between items-center border-b border-[#1f202b]">
         <h3 class="text-sm font-bold text-white">Редактировать профиль</h3>
-        <button id="close-edit-modal-btn" class="bg-white text-black font-semibold text-xs px-3.5 py-1.5 rounded-full">Отмена</button>
+        <button id="btn-dismiss-editor" class="bg-white text-black font-semibold text-xs px-3.5 py-1.5 rounded-full">Отмена</button>
       </div>
 
-      <!-- Вкладки настроек -->
       <div class="flex items-center gap-6 px-4 pt-3 border-b border-[#1f202b] text-xs text-gray-400">
-        <button id="subtab-profile" class="pb-2 active-tab">Профиль</button>
-        <button id="subtab-security" class="pb-2 hover:text-gray-200">Безопасность</button>
-        <button id="subtab-privacy" class="pb-2 hover:text-gray-200">Конфиденциальность</button>
+        <button id="tab-opt-profile" class="pb-2 tab-active">Профиль</button>
+        <button id="tab-opt-security" class="pb-2 hover:text-gray-200">Безопасность</button>
+        <button id="tab-opt-privacy" class="pb-2 hover:text-gray-200">Конфиденциальность</button>
       </div>
 
       <div class="p-4 flex-1 overflow-y-auto space-y-4">
-        <!-- Экран: Профиль -->
-        <div id="edit-pane-profile" class="space-y-4">
-          <!-- Смена баннера и аватарки -->
-          <div class="relative h-28 bg-[#181822] rounded-xl overflow-hidden border border-[#292a3a] cursor-pointer" onclick="document.getElementById('edit-banner-input').click()">
-            <img id="edit-banner-preview" src="" class="w-full h-full object-cover">
+        <!-- Секция: Профиль -->
+        <div id="pane-opt-profile" class="space-y-4">
+          <div class="relative h-28 bg-[#181822] rounded-xl overflow-hidden border border-[#292a3a] cursor-pointer" onclick="document.getElementById('file-banner-upload').click()">
+            <img id="preview-banner-edit" src="" class="w-full h-full object-cover">
             <span class="absolute top-2 left-2 bg-black/60 px-2.5 py-1 rounded-lg text-[10px] text-gray-300">До 25 МБ, любое разрешение</span>
-            <input type="file" id="edit-banner-input" accept="image/*" class="hidden">
+            <input type="file" id="file-banner-upload" accept="image/*" class="hidden">
           </div>
 
-          <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-[#1f202c] border border-[#2f3042] cursor-pointer -mt-8 ml-3 shadow-lg" onclick="document.getElementById('edit-avatar-input').click()">
-            <img id="edit-avatar-preview" src="" class="w-full h-full object-cover">
+          <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-[#1f202c] border border-[#2f3042] cursor-pointer -mt-8 ml-3 shadow-lg" onclick="document.getElementById('file-avatar-upload').click()">
+            <img id="preview-avatar-edit" src="" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <i class="fa-solid fa-camera text-xs text-white"></i>
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
             </div>
-            <input type="file" id="edit-avatar-input" accept="image/*" class="hidden">
+            <input type="file" id="file-avatar-upload" accept="image/*" class="hidden">
           </div>
 
           <div>
             <div class="flex justify-between text-[11px] text-gray-400 mb-1">
               <span>Ник</span>
-              <span id="edit-name-count">0/35</span>
+              <span id="counter-name-edit">0/35</span>
             </div>
-            <input type="text" id="edit-display-name" maxlength="35" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-400">
+            <input type="text" id="edit-val-display" maxlength="35" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
           </div>
 
           <div>
@@ -230,51 +259,53 @@
               <span>Имя пользователя (латиница)</span>
               <span>@</span>
             </div>
-            <input type="text" id="edit-username" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-400">
+            <input type="text" id="edit-val-username" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
           </div>
 
           <div>
             <div class="flex justify-between text-[11px] text-gray-400 mb-1">
               <span>О себе</span>
-              <span id="edit-bio-count">0/150</span>
+              <span id="counter-bio-edit">0/150</span>
             </div>
-            <textarea id="edit-bio" maxlength="150" rows="3" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-400" placeholder="не более 150 символов"></textarea>
+            <textarea id="edit-val-bio" maxlength="150" rows="3" placeholder="не более 150 символов" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none"></textarea>
           </div>
 
           <div>
             <label class="text-[11px] text-gray-400 block mb-1">Spotify трек (ссылка)</label>
-            <input type="text" id="edit-spotify" placeholder="https://open.spotify.com/track/..." class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <input type="text" id="edit-val-spotify" placeholder="https://open.spotify.com/track/..." class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
           </div>
 
           <!-- Верификация кнопка -->
           <div class="bg-[#181822] border border-[#282938] rounded-xl p-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-circle-check text-sky-400 text-lg"></i>
+              <svg class="w-5 h-5 text-sky-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
               <div>
                 <p class="text-xs font-bold text-white">Верификация</p>
                 <p class="text-[10px] text-gray-500">кнопка подачи на значок подлинности</p>
               </div>
             </div>
-            <button id="request-verify-btn" class="bg-[#242533] text-xs px-3 py-1.5 rounded-lg text-sky-300 border border-sky-500/20 hover:bg-sky-500/10">Подать</button>
+            <button id="btn-request-badge" class="bg-[#242533] text-xs px-3 py-1.5 rounded-lg text-sky-300 border border-sky-500/20 hover:bg-sky-500/10">Подать</button>
           </div>
 
-          <button id="save-profile-all-btn" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-xs active:scale-95 transition">
+          <button id="btn-save-full-profile" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-xs active:scale-95 transition">
             Сохранить изменения
           </button>
         </div>
 
-        <!-- Экран: Безопасность -->
-        <div id="edit-pane-security" class="hidden space-y-4">
+        <!-- Секция: Безопасность -->
+        <div id="pane-opt-security" class="hidden space-y-4">
           <p class="text-xs font-bold text-white mb-2">Смена пароля</p>
-          <input type="password" id="change-pass-current" placeholder="Текущий пароль" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <input type="password" id="change-pass-new" placeholder="Новый пароль (минимум 6 символов)" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <button id="save-new-password-btn" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-xs active:scale-95 transition">
+          <input type="password" id="input-pass-curr" placeholder="Текущий пароль" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <input type="password" id="input-pass-next" placeholder="Новый пароль (минимум 6 символов)" class="w-full bg-[#181822] border border-[#282938] rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <button id="btn-submit-new-pass" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-xs active:scale-95 transition">
             Изменить пароль
           </button>
         </div>
 
-        <!-- Экран: Конфиденциальность -->
-        <div id="edit-pane-privacy" class="hidden space-y-3">
+        <!-- Секция: Конфиденциальность -->
+        <div id="pane-opt-privacy" class="hidden space-y-3">
           <p class="text-xs font-bold text-white mb-2">Настройки приватности</p>
           <div class="bg-[#181822] border border-[#282938] rounded-xl p-3 flex items-center justify-between">
             <span class="text-xs text-gray-300">Отображать мои подписки для всех</span>
@@ -292,21 +323,21 @@
       </div>
     </div>
 
-    <!-- ВХОД / РЕГА (БЕЗ ПОЧТЫ) -->
-    <div id="auth-screen" class="hidden absolute inset-0 bg-[#0b0b0e] z-50 flex items-center justify-center p-4">
+    <!-- ОКНО ВХОДА И РЕГИСТРАЦИИ (БЕЗ ПОЧТЫ) -->
+    <div id="view-auth" class="hidden absolute inset-0 bg-[#0b0b0e] z-50 flex items-center justify-center p-4">
       <div class="w-full max-w-xs bg-[#14141c] border border-[#262636] rounded-2xl p-6 shadow-2xl">
-        <h3 id="auth-header" class="text-xl font-black text-center mb-1 text-white">Вход</h3>
+        <h3 id="txt-auth-title" class="text-xl font-black text-center mb-1 text-white">Вход</h3>
         <p class="text-xs text-gray-500 text-center mb-5">Никакой почты — только логин и пароль</p>
 
         <div class="space-y-3">
-          <input type="text" id="login-user" placeholder="Никнейм" class="w-full bg-[#1b1b26] border border-[#2b2b3d] rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-          <input type="password" id="login-pass" placeholder="Пароль" class="w-full bg-[#1b1b26] border border-[#2b2b3d] rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+          <input type="text" id="auth-val-user" placeholder="Никнейм" class="w-full bg-[#1b1b26] border border-[#2b2b3d] rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+          <input type="password" id="auth-val-pass" placeholder="Пароль" class="w-full bg-[#1b1b26] border border-[#2b2b3d] rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
           
-          <button id="auth-exec-btn" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider mt-2 active:scale-95 transition">
+          <button id="btn-submit-auth" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider mt-2 active:scale-95 transition">
             Войти
           </button>
 
-          <p id="toggle-auth-mode" class="text-[11px] text-center text-gray-400 cursor-pointer hover:text-white pt-2">
+          <p id="btn-switch-auth-mode" class="text-[11px] text-center text-gray-400 cursor-pointer hover:text-white pt-2">
             Создать новый аккаунт
           </p>
         </div>
@@ -316,249 +347,249 @@
   </div>
 
   <script>
-    // Supabase креды
+    // Supabase
     const SUPABASE_URL = "https://mlcfgdnwnhpfosomeutj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_X5oXLmCQy0FpOMAs2nLWuQ_HY2yaZy5";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const MAX_SIZE = 25 * 1024 * 1024; // 25 MB
-    let currentUser = JSON.parse(localStorage.getItem('nyx_user')) || null;
-    let isRegister = false;
-    let pickedFile = null;
-    let currentFeedFilter = 'all'; // all, friends, subs
+    const LIMIT_BYTES = 25 * 1024 * 1024; // 25 MB
+    let activeSession = JSON.parse(localStorage.getItem('nyx_session')) || null;
+    let authRegisterMode = false;
+    let attachedFile = null;
 
-    // Хеш sha256
-    async function hash(text) {
-      const b = new TextEncoder().encode(text);
+    // Векторные SVG для карточек постов
+    const SVG_LIKE = (active) => `<svg class="w-4 h-4 ${active ? 'text-red-500 fill-current' : 'text-gray-500 stroke-current'}" fill="${active ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>`;
+    const SVG_COMMENT = `<svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>`;
+    const SVG_REPOST = (active) => `<svg class="w-4 h-4 ${active ? 'text-green-400' : 'text-gray-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`;
+    const SVG_EYE = `<svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const SVG_CHECK = `<svg class="w-3.5 h-3.5 text-sky-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`;
+    const SVG_TRASH = `<svg class="w-3.5 h-3.5 text-red-400 hover:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`;
+    const SVG_BAN = `<svg class="w-3.5 h-3.5 text-yellow-400 hover:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>`;
+
+    async function hashPass(txt) {
+      const b = new TextEncoder().encode(txt);
       const h = await crypto.subtle.digest('SHA-256', b);
       return Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, '0')).join('');
     }
 
-    // Инициализация
-    async function init() {
-      if (!currentUser) {
-        document.getElementById('auth-screen').classList.remove('hidden');
+    async function startApp() {
+      if (!activeSession) {
+        document.getElementById('view-auth').classList.remove('hidden');
         return;
       }
-      const { data: user, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+      const { data: user, error } = await client.from('profiles').select('*').eq('id', activeSession.id).single();
       if (error || !user || user.is_banned) {
-        if (user?.is_banned) alert("⛔ Ваш профиль забанен!");
+        if (user?.is_banned) alert("⛔ Ваш аккаунт заблокирован!");
         logout();
         return;
       }
-      currentUser = user;
-      localStorage.setItem('nyx_user', JSON.stringify(user));
-      document.getElementById('auth-screen').classList.add('hidden');
-      
-      setupUI();
-      loadFeed();
-      loadUserPosts();
+      activeSession = user;
+      localStorage.setItem('nyx_session', JSON.stringify(user));
+      document.getElementById('view-auth').classList.add('hidden');
+
+      renderInterface();
+      fetchFeed();
+      fetchUserPosts();
     }
 
-    function setupUI() {
-      if (currentUser.is_admin) {
-        document.getElementById('admin-indicator').classList.remove('hidden');
+    function renderInterface() {
+      if (activeSession.is_admin) {
+        document.getElementById('badge-admin').classList.remove('hidden');
       }
-      document.getElementById('creator-avatar').src = currentUser.avatar_url;
-      document.getElementById('profile-avatar-view').src = currentUser.avatar_url;
-      document.getElementById('profile-banner-view').src = currentUser.banner_url;
-      document.getElementById('profile-name-view').textContent = currentUser.display_name || currentUser.username;
-      document.getElementById('profile-tag-view').textContent = `nyxflow.pro/@${currentUser.username}`;
-      document.getElementById('profile-bio-view').textContent = currentUser.bio || '';
-      
-      if (currentUser.is_verified) {
-        document.getElementById('verified-icon').classList.remove('hidden');
+      document.getElementById('feed-user-avatar').src = activeSession.avatar_url;
+      document.getElementById('view-avatar-img').src = activeSession.avatar_url;
+      document.getElementById('view-banner-img').src = activeSession.banner_url;
+      document.getElementById('view-name').textContent = activeSession.display_name || activeSession.username;
+      document.getElementById('view-tag').textContent = `nyxflow.pro/@${activeSession.username}`;
+      document.getElementById('view-bio').textContent = activeSession.bio || '';
+
+      if (activeSession.is_verified) {
+        document.getElementById('view-verified-svg').classList.remove('hidden');
       }
 
-      // Spotify
-      if (currentUser.spotify_url) {
-        const m = currentUser.spotify_url.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+      if (activeSession.spotify_url) {
+        const m = activeSession.spotify_url.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
         if (m) {
-          document.getElementById('profile-spotify-iframe').src = `https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator&theme=0`;
-          document.getElementById('profile-spotify-player').classList.remove('hidden');
+          document.getElementById('spotify-frame').src = `https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator&theme=0`;
+          document.getElementById('spotify-box').classList.remove('hidden');
         }
       }
 
-      updateFollowCounts();
+      refreshCounts();
     }
 
-    async function updateFollowCounts() {
-      const { count: f1 } = await supabaseClient.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', currentUser.id);
-      const { count: f2 } = await supabaseClient.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id);
-      document.getElementById('followers-count').textContent = f1 || 0;
-      document.getElementById('following-count').textContent = f2 || 0;
+    async function refreshCounts() {
+      const { count: c1 } = await client.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', activeSession.id);
+      const { count: c2 } = await client.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', activeSession.id);
+      document.getElementById('stat-followers').textContent = c1 || 0;
+      document.getElementById('stat-following').textContent = c2 || 0;
     }
 
     function logout() {
-      localStorage.removeItem('nyx_user');
+      localStorage.removeItem('nyx_session');
       location.reload();
     }
-    document.getElementById('logout-btn').addEventListener('click', logout);
+    document.getElementById('btn-logout').addEventListener('click', logout);
 
     // Авторизация
-    document.getElementById('toggle-auth-mode').addEventListener('click', () => {
-      isRegister = !isRegister;
-      document.getElementById('auth-header').textContent = isRegister ? "Регистрация" : "Вход";
-      document.getElementById('auth-exec-btn').textContent = isRegister ? "Создать аккаунт" : "Войти";
-      document.getElementById('toggle-auth-mode').textContent = isRegister ? "Уже есть аккаунт? Войти" : "Создать новый аккаунт";
+    document.getElementById('btn-switch-auth-mode').addEventListener('click', () => {
+      authRegisterMode = !authRegisterMode;
+      document.getElementById('txt-auth-title').textContent = authRegisterMode ? "Регистрация" : "Вход";
+      document.getElementById('btn-submit-auth').textContent = authRegisterMode ? "Создать аккаунт" : "Войти";
+      document.getElementById('btn-switch-auth-mode').textContent = authRegisterMode ? "Уже есть аккаунт? Войти" : "Создать новый аккаунт";
     });
 
-    document.getElementById('auth-exec-btn').addEventListener('click', async () => {
-      const u = document.getElementById('login-user').value.trim();
-      const p = document.getElementById('login-pass').value.trim();
+    document.getElementById('btn-submit-auth').addEventListener('click', async () => {
+      const u = document.getElementById('auth-val-user').value.trim();
+      const p = document.getElementById('auth-val-pass').value.trim();
       if (!u || !p) return alert("Заполни логин и пароль!");
 
-      const passHash = await hash(p);
+      const passHash = await hashPass(p);
 
-      if (isRegister) {
-        const { data, error } = await supabaseClient.from('profiles').insert([
+      if (authRegisterMode) {
+        const { data, error } = await client.from('profiles').insert([
           { username: u, display_name: u, password_hash: passHash }
         ]).select().single();
         if (error) return alert("Этот никнейм уже занят!");
-        currentUser = data;
-        localStorage.setItem('nyx_user', JSON.stringify(data));
+        activeSession = data;
+        localStorage.setItem('nyx_session', JSON.stringify(data));
         location.reload();
       } else {
-        const { data, error } = await supabaseClient.from('profiles').select('*')
+        const { data, error } = await client.from('profiles').select('*')
           .eq('username', u)
           .eq('password_hash', passHash)
           .single();
         if (error || !data) return alert("Неверный логин или пароль!");
-        if (data.is_banned) return alert("⛔ Аккаунт забанен!");
-        currentUser = data;
-        localStorage.setItem('nyx_user', JSON.stringify(data));
+        if (data.is_banned) return alert("⛔ Аккаунт заблокирован!");
+        activeSession = data;
+        localStorage.setItem('nyx_session', JSON.stringify(data));
         location.reload();
       }
     });
 
-    // Медиа выбор
-    const filePicker = document.getElementById('media-file-picker');
-    document.getElementById('pick-media-btn').addEventListener('click', () => filePicker.click());
-    filePicker.addEventListener('change', (e) => {
+    // Медиа файл
+    const fileMediaPicker = document.getElementById('input-file-media');
+    document.getElementById('btn-attach-media').addEventListener('click', () => fileMediaPicker.click());
+    fileMediaPicker.addEventListener('change', (e) => {
       const f = e.target.files[0];
       if (!f) return;
-      if (f.size > MAX_SIZE) {
-        alert("⚠️ Лимит 25 МБ превышен!");
-        filePicker.value = '';
+      if (f.size > LIMIT_BYTES) {
+        alert("⚠️ Лимит 25 МБ!");
+        fileMediaPicker.value = '';
         return;
       }
-      pickedFile = f;
-      document.getElementById('media-filename').textContent = f.name;
-      document.getElementById('media-preview').classList.remove('hidden');
-      document.getElementById('media-preview').classList.add('flex');
+      attachedFile = f;
+      document.getElementById('preview-file-title').textContent = f.name;
+      document.getElementById('media-preview-container').classList.remove('hidden');
+      document.getElementById('media-preview-container').classList.add('flex');
     });
 
-    document.getElementById('clear-media-btn').addEventListener('click', () => {
-      pickedFile = null;
-      filePicker.value = '';
-      document.getElementById('media-preview').classList.add('hidden');
-      document.getElementById('media-preview').classList.remove('flex');
+    document.getElementById('btn-remove-media').addEventListener('click', () => {
+      attachedFile = null;
+      fileMediaPicker.value = '';
+      document.getElementById('media-preview-container').classList.add('hidden');
+      document.getElementById('media-preview-container').classList.remove('flex');
     });
 
-    // Публикация
-    document.getElementById('post-textarea').addEventListener('input', (e) => {
-      document.getElementById('char-counter').textContent = `${e.target.value.length}/2000`;
+    // Публикация поста
+    document.getElementById('input-post-text').addEventListener('input', (e) => {
+      document.getElementById('counter-post-chars').textContent = `${e.target.value.length}/2000`;
     });
 
-    document.getElementById('publish-submit-btn').addEventListener('click', async () => {
-      const text = document.getElementById('post-textarea').value.trim();
-      if (!text && !pickedFile) return;
+    document.getElementById('btn-create-post').addEventListener('click', async () => {
+      const text = document.getElementById('input-post-text').value.trim();
+      if (!text && !attachedFile) return;
 
       let mediaUrl = null;
       let mediaType = null;
 
-      if (pickedFile) {
-        const ext = pickedFile.name.split('.').pop();
+      if (attachedFile) {
+        const ext = attachedFile.name.split('.').pop();
         const p = `posts/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
-        const { error: errUp } = await supabaseClient.storage.from('nyxflow-media').upload(p, pickedFile);
+        const { error: errUp } = await client.storage.from('nyxflow-media').upload(p, attachedFile);
         if (errUp) return alert("Ошибка медиа: " + errUp.message);
 
-        const { data: pub } = supabaseClient.storage.from('nyxflow-media').getPublicUrl(p);
+        const { data: pub } = client.storage.from('nyxflow-media').getPublicUrl(p);
         mediaUrl = pub.publicUrl;
-        mediaType = pickedFile.type.startsWith('video/') ? 'video' : 'image';
+        mediaType = attachedFile.type.startsWith('video/') ? 'video' : 'image';
       }
 
-      await supabaseClient.from('posts').insert([{
-        user_id: currentUser.id,
+      await client.from('posts').insert([{
+        user_id: activeSession.id,
         text,
         media_url: mediaUrl,
         media_type: mediaType
       }]);
 
-      document.getElementById('post-textarea').value = '';
-      document.getElementById('char-counter').textContent = '0/2000';
-      pickedFile = null;
-      filePicker.value = '';
-      document.getElementById('media-preview').classList.add('hidden');
-      document.getElementById('media-preview').classList.remove('flex');
+      document.getElementById('input-post-text').value = '';
+      document.getElementById('counter-post-chars').textContent = '0/2000';
+      attachedFile = null;
+      fileMediaPicker.value = '';
+      document.getElementById('media-preview-container').classList.add('hidden');
+      document.getElementById('media-preview-container').classList.remove('flex');
 
-      loadFeed();
-      loadUserPosts();
+      fetchFeed();
+      fetchUserPosts();
     });
 
-    // Загрузка ленты
-    async function loadFeed() {
-      let query = supabaseClient.from('posts').select(`
+    // Загрузка постов
+    async function fetchFeed() {
+      const { data: posts, error } = await client.from('posts').select(`
         id, text, media_url, media_type, views_count, created_at, user_id,
         profiles ( id, username, display_name, avatar_url, is_verified, is_admin, is_banned ),
         likes ( user_id ),
         reposts ( user_id )
       `).order('created_at', { ascending: false });
 
-      const { data: posts, error } = await query;
       if (error) return console.error(error);
-
-      // Защита от забаненных
-      const validPosts = posts.filter(p => !p.profiles?.is_banned);
-      renderPostList(validPosts, document.getElementById('posts-feed'));
+      const valid = posts.filter(p => !p.profiles?.is_banned);
+      drawPosts(valid, document.getElementById('feed-items-list'));
     }
 
-    async function loadUserPosts() {
-      const { data: posts } = await supabaseClient.from('posts').select(`
+    async function fetchUserPosts() {
+      const { data: posts } = await client.from('posts').select(`
         id, text, media_url, media_type, views_count, created_at, user_id,
         profiles ( id, username, display_name, avatar_url, is_verified, is_admin, is_banned ),
         likes ( user_id ),
         reposts ( user_id )
-      `).eq('user_id', currentUser.id).order('created_at', { ascending: false });
+      `).eq('user_id', activeSession.id).order('created_at', { ascending: false });
 
-      renderPostList(posts || [], document.getElementById('user-posts-container'));
+      drawPosts(posts || [], document.getElementById('profile-posts-list'));
     }
 
-    // Рендер постов в точь-в-точь стиле pyLost
-    function renderPostList(posts, container) {
-      container.innerHTML = '';
+    function drawPosts(posts, targetEl) {
+      targetEl.innerHTML = '';
       posts.forEach(post => {
         const card = document.createElement('article');
         card.className = "p-4 hover:bg-[#14141c]/50 transition";
 
-        const isLiked = post.likes?.some(l => l.user_id === currentUser.id);
-        const isReposted = post.reposts?.some(r => r.user_id === currentUser.id);
-        const likesCount = post.likes?.length || 0;
-        const repostsCount = post.reposts?.length || 0;
+        const hasLiked = post.likes?.some(l => l.user_id === activeSession.id);
+        const hasReposted = post.reposts?.some(r => r.user_id === activeSession.id);
+        const lCount = post.likes?.length || 0;
+        const rCount = post.reposts?.length || 0;
 
-        let mediaBlock = '';
+        let mediaNode = '';
         if (post.media_url) {
           if (post.media_type === 'video') {
-            mediaBlock = `
+            mediaNode = `
               <div class="rounded-2xl overflow-hidden bg-black max-h-96 border border-[#232330] mt-3">
                 <video src="${post.media_url}" controls class="w-full max-h-96 object-cover"></video>
               </div>`;
           } else {
-            mediaBlock = `
+            mediaNode = `
               <div class="rounded-2xl overflow-hidden bg-black max-h-96 border border-[#232330] mt-3">
                 <img src="${post.media_url}" class="w-full object-cover">
               </div>`;
           }
         }
 
-        // Админка
-        let adminAction = '';
-        if (currentUser.is_admin) {
-          adminAction = `
+        let adminControls = '';
+        if (activeSession.is_admin) {
+          adminControls = `
             <div class="flex items-center gap-2">
-              <button onclick="deletePost('${post.id}')" title="Удалить" class="text-xs text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
-              ${post.profiles?.id !== currentUser.id ? `
-                <button onclick="banUser('${post.profiles?.id}')" title="Бан" class="text-xs text-yellow-400 hover:text-yellow-300"><i class="fa-solid fa-ban"></i></button>
+              <button onclick="handleDeletePost('${post.id}')" title="Удалить">${SVG_TRASH}</button>
+              ${post.profiles?.id !== activeSession.id ? `
+                <button onclick="handleBanUser('${post.profiles?.id}')" title="Бан">${SVG_BAN}</button>
               ` : ''}
             </div>
           `;
@@ -568,8 +599,8 @@
           <div class="flex items-start gap-3">
             <div class="relative">
               <img src="${post.profiles?.avatar_url || ''}" class="w-10 h-10 rounded-xl object-cover bg-gray-800">
-              ${post.profiles?.id !== currentUser.id ? `
-                <button onclick="toggleFollow('${post.profiles?.id}')" title="Подписаться" class="absolute -bottom-1 -right-1 w-4 h-4 bg-white text-black text-[9px] rounded-full flex items-center justify-center font-bold shadow">
+              ${post.profiles?.id !== activeSession.id ? `
+                <button onclick="handleFollow('${post.profiles?.id}')" title="Подписаться" class="absolute -bottom-1 -right-1 w-4 h-4 bg-white text-black text-[9px] rounded-full flex items-center justify-center font-bold shadow">
                   +
                 </button>
               ` : ''}
@@ -579,39 +610,33 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-bold text-xs text-white">${post.profiles?.display_name || post.profiles?.username}</span>
-                  ${post.profiles?.is_verified ? '<i class="fa-solid fa-circle-check text-sky-400 text-[11px]"></i>' : ''}
-                  ${post.profiles?.is_admin ? '<i class="fa-solid fa-shield text-emerald-400 text-[11px]"></i>' : ''}
+                  ${post.profiles?.is_verified ? SVG_CHECK : ''}
                   <span class="text-[11px] text-gray-500">· ${new Date(post.created_at).toLocaleDateString([], {month:'short', day:'numeric'})}</span>
                 </div>
-                ${adminAction || '<i class="fa-solid fa-ellipsis text-xs text-gray-600"></i>'}
+                ${adminControls || '<svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"/></svg>'}
               </div>
 
               ${post.text ? `<p class="text-xs text-gray-200 mt-1 leading-relaxed break-words">${post.text}</p>` : ''}
-              ${mediaBlock}
+              ${mediaNode}
 
-              <!-- Кнопки действий: Лайк, Комменты, Репост, Просмотры -->
               <div class="flex items-center justify-between text-xs text-gray-500 mt-3 pt-1">
-                <!-- Лайк -->
-                <button onclick="toggleLike('${post.id}')" class="flex items-center gap-1.5 hover:text-red-400 ${isLiked ? 'text-red-500' : ''}">
-                  <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
-                  <span>${likesCount}</span>
+                <button onclick="handleLike('${post.id}')" class="flex items-center gap-1.5 hover:text-red-400">
+                  ${SVG_LIKE(hasLiked)}
+                  <span>${lCount}</span>
                 </button>
 
-                <!-- Комменты -->
                 <button class="flex items-center gap-1.5 hover:text-white">
-                  <i class="fa-regular fa-comment"></i>
+                  ${SVG_COMMENT}
                   <span>0</span>
                 </button>
 
-                <!-- Репост -->
-                <button onclick="toggleRepost('${post.id}')" class="flex items-center gap-1.5 hover:text-green-400 ${isReposted ? 'text-green-400' : ''}">
-                  <i class="fa-solid fa-repeat"></i>
-                  <span>${repostsCount}</span>
+                <button onclick="handleRepost('${post.id}')" class="flex items-center gap-1.5 hover:text-green-400">
+                  ${SVG_REPOST(hasReposted)}
+                  <span>${rCount}</span>
                 </button>
 
-                <!-- Просмотры -->
                 <div class="flex items-center gap-1.5 text-gray-600">
-                  <i class="fa-regular fa-eye"></i>
+                  ${SVG_EYE}
                   <span>${post.views_count || 15}</span>
                 </div>
               </div>
@@ -619,196 +644,193 @@
             </div>
           </div>
         `;
-        container.appendChild(card);
+        targetEl.appendChild(card);
       });
     }
 
-    // Лайк
-    window.toggleLike = async function(postId) {
-      const { data: ex } = await supabaseClient.from('likes').select('id').eq('user_id', currentUser.id).eq('post_id', postId).maybeSingle();
+    // Обработчики действий
+    window.handleLike = async function(id) {
+      const { data: ex } = await client.from('likes').select('id').eq('user_id', activeSession.id).eq('post_id', id).maybeSingle();
       if (ex) {
-        await supabaseClient.from('likes').delete().eq('id', ex.id);
+        await client.from('likes').delete().eq('id', ex.id);
       } else {
-        await supabaseClient.from('likes').insert([{ user_id: currentUser.id, post_id: postId }]);
+        await client.from('likes').insert([{ user_id: activeSession.id, post_id: id }]);
       }
-      loadFeed();
-      loadUserPosts();
+      fetchFeed();
+      fetchUserPosts();
     };
 
-    // Репост
-    window.toggleRepost = async function(postId) {
-      const { data: ex } = await supabaseClient.from('reposts').select('id').eq('user_id', currentUser.id).eq('post_id', postId).maybeSingle();
+    window.handleRepost = async function(id) {
+      const { data: ex } = await client.from('reposts').select('id').eq('user_id', activeSession.id).eq('post_id', id).maybeSingle();
       if (ex) {
-        await supabaseClient.from('reposts').delete().eq('id', ex.id);
+        await client.from('reposts').delete().eq('id', ex.id);
       } else {
-        await supabaseClient.from('reposts').insert([{ user_id: currentUser.id, post_id: postId }]);
+        await client.from('reposts').insert([{ user_id: activeSession.id, post_id: id }]);
       }
-      loadFeed();
-      loadUserPosts();
+      fetchFeed();
+      fetchUserPosts();
     };
 
-    // Подписка по кнопке [+] у аватарки
-    window.toggleFollow = async function(targetUserId) {
-      const { data: ex } = await supabaseClient.from('follows').select('id').eq('follower_id', currentUser.id).eq('following_id', targetUserId).maybeSingle();
+    window.handleFollow = async function(uid) {
+      const { data: ex } = await client.from('follows').select('id').eq('follower_id', activeSession.id).eq('following_id', uid).maybeSingle();
       if (ex) {
-        await supabaseClient.from('follows').delete().eq('id', ex.id);
+        await client.from('follows').delete().eq('id', ex.id);
         alert("Вы отписались");
       } else {
-        await supabaseClient.from('follows').insert([{ follower_id: currentUser.id, following_id: targetUserId }]);
+        await client.from('follows').insert([{ follower_id: activeSession.id, following_id: uid }]);
         alert("Вы подписались!");
       }
-      updateFollowCounts();
+      refreshCounts();
     };
 
-    // Админка
-    window.deletePost = async function(id) {
-      if (!confirm("Удалить пост?")) return;
-      await supabaseClient.from('posts').delete().eq('id', id);
-      loadFeed();
-      loadUserPosts();
+    window.handleDeletePost = async function(id) {
+      if (!confirm("Удалить этот пост?")) return;
+      await client.from('posts').delete().eq('id', id);
+      fetchFeed();
+      fetchUserPosts();
     };
 
-    window.banUser = async function(uid) {
-      if (!confirm("Забанить пользователя?")) return;
-      await supabaseClient.from('profiles').update({ is_banned: true }).eq('id', uid);
-      alert("Пользователь заблокирован!");
-      loadFeed();
+    window.handleBanUser = async function(uid) {
+      if (!confirm("Забанить пользователя навсегда?")) return;
+      await client.from('profiles').update({ is_banned: true }).eq('id', uid);
+      alert("Пользователь забанен!");
+      fetchFeed();
     };
 
-    // Модалка Редактирования профиля
-    const editModal = document.getElementById('edit-modal');
-    document.getElementById('open-edit-profile-btn').addEventListener('click', () => {
-      editModal.classList.remove('hidden');
-      document.getElementById('edit-display-name').value = currentUser.display_name || '';
-      document.getElementById('edit-username').value = currentUser.username || '';
-      document.getElementById('edit-bio').value = currentUser.bio || '';
-      document.getElementById('edit-spotify').value = currentUser.spotify_url || '';
-      document.getElementById('edit-banner-preview').src = currentUser.banner_url;
-      document.getElementById('edit-avatar-preview').src = currentUser.avatar_url;
-      document.getElementById('edit-name-count').textContent = `${(currentUser.display_name||'').length}/35`;
-      document.getElementById('edit-bio-count').textContent = `${(currentUser.bio||'').length}/150`;
+    // Модалка редактирования
+    const modalEditor = document.getElementById('modal-editor');
+    document.getElementById('btn-open-editor').addEventListener('click', () => {
+      modalEditor.classList.remove('hidden');
+      document.getElementById('edit-val-display').value = activeSession.display_name || '';
+      document.getElementById('edit-val-username').value = activeSession.username || '';
+      document.getElementById('edit-val-bio').value = activeSession.bio || '';
+      document.getElementById('edit-val-spotify').value = activeSession.spotify_url || '';
+      document.getElementById('preview-banner-edit').src = activeSession.banner_url;
+      document.getElementById('preview-avatar-edit').src = activeSession.avatar_url;
+      document.getElementById('counter-name-edit').textContent = `${(activeSession.display_name||'').length}/35`;
+      document.getElementById('counter-bio-edit').textContent = `${(activeSession.bio||'').length}/150`;
     });
-    document.getElementById('close-edit-modal-btn').addEventListener('click', () => editModal.classList.add('hidden'));
+    document.getElementById('btn-dismiss-editor').addEventListener('click', () => modalEditor.classList.add('hidden'));
 
-    // Табы настроек (Профиль / Безопасность / Конфиденциальность)
-    const p1 = document.getElementById('edit-pane-profile');
-    const p2 = document.getElementById('edit-pane-security');
-    const p3 = document.getElementById('edit-pane-privacy');
-    const b1 = document.getElementById('subtab-profile');
-    const b2 = document.getElementById('subtab-security');
-    const b3 = document.getElementById('subtab-privacy');
+    // Табы настроек
+    const pProfile = document.getElementById('pane-opt-profile');
+    const pSecurity = document.getElementById('pane-opt-security');
+    const pPrivacy = document.getElementById('pane-opt-privacy');
+    const tProfile = document.getElementById('tab-opt-profile');
+    const tSecurity = document.getElementById('tab-opt-security');
+    const tPrivacy = document.getElementById('tab-opt-privacy');
 
-    b1.addEventListener('click', () => {
-      p1.classList.remove('hidden'); p2.classList.add('hidden'); p3.classList.add('hidden');
-      b1.className = "pb-2 active-tab"; b2.className = "pb-2 hover:text-gray-200"; b3.className = "pb-2 hover:text-gray-200";
+    tProfile.addEventListener('click', () => {
+      pProfile.classList.remove('hidden'); pSecurity.classList.add('hidden'); pPrivacy.classList.add('hidden');
+      tProfile.className = "pb-2 tab-active"; tSecurity.className = "pb-2 hover:text-gray-200"; tPrivacy.className = "pb-2 hover:text-gray-200";
     });
-    b2.addEventListener('click', () => {
-      p2.classList.remove('hidden'); p1.classList.add('hidden'); p3.classList.add('hidden');
-      b2.className = "pb-2 active-tab"; b1.className = "pb-2 hover:text-gray-200"; b3.className = "pb-2 hover:text-gray-200";
+    tSecurity.addEventListener('click', () => {
+      pSecurity.classList.remove('hidden'); pProfile.classList.add('hidden'); pPrivacy.classList.add('hidden');
+      tSecurity.className = "pb-2 tab-active"; tProfile.className = "pb-2 hover:text-gray-200"; tPrivacy.className = "pb-2 hover:text-gray-200";
     });
-    b3.addEventListener('click', () => {
-      p3.classList.remove('hidden'); p1.classList.add('hidden'); p2.classList.add('hidden');
-      b3.className = "pb-2 active-tab"; b1.className = "pb-2 hover:text-gray-200"; b2.className = "pb-2 hover:text-gray-200";
+    tPrivacy.addEventListener('click', () => {
+      pPrivacy.classList.remove('hidden'); pProfile.classList.add('hidden'); pSecurity.classList.add('hidden');
+      tPrivacy.className = "pb-2 tab-active"; tProfile.className = "pb-2 hover:text-gray-200"; tSecurity.className = "pb-2 hover:text-gray-200";
     });
 
-    // Загрузка аватарки и баннера в настройках
-    document.getElementById('edit-avatar-input').addEventListener('change', async (e) => {
+    // Смена аватара и баннера
+    document.getElementById('file-avatar-upload').addEventListener('change', async (e) => {
       const f = e.target.files[0];
       if (!f) return;
-      const p = `avatars/${currentUser.id}_${Date.now()}.${f.name.split('.').pop()}`;
-      await supabaseClient.storage.from('nyxflow-media').upload(p, f);
-      const { data } = supabaseClient.storage.from('nyxflow-media').getPublicUrl(p);
-      document.getElementById('edit-avatar-preview').src = data.publicUrl;
-      currentUser.avatar_url = data.publicUrl;
+      const path = `avatars/${activeSession.id}_${Date.now()}.${f.name.split('.').pop()}`;
+      await client.storage.from('nyxflow-media').upload(path, f);
+      const { data } = client.storage.from('nyxflow-media').getPublicUrl(path);
+      document.getElementById('preview-avatar-edit').src = data.publicUrl;
+      activeSession.avatar_url = data.publicUrl;
     });
 
-    document.getElementById('edit-banner-input').addEventListener('change', async (e) => {
+    document.getElementById('file-banner-upload').addEventListener('change', async (e) => {
       const f = e.target.files[0];
       if (!f) return;
-      const p = `banners/${currentUser.id}_${Date.now()}.${f.name.split('.').pop()}`;
-      await supabaseClient.storage.from('nyxflow-media').upload(p, f);
-      const { data } = supabaseClient.storage.from('nyxflow-media').getPublicUrl(p);
-      document.getElementById('edit-banner-preview').src = data.publicUrl;
-      currentUser.banner_url = data.publicUrl;
+      const path = `banners/${activeSession.id}_${Date.now()}.${f.name.split('.').pop()}`;
+      await client.storage.from('nyxflow-media').upload(path, f);
+      const { data } = client.storage.from('nyxflow-media').getPublicUrl(path);
+      document.getElementById('preview-banner-edit').src = data.publicUrl;
+      activeSession.banner_url = data.publicUrl;
     });
 
-    // Сохранить все изменения профиля
-    document.getElementById('save-profile-all-btn').addEventListener('click', async () => {
-      const dName = document.getElementById('edit-display-name').value.trim();
-      const uName = document.getElementById('edit-username').value.trim();
-      const bio = document.getElementById('edit-bio').value.trim();
-      const spot = document.getElementById('edit-spotify').value.trim();
+    // Сохранение настроек профиля
+    document.getElementById('btn-save-full-profile').addEventListener('click', async () => {
+      const dName = document.getElementById('edit-val-display').value.trim();
+      const uName = document.getElementById('edit-val-username').value.trim();
+      const bio = document.getElementById('edit-val-bio').value.trim();
+      const spot = document.getElementById('edit-val-spotify').value.trim();
 
-      const { data, error } = await supabaseClient.from('profiles').update({
+      const { data, error } = await client.from('profiles').update({
         display_name: dName,
         username: uName,
         bio: bio,
         spotify_url: spot,
-        avatar_url: currentUser.avatar_url,
-        banner_url: currentUser.banner_url
-      }).eq('id', currentUser.id).select().single();
+        avatar_url: activeSession.avatar_url,
+        banner_url: activeSession.banner_url
+      }).eq('id', activeSession.id).select().single();
 
-      if (error) return alert("Ошибка! Возможно ник уже занят.");
-      currentUser = data;
-      localStorage.setItem('nyx_user', JSON.stringify(data));
-      editModal.classList.add('hidden');
-      setupUI();
-      loadFeed();
-      loadUserPosts();
+      if (error) return alert("Ошибка сохранения или ник занят!");
+      activeSession = data;
+      localStorage.setItem('nyx_session', JSON.stringify(data));
+      modalEditor.classList.add('hidden');
+      renderInterface();
+      fetchFeed();
+      fetchUserPosts();
     });
 
     // Смена пароля
-    document.getElementById('save-new-password-btn').addEventListener('click', async () => {
-      const cur = document.getElementById('change-pass-current').value.trim();
-      const n = document.getElementById('change-pass-new').value.trim();
-      if (!cur || !n) return alert("Заполни поля паролей!");
-      if (n.length < 6) return alert("Новый пароль минимум 6 символов!");
+    document.getElementById('btn-submit-new-pass').addEventListener('click', async () => {
+      const c = document.getElementById('input-pass-curr').value.trim();
+      const n = document.getElementById('input-pass-next').value.trim();
+      if (!c || !n) return alert("Заполни оба поля!");
+      if (n.length < 6) return alert("Пароль минимум 6 знаков!");
 
-      const curHash = await hash(cur);
-      if (curHash !== currentUser.password_hash) return alert("Неверный текущий пароль!");
+      const cHash = await hashPass(c);
+      if (cHash !== activeSession.password_hash) return alert("Неверный текущий пароль!");
 
-      const newHash = await hash(n);
-      await supabaseClient.from('profiles').update({ password_hash: newHash }).eq('id', currentUser.id);
-      currentUser.password_hash = newHash;
-      localStorage.setItem('nyx_user', JSON.stringify(currentUser));
-      alert("Пароль успешно изменен!");
-      editModal.classList.add('hidden');
+      const nHash = await hashPass(n);
+      await client.from('profiles').update({ password_hash: nHash }).eq('id', activeSession.id);
+      activeSession.password_hash = nHash;
+      localStorage.setItem('nyx_session', JSON.stringify(activeSession));
+      alert("Пароль успешно обновлен!");
+      modalEditor.classList.add('hidden');
     });
 
-    // Заявка на верификацию
-    document.getElementById('request-verify-btn').addEventListener('click', async () => {
-      if (currentUser.is_admin) {
-        await supabaseClient.from('profiles').update({ is_verified: true }).eq('id', currentUser.id);
-        currentUser.is_verified = true;
-        localStorage.setItem('nyx_user', JSON.stringify(currentUser));
-        setupUI();
-        alert("Галочка верификации выдана!");
+    // Верификация
+    document.getElementById('btn-request-badge').addEventListener('click', async () => {
+      if (activeSession.is_admin) {
+        await client.from('profiles').update({ is_verified: true }).eq('id', activeSession.id);
+        activeSession.is_verified = true;
+        localStorage.setItem('nyx_session', JSON.stringify(activeSession));
+        renderInterface();
+        alert("Верификация включена!");
       } else {
-        alert("Заявка на верификацию отправлена администрации!");
+        alert("Заявка на верификацию отправлена!");
       }
     });
 
-    // Навигация
-    const feedScreen = document.getElementById('feed-screen');
-    const profileScreen = document.getElementById('profile-screen');
-    const navFeed = document.getElementById('nav-feed');
-    const navProfile = document.getElementById('nav-profile');
+    // Нижняя навигация
+    const viewFeed = document.getElementById('view-feed');
+    const viewProfile = document.getElementById('view-profile');
+    const btnNavHome = document.getElementById('nav-btn-home');
+    const btnNavAccount = document.getElementById('nav-btn-account');
 
-    navFeed.addEventListener('click', () => {
-      feedScreen.classList.remove('hidden');
-      profileScreen.classList.add('hidden');
-      navFeed.className = "flex flex-col items-center gap-1 text-white";
-      navProfile.className = "flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300";
+    btnNavHome.addEventListener('click', () => {
+      viewFeed.classList.remove('hidden');
+      viewProfile.classList.add('hidden');
+      btnNavHome.className = "flex flex-col items-center gap-1 text-white";
+      btnNavAccount.className = "flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300";
     });
 
-    navProfile.addEventListener('click', () => {
-      feedScreen.classList.add('hidden');
-      profileScreen.classList.remove('hidden');
-      navProfile.className = "flex flex-col items-center gap-1 text-white";
-      navFeed.className = "flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300";
+    btnNavAccount.addEventListener('click', () => {
+      viewFeed.classList.add('hidden');
+      viewProfile.classList.remove('hidden');
+      btnNavAccount.className = "flex flex-col items-center gap-1 text-white";
+      btnNavHome.className = "flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300";
     });
 
-    init();
+    startApp();
   </script>
 </body>
 </html>
